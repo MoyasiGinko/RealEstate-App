@@ -24,13 +24,25 @@ class OwnerForm(BoxLayout):
         self.padding = dp(10)
         self.spacing = dp(10)
 
+        # Set white background for the form
+        with self.canvas.before:
+            Color(1, 1, 1, 1)  # White background
+            self.rect = Rectangle(pos=self.pos, size=self.size)
+        self.bind(pos=self.update_rect, size=self.update_rect)
+
         self.save_callback = save_callback
         self.owner_data = owner_data
         self.owner_code = owner_data.get('Ownercode') if owner_data else None
 
         # Title
         title = 'Edit Owner' if owner_data else 'Add New Owner'
-        self.add_widget(Label(text=title, font_size=dp(24), size_hint_y=None, height=dp(40)))
+        self.add_widget(Label(
+            text=title,
+            font_size=dp(24),
+            size_hint_y=None,
+            height=dp(40),
+            color=(0.2, 0.2, 0.2, 1)  # Dark gray text
+        ))
 
         # Form container with scroll view for larger forms
         form_container = BoxLayout(orientation='vertical', spacing=dp(10))
@@ -42,14 +54,17 @@ class OwnerForm(BoxLayout):
             size_hint_y=None,
             height=dp(20),
             halign='left',
-            text_size=(dp(300), dp(20))
+            text_size=(dp(300), dp(20)),
+            color=(0.3, 0.3, 0.3, 1)  # Dark gray text
         ))
         self.owner_name_input = TextInput(
             hint_text='Enter owner name',
             text=owner_data.get('ownername', '') if owner_data else '',
             multiline=False,
             size_hint_y=None,
-            height=dp(40)
+            height=dp(40),
+            background_color=(0.98, 0.98, 0.98, 1),  # Light gray background
+            foreground_color=(0.2, 0.2, 0.2, 1)  # Dark text
         )
         name_layout.add_widget(self.owner_name_input)
         form_container.add_widget(name_layout)
@@ -61,7 +76,8 @@ class OwnerForm(BoxLayout):
             size_hint_y=None,
             height=dp(20),
             halign='left',
-            text_size=(dp(300), dp(20))
+            text_size=(dp(300), dp(20)),
+            color=(0.3, 0.3, 0.3, 1)  # Dark gray text
         ))
         self.owner_phone_input = TextInput(
             hint_text='Enter phone number (07xxxxxxxxx)',
@@ -69,7 +85,9 @@ class OwnerForm(BoxLayout):
             multiline=False,
             size_hint_y=None,
             height=dp(40),
-            input_filter=self.phone_filter
+            input_filter=self.phone_filter,
+            background_color=(0.98, 0.98, 0.98, 1),  # Light gray background
+            foreground_color=(0.2, 0.2, 0.2, 1)  # Dark text
         )
         phone_layout.add_widget(self.owner_phone_input)
         form_container.add_widget(phone_layout)
@@ -81,14 +99,17 @@ class OwnerForm(BoxLayout):
             size_hint_y=None,
             height=dp(20),
             halign='left',
-            text_size=(dp(300), dp(20))
+            text_size=(dp(300), dp(20)),
+            color=(0.3, 0.3, 0.3, 1)  # Dark gray text
         ))
         self.note_input = TextInput(
             hint_text='Enter additional notes (optional)',
             text=owner_data.get('Note', '') if owner_data else '',
             multiline=True,
             size_hint_y=None,
-            height=dp(100)
+            height=dp(100),
+            background_color=(0.98, 0.98, 0.98, 1),  # Light gray background
+            foreground_color=(0.2, 0.2, 0.2, 1)  # Dark text
         )
         note_layout.add_widget(self.note_input)
         form_container.add_widget(note_layout)
@@ -102,20 +123,27 @@ class OwnerForm(BoxLayout):
         # Save button
         save_button = Button(
             text='Save',
-            background_color=(0.2, 0.7, 0.3, 1)
+            background_color=(0.2, 0.6, 0.2, 1),  # Green button
+            color=(1, 1, 1, 1)  # White text
         )
         save_button.bind(on_press=self.save)
         buttons_layout.add_widget(save_button)
 
         # Cancel button
-        cancel_button = Button(
+        self.cancel_button = Button(
             text='Cancel',
-            background_color=(0.8, 0.2, 0.2, 1)
+            background_color=(0.6, 0.2, 0.2, 1),  # Red button
+            color=(1, 1, 1, 1)  # White text
         )
-        cancel_button.bind(on_press=self.cancel)
-        buttons_layout.add_widget(cancel_button)
+        # We'll bind this in the parent class
+        buttons_layout.add_widget(self.cancel_button)
 
         self.add_widget(buttons_layout)
+
+    def update_rect(self, instance, value):
+        """Update the rectangle position and size."""
+        instance.rect.pos = instance.pos
+        instance.rect.size = instance.size
 
     def phone_filter(self, text, from_undo=False):
         """Filter for phone number input - only allow digits and limit length."""
@@ -146,16 +174,11 @@ class OwnerForm(BoxLayout):
         # Call the save callback with the owner data
         self.save_callback(owner_name, owner_phone, note, self.owner_code)
 
-    def cancel(self, instance):
-        """Cancel the form and close the popup."""
-        if hasattr(self.parent, 'dismiss'):
-            self.parent.dismiss()
-
     def show_error(self, message):
         """Show an error popup."""
         popup = Popup(
             title='Error',
-            content=Label(text=message),
+            content=Label(text=message, color=(0.2, 0.2, 0.2, 1)),
             size_hint=(0.7, 0.3)
         )
         popup.open()
@@ -167,6 +190,12 @@ class OwnerManagementScreen(Screen):
         super(OwnerManagementScreen, self).__init__(**kwargs)
         self.api = get_api()
 
+        # Set white background for the entire screen
+        with self.canvas.before:
+            Color(1, 1, 1, 1)  # White background
+            self.rect = Rectangle(pos=self.pos, size=self.size)
+        self.bind(pos=self.update_screen_rect, size=self.update_screen_rect)
+
         # Main layout
         self.layout = BoxLayout(orientation='vertical', padding=dp(10), spacing=dp(10))
 
@@ -177,14 +206,16 @@ class OwnerManagementScreen(Screen):
             font_size=dp(24),
             halign='left',
             valign='middle',
-            text_size=(dp(300), dp(50))
+            text_size=(dp(300), dp(50)),
+            color=(0.2, 0.2, 0.2, 1)  # Dark gray text
         ))
 
         add_button = Button(
             text='Add Owner',
             size_hint_x=None,
             width=dp(120),
-            background_color=(0.2, 0.7, 0.3, 1)
+            background_color=(0.2, 0.6, 0.2, 1),  # Green button
+            color=(1, 1, 1, 1)  # White text
         )
         add_button.bind(on_press=self.show_add_owner_form)
         header.add_widget(add_button)
@@ -197,7 +228,9 @@ class OwnerManagementScreen(Screen):
         self.search_input = TextInput(
             hint_text='Search owners by name or phone',
             multiline=False,
-            size_hint_x=0.7
+            size_hint_x=0.7,
+            background_color=(0.98, 0.98, 0.98, 1),  # Light gray background
+            foreground_color=(0.2, 0.2, 0.2, 1)  # Dark text
         )
         self.search_input.bind(text=self.on_search_text_changed)
         search_container.add_widget(self.search_input)
@@ -205,7 +238,8 @@ class OwnerManagementScreen(Screen):
         search_button = Button(
             text='Search',
             size_hint_x=0.15,
-            background_color=(0.3, 0.5, 0.9, 1)
+            background_color=(0.2, 0.4, 0.8, 1),  # Blue button
+            color=(1, 1, 1, 1)  # White text
         )
         search_button.bind(on_press=self.search_owners)
         search_container.add_widget(search_button)
@@ -213,7 +247,8 @@ class OwnerManagementScreen(Screen):
         clear_button = Button(
             text='Clear',
             size_hint_x=0.15,
-            background_color=(0.7, 0.7, 0.7, 1)
+            background_color=(0.5, 0.5, 0.5, 1),  # Gray button
+            color=(1, 1, 1, 1)  # White text
         )
         clear_button.bind(on_press=self.clear_search)
         search_container.add_widget(clear_button)
@@ -227,16 +262,23 @@ class OwnerManagementScreen(Screen):
             height=dp(30),
             halign='right',
             valign='middle',
-            text_size=(self.width, dp(30))
+            text_size=(self.width, dp(30)),
+            color=(0.3, 0.3, 0.3, 1)  # Dark gray text
         )
         self.layout.add_widget(self.stats_label)
 
         # Owners list header
         list_header = GridLayout(cols=4, size_hint_y=None, height=dp(40))
-        list_header.add_widget(Label(text='Code', bold=True))
-        list_header.add_widget(Label(text='Name', bold=True))
-        list_header.add_widget(Label(text='Phone', bold=True))
-        list_header.add_widget(Label(text='Actions', bold=True))
+        # Add background to header
+        with list_header.canvas.before:
+            Color(0.9, 0.9, 0.9, 1)  # Light gray background for header
+            list_header.rect = Rectangle(pos=list_header.pos, size=list_header.size)
+        list_header.bind(pos=self.update_rect, size=self.update_rect)
+
+        list_header.add_widget(Label(text='Code', bold=True, color=(0.2, 0.2, 0.2, 1)))
+        list_header.add_widget(Label(text='Name', bold=True, color=(0.2, 0.2, 0.2, 1)))
+        list_header.add_widget(Label(text='Phone', bold=True, color=(0.2, 0.2, 0.2, 1)))
+        list_header.add_widget(Label(text='Actions', bold=True, color=(0.2, 0.2, 0.2, 1)))
         self.layout.add_widget(list_header)
 
         # Owners list in a scrollview
@@ -252,7 +294,8 @@ class OwnerManagementScreen(Screen):
             text='Back to Dashboard',
             size_hint_y=None,
             height=dp(50),
-            background_color=(0.4, 0.4, 0.8, 1)
+            background_color=(0.3, 0.3, 0.6, 1),  # Purple button
+            color=(1, 1, 1, 1)  # White text
         )
         back_button.bind(on_press=lambda x: self.go_to_dashboard())
         self.layout.add_widget(back_button)
@@ -261,6 +304,11 @@ class OwnerManagementScreen(Screen):
         self.all_owners = []
 
         self.add_widget(self.layout)
+
+    def update_screen_rect(self, instance, value):
+        """Update the screen background rectangle position and size."""
+        instance.rect.pos = instance.pos
+        instance.rect.size = instance.size
 
     def on_search_text_changed(self, instance, value):
         """Filter owners as user types."""
@@ -308,7 +356,8 @@ class OwnerManagementScreen(Screen):
                 Label(
                     text='No owners found. Click "Add Owner" to create one.',
                     size_hint_y=None,
-                    height=dp(40)
+                    height=dp(40),
+                    color=(0.4, 0.4, 0.4, 1)  # Gray text
                 )
             )
             return
@@ -318,30 +367,32 @@ class OwnerManagementScreen(Screen):
 
             # Add a background color effect for rows
             with owner_row.canvas.before:
-                Color(0.95, 0.95, 0.95, 1)
+                Color(0.98, 0.98, 0.98, 1)  # Very light gray background
                 owner_row.rect = Rectangle(pos=owner_row.pos, size=owner_row.size)
 
             owner_row.bind(pos=self.update_rect, size=self.update_rect)
 
             owner_row.add_widget(Label(
                 text=owner['Ownercode'],
-                color=(0.2, 0.2, 0.8, 1)
+                color=(0.2, 0.2, 0.6, 1)  # Dark blue text
             ))
-            owner_row.add_widget(Label(text=owner['ownername']))
-            owner_row.add_widget(Label(text=owner['ownerphone']))
+            owner_row.add_widget(Label(text=owner['ownername'], color=(0.2, 0.2, 0.2, 1)))
+            owner_row.add_widget(Label(text=owner['ownerphone'], color=(0.2, 0.2, 0.2, 1)))
 
             actions = BoxLayout(spacing=dp(5))
 
             edit_button = Button(
                 text='Edit',
-                background_color=(0.3, 0.5, 0.9, 1)
+                background_color=(0.2, 0.4, 0.8, 1),  # Blue button
+                color=(1, 1, 1, 1)  # White text
             )
             edit_button.bind(on_press=lambda x, o=owner: self.show_edit_owner_form(o))
             actions.add_widget(edit_button)
 
             delete_button = Button(
                 text='Delete',
-                background_color=(0.8, 0.2, 0.2, 1)
+                background_color=(0.6, 0.2, 0.2, 1),  # Red button
+                color=(1, 1, 1, 1)  # White text
             )
             delete_button.bind(on_press=lambda x, code=owner['Ownercode']: self.confirm_delete_owner(code))
             actions.add_widget(delete_button)
@@ -363,6 +414,8 @@ class OwnerManagementScreen(Screen):
             content=content,
             size_hint=(0.8, 0.8)
         )
+        # Bind the cancel method directly to the popup
+        content.cancel_button.bind(on_press=lambda x: self.popup.dismiss())
         self.popup.open()
 
     def show_edit_owner_form(self, owner_data):
@@ -373,6 +426,8 @@ class OwnerManagementScreen(Screen):
             content=content,
             size_hint=(0.8, 0.8)
         )
+        # Bind the cancel method directly to the popup
+        content.cancel_button.bind(on_press=lambda x: self.popup.dismiss())
         self.popup.open()
 
     def add_owner(self, owner_name, owner_phone, note, owner_code=None):
@@ -406,21 +461,24 @@ class OwnerManagementScreen(Screen):
         content = BoxLayout(orientation='vertical', padding=dp(10), spacing=dp(10))
         content.add_widget(Label(
             text=f"Are you sure you want to delete owner '{owner['ownername']}' ({owner_code})?\n\n"
-                 "Note: Owners linked to properties cannot be deleted."
+                 "Note: Owners linked to properties cannot be deleted.",
+            color=(0.2, 0.2, 0.2, 1)  # Dark gray text
         ))
 
         buttons = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(10))
 
         yes_button = Button(
             text='Yes, Delete',
-            background_color=(0.8, 0.2, 0.2, 1)
+            background_color=(0.6, 0.2, 0.2, 1),  # Red button
+            color=(1, 1, 1, 1)  # White text
         )
         yes_button.bind(on_press=lambda x: self.delete_owner(owner_code))
         buttons.add_widget(yes_button)
 
         no_button = Button(
             text='Cancel',
-            background_color=(0.5, 0.5, 0.5, 1)
+            background_color=(0.5, 0.5, 0.5, 1),  # Gray button
+            color=(1, 1, 1, 1)  # White text
         )
         no_button.bind(on_press=lambda x: self.confirm_popup.dismiss())
         buttons.add_widget(no_button)
@@ -449,7 +507,7 @@ class OwnerManagementScreen(Screen):
         """Show a success popup."""
         popup = Popup(
             title='Success',
-            content=Label(text=message),
+            content=Label(text=message, color=(0.2, 0.2, 0.2, 1)),
             size_hint=(0.7, 0.3)
         )
         popup.open()
@@ -458,7 +516,7 @@ class OwnerManagementScreen(Screen):
         """Show an error popup."""
         popup = Popup(
             title='Error',
-            content=Label(text=message),
+            content=Label(text=message, color=(0.2, 0.2, 0.2, 1)),
             size_hint=(0.7, 0.3)
         )
         popup.open()

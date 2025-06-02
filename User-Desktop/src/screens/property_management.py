@@ -435,9 +435,9 @@ class PropertyForm(BoxLayout):
         buttons_layout.add_widget(save_button)
 
         # Cancel button
-        cancel_button = Button(text='Cancel')
-        cancel_button.bind(on_press=self.cancel)
-        buttons_layout.add_widget(cancel_button)
+        self.cancel_button = Button(text='Cancel')
+        self.cancel_button.bind(on_press=self.cancel)
+        buttons_layout.add_widget(self.cancel_button)
 
         form_layout.add_widget(buttons_layout)
 
@@ -732,6 +732,8 @@ class PropertyManagementScreen(Screen):
             content=content,
             size_hint=(0.9, 0.9)
         )
+        content.cancel_button.unbind(on_press=content.cancel)  # Remove old binding
+        content.cancel_button.bind(on_press=lambda x: self.popup.dismiss())
         self.popup.open()
 
     def show_edit_property_form(self, property_data):
@@ -742,6 +744,8 @@ class PropertyManagementScreen(Screen):
             content=content,
             size_hint=(0.9, 0.9)
         )
+        content.cancel_button.unbind(on_press=content.cancel)
+        content.cancel_button.bind(on_press=lambda x: self.popup.dismiss())
         self.popup.open()
 
     def add_property(self, property_data, photos, property_code=None):
