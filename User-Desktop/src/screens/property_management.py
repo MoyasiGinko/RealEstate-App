@@ -812,16 +812,20 @@ class PropertyManagementScreen(Screen):
         scroll_view.add_widget(self.properties_container)
         self.layout.add_widget(scroll_view)
 
-        # Back button
+        # Back button with better positioning
+        footer_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(60), padding=[0, dp(10), 0, 0])
         back_button = Button(
-            text='Back to Dashboard',
-            size_hint_y=None,
-            height=dp(50),
-            background_color=(0.6, 0.6, 0.6, 1),
-            color=(1, 1, 1, 1)
+            text='← Back to Dashboard',
+            size_hint=(None, None),
+            size=(dp(200), dp(50)),
+            background_color=(0.4, 0.4, 0.8, 1),
+            color=(1, 1, 1, 1),
+            font_size=dp(16)
         )
-        back_button.bind(on_press=lambda x: self.go_to_dashboard())
-        self.layout.add_widget(back_button)
+        back_button.bind(on_press=self.go_to_dashboard)
+        footer_layout.add_widget(back_button)
+        footer_layout.add_widget(Label())  # Spacer
+        self.layout.add_widget(footer_layout)
 
         self.add_widget(self.layout)
 
@@ -1006,6 +1010,6 @@ class PropertyManagementScreen(Screen):
         )
         popup.open()
 
-    def go_to_dashboard(self):
+    def go_to_dashboard(self, instance=None):
         """Navigate back to the dashboard."""
         self.manager.current = 'dashboard'
