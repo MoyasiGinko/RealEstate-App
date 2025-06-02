@@ -207,56 +207,97 @@ class SearchReportScreen(Screen):
             self.bg_rect = Rectangle(pos=self.pos, size=self.size)
         self.bind(pos=self.update_bg, size=self.update_bg)
 
-        # Main layout
-        self.layout = BoxLayout(orientation='vertical', padding=dp(10), spacing=dp(10))
+        # Main layout with better spacing
+        self.layout = BoxLayout(orientation='vertical', padding=dp(20), spacing=dp(15))
 
-        # Screen title
+        # Screen title with better styling
         title = Label(
             text='Property Search & Reports',
-            font_size=dp(24),
+            font_size=dp(28),
             size_hint_y=None,
-            height=dp(40),
-            color=(0, 0, 0, 1)  # Black text
+            height=dp(50),
+            color=(0.1, 0.1, 0.1, 1),  # Dark gray text
+            bold=True
         )
         self.layout.add_widget(title)
 
-        # Search criteria section
-        search_form = GridLayout(cols=2, spacing=dp(10), size_hint_y=None, height=dp(250))
+        # Search criteria section with better organization
+        search_section = BoxLayout(orientation='vertical', size_hint_y=None, height=dp(320), spacing=dp(10))
+
+        # Section title
+        search_title = Label(
+            text='Search Criteria',
+            font_size=dp(18),
+            size_hint_y=None,
+            height=dp(30),
+            color=(0.2, 0.2, 0.2, 1),
+            bold=True,
+            halign='left'
+        )
+        search_title.bind(size=search_title.setter('text_size'))
+        search_section.add_widget(search_title)
+
+        # Search form with better grid layout
+        search_form = GridLayout(cols=4, spacing=dp(15), size_hint_y=None, height=dp(280), row_default_height=dp(60))
 
         # Property type
-        search_form.add_widget(Label(text='Property Type:', color=(0, 0, 0, 1)))
+        search_form.add_widget(Label(
+            text='Property Type:',
+            color=(0, 0, 0, 1),
+            size_hint_y=None,
+            height=dp(30),
+            halign='left',
+            valign='middle'
+        ))
         self.property_type_spinner = Spinner(
             text='All Types',
             values=['All Types'],
             size_hint_y=None,
-            height=dp(40),
-            background_color=(1, 1, 1, 1),  # White background
-            color=(0, 0, 0, 1)  # Black text
+            height=dp(45),
+            background_color=(0.98, 0.98, 0.98, 1),
+            color=(0, 0, 0, 1)
         )
         search_form.add_widget(self.property_type_spinner)
 
         # Building type
-        search_form.add_widget(Label(text='Building Type:', color=(0, 0, 0, 1)))
+        search_form.add_widget(Label(
+            text='Building Type:',
+            color=(0, 0, 0, 1),
+            size_hint_y=None,
+            height=dp(30),
+            halign='left',
+            valign='middle'
+        ))
         self.building_type_spinner = Spinner(
             text='All Types',
             values=['All Types'],
             size_hint_y=None,
-            height=dp(40),
-            background_color=(1, 1, 1, 1),  # White background
-            color=(0, 0, 0, 1)  # Black text
+            height=dp(45),
+            background_color=(0.98, 0.98, 0.98, 1),
+            color=(0, 0, 0, 1)
         )
         search_form.add_widget(self.building_type_spinner)
 
-        # Bedrooms
-        search_form.add_widget(Label(text='Bedrooms:', color=(0, 0, 0, 1)))
-        bedrooms_layout = BoxLayout(orientation='horizontal')
+        # Bedrooms range
+        search_form.add_widget(Label(
+            text='Bedrooms:',
+            color=(0, 0, 0, 1),
+            size_hint_y=None,
+            height=dp(30),
+            halign='left',
+            valign='middle'
+        ))
+        bedrooms_layout = BoxLayout(orientation='horizontal', spacing=dp(10), size_hint_y=None, height=dp(45))
         self.min_bedrooms = TextInput(
             hint_text='Min',
             multiline=False,
             input_filter='int',
             size_hint_x=0.5,
-            background_color=(1, 1, 1, 1),  # White background
-            foreground_color=(0, 0, 0, 1)  # Black text
+            size_hint_y=None,
+            height=dp(45),
+            background_color=(0.98, 0.98, 0.98, 1),
+            foreground_color=(0, 0, 0, 1),
+            font_size=dp(14)
         )
         bedrooms_layout.add_widget(self.min_bedrooms)
         self.max_bedrooms = TextInput(
@@ -264,22 +305,35 @@ class SearchReportScreen(Screen):
             multiline=False,
             input_filter='int',
             size_hint_x=0.5,
-            background_color=(1, 1, 1, 1),  # White background
-            foreground_color=(0, 0, 0, 1)  # Black text
+            size_hint_y=None,
+            height=dp(45),
+            background_color=(0.98, 0.98, 0.98, 1),
+            foreground_color=(0, 0, 0, 1),
+            font_size=dp(14)
         )
         bedrooms_layout.add_widget(self.max_bedrooms)
         search_form.add_widget(bedrooms_layout)
 
-        # Area
-        search_form.add_widget(Label(text='Area (m²):', color=(0, 0, 0, 1)))
-        area_layout = BoxLayout(orientation='horizontal')
+        # Area range
+        search_form.add_widget(Label(
+            text='Area (m²):',
+            color=(0, 0, 0, 1),
+            size_hint_y=None,
+            height=dp(30),
+            halign='left',
+            valign='middle'
+        ))
+        area_layout = BoxLayout(orientation='horizontal', spacing=dp(10), size_hint_y=None, height=dp(45))
         self.min_area = TextInput(
             hint_text='Min',
             multiline=False,
             input_filter='float',
             size_hint_x=0.5,
-            background_color=(1, 1, 1, 1),  # White background
-            foreground_color=(0, 0, 0, 1)  # Black text
+            size_hint_y=None,
+            height=dp(45),
+            background_color=(0.98, 0.98, 0.98, 1),
+            foreground_color=(0, 0, 0, 1),
+            font_size=dp(14)
         )
         area_layout.add_widget(self.min_area)
         self.max_area = TextInput(
@@ -287,88 +341,146 @@ class SearchReportScreen(Screen):
             multiline=False,
             input_filter='float',
             size_hint_x=0.5,
-            background_color=(1, 1, 1, 1),  # White background
-            foreground_color=(0, 0, 0, 1)  # Black text
+            size_hint_y=None,
+            height=dp(45),
+            background_color=(0.98, 0.98, 0.98, 1),
+            foreground_color=(0, 0, 0, 1),
+            font_size=dp(14)
         )
         area_layout.add_widget(self.max_area)
         search_form.add_widget(area_layout)
 
         # Address
-        search_form.add_widget(Label(text='Address:', color=(0, 0, 0, 1)))
+        search_form.add_widget(Label(
+            text='Address:',
+            color=(0, 0, 0, 1),
+            size_hint_y=None,
+            height=dp(30),
+            halign='left',
+            valign='middle'
+        ))
         self.address_input = TextInput(
             hint_text='Enter address',
             multiline=False,
-            background_color=(1, 1, 1, 1),  # White background
-            foreground_color=(0, 0, 0, 1)  # Black text
+            size_hint_y=None,
+            height=dp(45),
+            background_color=(0.98, 0.98, 0.98, 1),
+            foreground_color=(0, 0, 0, 1),
+            font_size=dp(14)
         )
         search_form.add_widget(self.address_input)
 
         # Owner name
-        search_form.add_widget(Label(text='Owner Name:', color=(0, 0, 0, 1)))
+        search_form.add_widget(Label(
+            text='Owner Name:',
+            color=(0, 0, 0, 1),
+            size_hint_y=None,
+            height=dp(30),
+            halign='left',
+            valign='middle'
+        ))
         self.owner_input = TextInput(
             hint_text='Enter owner name',
             multiline=False,
-            background_color=(1, 1, 1, 1),  # White background
-            foreground_color=(0, 0, 0, 1)  # Black text
+            size_hint_y=None,
+            height=dp(45),
+            background_color=(0.98, 0.98, 0.98, 1),
+            foreground_color=(0, 0, 0, 1),
+            font_size=dp(14)
         )
         search_form.add_widget(self.owner_input)
 
         # Corner property
-        search_form.add_widget(Label(text='Corner Property:', color=(0, 0, 0, 1)))
-        corner_layout = BoxLayout(orientation='horizontal')
-        self.corner_checkbox = CheckBox()
+        search_form.add_widget(Label(
+            text='Corner Property:',
+            color=(0, 0, 0, 1),
+            size_hint_y=None,
+            height=dp(30),
+            halign='left',
+            valign='middle'
+        ))
+        corner_layout = BoxLayout(orientation='horizontal', spacing=dp(10), size_hint_y=None, height=dp(45))
+        self.corner_checkbox = CheckBox(size_hint=(None, None), size=(dp(30), dp(30)))
         corner_layout.add_widget(self.corner_checkbox)
-        corner_layout.add_widget(Label(text='Yes', color=(0, 0, 0, 1)))
+        corner_layout.add_widget(Label(text='Yes', color=(0, 0, 0, 1), size_hint_x=None, width=dp(50)))
+        corner_layout.add_widget(Label(text='', size_hint_x=1))  # Spacer
         search_form.add_widget(corner_layout)
 
-        self.layout.add_widget(search_form)
+        search_section.add_widget(search_form)
+        self.layout.add_widget(search_section)
 
-        # Search buttons
-        buttons_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(50), spacing=dp(10))
+        # Search buttons with better styling
+        buttons_layout = BoxLayout(
+            orientation='horizontal',
+            size_hint_y=None,
+            height=dp(60),
+            spacing=dp(15),
+            padding=[dp(50), 0, dp(50), 0]
+        )
 
         search_button = Button(
-            text='Search',
-            background_color=(0.2, 0.6, 1, 1),  # Blue button
-            color=(1, 1, 1, 1)  # White text
+            text='Search Properties',
+            size_hint_x=0.3,
+            background_color=(0.2, 0.6, 1, 1),
+            color=(1, 1, 1, 1),
+            font_size=dp(16)
         )
         search_button.bind(on_press=self.perform_search)
         buttons_layout.add_widget(search_button)
 
         clear_button = Button(
-            text='Clear',
-            background_color=(0.7, 0.7, 0.7, 1),  # Gray button
-            color=(1, 1, 1, 1)  # White text
+            text='Clear All',
+            size_hint_x=0.2,
+            background_color=(0.7, 0.7, 0.7, 1),
+            color=(1, 1, 1, 1),
+            font_size=dp(16)
         )
         clear_button.bind(on_press=self.clear_search)
         buttons_layout.add_widget(clear_button)
 
         export_button = Button(
             text='Export Results',
-            background_color=(0.2, 0.7, 0.3, 1),  # Green button
-            color=(1, 1, 1, 1)  # White text
+            size_hint_x=0.3,
+            background_color=(0.2, 0.7, 0.3, 1),
+            color=(1, 1, 1, 1),
+            font_size=dp(16)
         )
         export_button.bind(on_press=self.export_results)
         buttons_layout.add_widget(export_button)
 
         self.layout.add_widget(buttons_layout)
 
-        # Results count
+        # Results section with better spacing
+        results_section = BoxLayout(orientation='vertical', spacing=dp(10))
+
+        # Results count with better styling
         self.results_count = Label(
             text='0 properties found',
             size_hint_y=None,
-            height=dp(30),
-            color=(0, 0, 0, 1)  # Black text
+            height=dp(35),
+            color=(0.2, 0.2, 0.2, 1),
+            font_size=dp(16),
+            bold=True,
+            halign='left'
         )
-        self.layout.add_widget(self.results_count)
+        self.results_count.bind(size=self.results_count.setter('text_size'))
+        results_section.add_widget(self.results_count)
 
-        # Results header
-        results_header = GridLayout(
-            cols=7,
+        # Results header with better proportions
+        results_header = BoxLayout(
+            orientation='horizontal',
             size_hint_y=None,
-            height=dp(40),
+            height=dp(50),
             spacing=dp(5),
-            padding=dp(5)
+            padding=dp(10)
         )
+
+        # Set background for header
+        with results_header.canvas.before:
+            Color(0.9, 0.9, 0.9, 1)
+            results_header.rect = Rectangle(pos=results_header.pos, size=results_header.size)
+        results_header.bind(pos=lambda instance, value: setattr(results_header.rect, 'pos', instance.pos))
+        results_header.bind(size=lambda instance, value: setattr(results_header.rect, 'size', instance.size))
 
         headers = [
             ('Code', 0.15),
@@ -385,29 +497,36 @@ class SearchReportScreen(Screen):
                 text=header,
                 size_hint_x=size,
                 bold=True,
-                color=(0, 0, 0, 1)  # Black text
+                color=(0.1, 0.1, 0.1, 1),
+                font_size=dp(14)
             ))
 
-        self.layout.add_widget(results_header)
+        results_section.add_widget(results_header)
 
-        # Results container
+        # Results container with scroll
         self.results_container = GridLayout(cols=1, spacing=dp(2), size_hint_y=None)
         self.results_container.bind(minimum_height=self.results_container.setter('height'))
 
         results_scroll = ScrollView(size_hint=(1, 1), do_scroll_x=False)
         results_scroll.add_widget(self.results_container)
-        self.layout.add_widget(results_scroll)
+        results_section.add_widget(results_scroll)
 
-        # Back button
+        self.layout.add_widget(results_section)
+
+        # Back button with better positioning
+        footer_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(60), padding=[0, dp(10), 0, 0])
         back_button = Button(
-            text='Back to Dashboard',
-            size_hint_y=None,
-            height=dp(50),
-            background_color=(0.4, 0.4, 0.8, 1),  # Purple button
-            color=(1, 1, 1, 1)  # White text
+            text='← Back to Dashboard',
+            size_hint=(None, None),
+            size=(dp(200), dp(50)),
+            background_color=(0.4, 0.4, 0.8, 1),
+            color=(1, 1, 1, 1),
+            font_size=dp(16)
         )
         back_button.bind(on_press=self.go_to_dashboard)
-        self.layout.add_widget(back_button)
+        footer_layout.add_widget(back_button)
+        footer_layout.add_widget(Label())  # Spacer
+        self.layout.add_widget(footer_layout)
 
         # Store search results
         self.search_results = []
@@ -534,8 +653,9 @@ class SearchReportScreen(Screen):
             self.results_container.add_widget(Label(
                 text="No properties found matching your criteria.",
                 size_hint_y=None,
-                height=dp(40),
-                color=(0, 0, 0, 1)  # Black text
+                height=dp(60),
+                color=(0.5, 0.5, 0.5, 1),
+                font_size=dp(16)
             ))
             return
 
