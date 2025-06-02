@@ -1,0 +1,68 @@
+<contents of /user-desktop-app/user-desktop-app/assets/kv/forms.kv>
+<|diff_marker|> 
+#:kivy 2.0.0
+
+<FormsScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 10
+        spacing: 10
+
+        Label:
+            text: 'Owner Management'
+            font_size: 24
+            size_hint_y: None
+            height: 40
+
+        TextInput:
+            id: owner_name
+            hint_text: 'Owner Name'
+            multiline: False
+
+        TextInput:
+            id: owner_phone
+            hint_text: 'Owner Phone'
+            multiline: False
+
+        TextInput:
+            id: owner_note
+            hint_text: 'Note'
+            multiline: True
+
+        Button:
+            text: 'Add Owner'
+            on_press: root.add_owner()
+
+        Label:
+            text: 'Property Management'
+            font_size: 24
+            size_hint_y: None
+            height: 40
+
+        TextInput:
+            id: property_address
+            hint_text: 'Property Address'
+            multiline: False
+
+        TextInput:
+            id: property_area
+            hint_text: 'Property Area (sqm)'
+            multiline: False
+
+        TextInput:
+            id: property_bedrooms
+            hint_text: 'Number of Bedrooms'
+            multiline: False
+
+        TextInput:
+            id: property_bathrooms
+            hint_text: 'Number of Bathrooms'
+            multiline: False
+
+        Button:
+            text: 'Add Property'
+            on_press: root.add_property()
+
+        Button:
+            text: 'Cancel'
+            on_press: root.dismiss()

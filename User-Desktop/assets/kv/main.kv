@@ -1,0 +1,33 @@
+# main.kv
+
+#:kivy 2.0.0
+
+<MainScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        
+        Label:
+            text: 'Welcome to User-Desktop App'
+            font_size: 24
+            size_hint_y: None
+            height: 50
+        
+        Button:
+            text: 'Owner Management'
+            on_press: app.change_screen('owner_management')
+        
+        Button:
+            text: 'Property Management'
+            on_press: app.change_screen('property_management')
+        
+        Button:
+            text: 'Search & Report'
+            on_press: app.change_screen('search_report')
+        
+        Button:
+            text: 'Settings'
+            on_press: app.change_screen('settings')
+        
+        Button:
+            text: 'Exit'
+            on_press: app.stop()
