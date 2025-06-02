@@ -1,8 +1,13 @@
-<contents of /user-desktop-app/user-desktop-app/assets/kv/forms.kv>
-<|diff_marker|> 
 #:kivy 2.0.0
 
 <FormsScreen>:
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1  # White background
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
     BoxLayout:
         orientation: 'vertical'
         padding: 10
@@ -13,56 +18,78 @@
             font_size: 24
             size_hint_y: None
             height: 40
+            color: 0, 0, 0, 1  # Black text
 
         TextInput:
             id: owner_name
             hint_text: 'Owner Name'
             multiline: False
+            background_color: 1, 1, 1, 1  # White background
+            foreground_color: 0, 0, 0, 1  # Black text
 
         TextInput:
             id: owner_phone
             hint_text: 'Owner Phone'
             multiline: False
+            background_color: 1, 1, 1, 1
+            foreground_color: 0, 0, 0, 1
 
         TextInput:
             id: owner_note
             hint_text: 'Note'
             multiline: True
+            background_color: 1, 1, 1, 1
+            foreground_color: 0, 0, 0, 1
 
         Button:
             text: 'Add Owner'
             on_press: root.add_owner()
+            background_color: 0.2, 0.6, 1, 1  # Blue button
+            color: 1, 1, 1, 1  # White text
 
         Label:
             text: 'Property Management'
             font_size: 24
             size_hint_y: None
             height: 40
+            color: 0, 0, 0, 1
 
         TextInput:
             id: property_address
             hint_text: 'Property Address'
             multiline: False
+            background_color: 1, 1, 1, 1
+            foreground_color: 0, 0, 0, 1
 
         TextInput:
             id: property_area
             hint_text: 'Property Area (sqm)'
             multiline: False
+            background_color: 1, 1, 1, 1
+            foreground_color: 0, 0, 0, 1
 
         TextInput:
             id: property_bedrooms
             hint_text: 'Number of Bedrooms'
             multiline: False
+            background_color: 1, 1, 1, 1
+            foreground_color: 0, 0, 0, 1
 
         TextInput:
             id: property_bathrooms
             hint_text: 'Number of Bathrooms'
             multiline: False
+            background_color: 1, 1, 1, 1
+            foreground_color: 0, 0, 0, 1
 
         Button:
             text: 'Add Property'
             on_press: root.add_property()
+            background_color: 0.2, 0.8, 0.2, 1  # Green button
+            color: 1, 1, 1, 1
 
         Button:
             text: 'Cancel'
             on_press: root.dismiss()
+            background_color: 0.8, 0.2, 0.2, 1  # Red button
+            color: 1, 1, 1, 1

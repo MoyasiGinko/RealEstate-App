@@ -37,13 +37,28 @@ class PropertyForm(BoxLayout):
         self.property_code = property_data.get('realstatecode') if property_data else None
         self.selected_photos = []
 
-        # Create a scrollview for the form
+        # Create the form
+        self.create_form()
+
+    def safe_get_text(self, field_name, default=''):
+        """Safely get text value from property data, handling None values."""
+        if not self.property_data:
+            return default
+
+        value = self.property_data.get(field_name, default)
+        if value is None:
+            return default
+
+        return str(value)
+
+    def create_form(self):
+        """Create the property form UI."""
         scroll_view = ScrollView(do_scroll_x=False)
         form_layout = GridLayout(cols=1, spacing=dp(10), size_hint_y=None)
         form_layout.bind(minimum_height=form_layout.setter('height'))
 
         # Title
-        title = 'Edit Property' if property_data else 'Add New Property'
+        title = 'Edit Property' if self.property_data else 'Add New Property'
         title_label = Label(
             text=title,
             font_size=dp(24),
@@ -55,12 +70,11 @@ class PropertyForm(BoxLayout):
 
         # Property type (dropdown from Maincode where recty = 03)
         property_types = self.api.get_property_types() or []
-
         # Safely handle property types - ensure it's a list even if None is returned
         property_type_values = []
         if property_types:
             try:
-                property_type_values = [f"{t.get('Code', 'N/A')} - {t.get('Name', 'Unknown')}" for t in property_types]
+                property_type_values = [f"{t.get('code', 'N/A')} - {t.get('name', 'Unknown')}" for t in property_types]
             except (KeyError, TypeError, AttributeError) as e:
                 print(f"Error processing property types: {e}")
                 # Fallback to empty list if there's an error
@@ -85,10 +99,10 @@ class PropertyForm(BoxLayout):
         )
 
         # Safely set the spinner value if we have property data
-        if property_data and property_data.get('Rstatetcode') and property_type_values and property_type_values[0] != 'No property types available':
+        if self.property_data and self.property_data.get('Rstatetcode') and property_type_values and property_type_values[0] != 'No property types available':
             try:
                 for val in property_type_values:
-                    if val.startswith(property_data['Rstatetcode']):
+                    if val.startswith(self.property_data['Rstatetcode']):
                         self.property_type_spinner.text = val
                         break
             except Exception as e:
@@ -100,12 +114,11 @@ class PropertyForm(BoxLayout):
 
         # Building type (dropdown from Maincode where recty = 04)
         building_types = self.api.get_building_types() or []
-
         # Safely handle building types
         building_type_values = []
         if building_types:
             try:
-                building_type_values = [f"{t.get('Code', 'N/A')} - {t.get('Name', 'Unknown')}" for t in building_types]
+                building_type_values = [f"{t.get('code', 'N/A')} - {t.get('name', 'Unknown')}" for t in building_types]
             except (KeyError, TypeError, AttributeError) as e:
                 print(f"Error processing building types: {e}")
                 # Fallback to empty list if there's an error
@@ -130,10 +143,10 @@ class PropertyForm(BoxLayout):
         )
 
         # Safely set the spinner value if we have property data
-        if property_data and property_data.get('Buildtcode') and building_type_values and building_type_values[0] != 'No building types available':
+        if self.property_data and self.property_data.get('Buildtcode') and building_type_values and building_type_values[0] != 'No building types available':
             try:
                 for val in building_type_values:
-                    if val.startswith(property_data['Buildtcode']):
+                    if val.startswith(self.property_data['Buildtcode']):
                         self.building_type_spinner.text = val
                         break
             except Exception as e:
@@ -161,8 +174,9 @@ class PropertyForm(BoxLayout):
             background_color=(0.95, 0.95, 0.95, 1),
             color=(0.2, 0.2, 0.2, 1)
         )
-        if property_data and property_data.get('Yearmake'):
-            year = property_data['Yearmake'].split('-')[0]  # Extract year from ISO format
+
+        if self.property_data and self.property_data.get('Yearmake'):
+            year = self.property_data['Yearmake'].split('-')[0]  # Extract year from ISO format
             if year in year_values:
                 self.year_spinner.text = year
 
@@ -179,7 +193,7 @@ class PropertyForm(BoxLayout):
 
         self.area_input = TextInput(
             hint_text='Property Area',
-            text=str(property_data.get('Property-area', '')) if property_data else '',
+            text=self.safe_get_text('Property-area'),
             input_filter='float',
             multiline=False,
             size_hint_x=0.7,
@@ -199,7 +213,7 @@ class PropertyForm(BoxLayout):
 
         self.facade_input = TextInput(
             hint_text='Facade Length',
-            text=str(property_data.get('Property-facade', '')) if property_data else '',
+            text=self.safe_get_text('Property-facade'),
             input_filter='float',
             multiline=False,
             size_hint_x=0.7,
@@ -219,7 +233,7 @@ class PropertyForm(BoxLayout):
 
         self.depth_input = TextInput(
             hint_text='Property Depth',
-            text=str(property_data.get('Property-depth', '')) if property_data else '',
+            text=self.safe_get_text('Property-depth'),
             input_filter='float',
             multiline=False,
             size_hint_x=0.7,
@@ -239,7 +253,7 @@ class PropertyForm(BoxLayout):
 
         self.bedrooms_input = TextInput(
             hint_text='Number of Bedrooms',
-            text=str(property_data.get('N-of-bedrooms', '')) if property_data else '',
+            text=self.safe_get_text('N-of-bedrooms'),
             input_filter='int',
             multiline=False,
             size_hint_x=0.7,
@@ -259,7 +273,7 @@ class PropertyForm(BoxLayout):
 
         self.bathrooms_input = TextInput(
             hint_text='Number of Bathrooms',
-            text=str(property_data.get('N-of-bathrooms', '')) if property_data else '',
+            text=self.safe_get_text('N-of-bathrooms'),
             input_filter='int',
             multiline=False,
             size_hint_x=0.7,
@@ -278,8 +292,8 @@ class PropertyForm(BoxLayout):
         ))
 
         self.corner_checkbox = CheckBox()
-        if property_data and property_data.get('Property-corner'):
-            self.corner_checkbox.active = bool(property_data['Property-corner'])
+        if self.property_data and self.property_data.get('Property-corner'):
+            self.corner_checkbox.active = bool(self.property_data['Property-corner'])
 
         corner_layout.add_widget(self.corner_checkbox)
         form_layout.add_widget(corner_layout)
@@ -291,7 +305,7 @@ class PropertyForm(BoxLayout):
         offer_type_values = []
         if offer_types:
             try:
-                offer_type_values = [f"{t.get('Code', 'N/A')} - {t.get('Name', 'Unknown')}" for t in offer_types]
+                offer_type_values = [f"{t.get('code', 'N/A')} - {t.get('name', 'Unknown')}" for t in offer_types]
             except (KeyError, TypeError, AttributeError) as e:
                 print(f"Error processing offer types: {e}")
 
@@ -315,10 +329,10 @@ class PropertyForm(BoxLayout):
         )
 
         # Safely set the spinner value if we have property data
-        if property_data and property_data.get('Offer-Type-Code') and offer_type_values and offer_type_values[0] != 'No offer types available':
+        if self.property_data and self.property_data.get('Offer-Type-Code') and offer_type_values and offer_type_values[0] != 'No offer types available':
             try:
                 for val in offer_type_values:
-                    if val.startswith(property_data['Offer-Type-Code']):
+                    if val.startswith(self.property_data['Offer-Type-Code']):
                         self.offer_type_spinner.text = val
                         break
             except Exception as e:
@@ -334,7 +348,7 @@ class PropertyForm(BoxLayout):
         province_values = []
         if provinces:
             try:
-                province_values = [f"{p.get('Code', 'N/A')} - {p.get('Name', 'Unknown')}" for p in provinces]
+                province_values = [f"{p.get('code', 'N/A')} - {p.get('name', 'Unknown')}" for p in provinces]
             except (KeyError, TypeError, AttributeError) as e:
                 print(f"Error processing provinces: {e}")
 
@@ -358,10 +372,10 @@ class PropertyForm(BoxLayout):
         )
 
         # Safely set the spinner value if we have property data
-        if property_data and property_data.get('Province-code') and province_values and province_values[0] != 'No provinces available':
+        if self.property_data and self.property_data.get('Province-code') and province_values and province_values[0] != 'No provinces available':
             try:
                 for val in province_values:
-                    if val.startswith(property_data['Province-code']):
+                    if val.startswith(self.property_data['Province-code']):
                         self.province_spinner.text = val
                         break
             except Exception as e:
@@ -377,12 +391,11 @@ class PropertyForm(BoxLayout):
         city_values = []
         if cities:
             try:
-                city_values = [f"{c.get('Code', 'N/A')} - {c.get('Name', 'Unknown')}" for c in cities]
+                city_values = [f"{c.get('code', 'N/A')} - {c.get('name', 'Unknown')}" for c in cities]
             except (KeyError, TypeError, AttributeError) as e:
                 print(f"Error processing cities: {e}")
 
-        # Add a default option if the list is empty
-        if not city_values:
+        # Add a default option if the list is empty        if not city_values:
             city_values = ['No regions available']
 
         region_layout = BoxLayout(size_hint_y=None, height=dp(40))
@@ -401,10 +414,10 @@ class PropertyForm(BoxLayout):
         )
 
         # Safely set the spinner value if we have property data
-        if property_data and property_data.get('Region-code') and city_values and city_values[0] != 'No regions available':
+        if self.property_data and self.property_data.get('Region-code') and city_values and city_values[0] != 'No regions available':
             try:
                 for val in city_values:
-                    if val.startswith(property_data['Region-code']):
+                    if val.startswith(self.property_data['Region-code']):
                         self.region_spinner.text = val
                         break
             except Exception as e:
@@ -423,7 +436,7 @@ class PropertyForm(BoxLayout):
 
         self.address_input = TextInput(
             hint_text='Property Address',
-            text=property_data.get('Property-address', '') if property_data else '',
+            text=self.safe_get_text('Property-address'),
             multiline=True,
             size_hint_x=0.7,
             height=dp(80),
@@ -440,7 +453,7 @@ class PropertyForm(BoxLayout):
         owner_values = []
         if owners:
             try:
-                owner_values = [f"{o.get('Ownercode', 'N/A')} - {o.get('ownername', 'Unknown')}" for o in owners]
+                owner_values = [f"{o.get('ownercode', 'N/A')} - {o.get('ownername', 'Unknown')}" for o in owners]
             except (KeyError, TypeError, AttributeError) as e:
                 print(f"Error processing owners: {e}")
 
@@ -464,10 +477,10 @@ class PropertyForm(BoxLayout):
         )
 
         # Safely set the spinner value if we have property data
-        if property_data and property_data.get('Ownercode') and owner_values and owner_values[0] != 'No owners available':
+        if self.property_data and self.property_data.get('Ownercode') and owner_values and owner_values[0] != 'No owners available':
             try:
                 for val in owner_values:
-                    if val.startswith(property_data['Ownercode']):
+                    if val.startswith(self.property_data['Ownercode']):
                         self.owner_spinner.text = val
                         break
             except Exception as e:
@@ -497,7 +510,7 @@ class PropertyForm(BoxLayout):
 
         self.description_input = TextInput(
             hint_text='Property Description',
-            text=property_data.get('Descriptions', '') if property_data else '',
+            text=self.safe_get_text('Descriptions'),
             multiline=True,
             size_hint_x=0.7,
             height=dp(100),
@@ -559,7 +572,7 @@ class PropertyForm(BoxLayout):
         self.add_widget(scroll_view)
 
         # Load existing photos if editing
-        if property_data and self.property_code:
+        if self.property_data and self.property_code:
             self.load_existing_photos()
 
     def _update_rect(self, instance, value):
@@ -658,11 +671,9 @@ class PropertyForm(BoxLayout):
         owner_code = self.api.add_owner(owner_name, owner_phone, note)
 
         if owner_code:
-            self.owner_popup.dismiss()
-
-            # Refresh the owner dropdown
+            self.owner_popup.dismiss()            # Refresh the owner dropdown
             owners = self.api.get_all_owners()
-            owner_values = [f"{o.get('Ownercode', 'N/A')} - {o.get('ownername', 'Unknown')}" for o in owners]
+            owner_values = [f"{o.get('ownercode', 'N/A')} - {o.get('ownername', 'Unknown')}" for o in owners]
             self.owner_spinner.values = owner_values
 
             # Select the newly added owner
@@ -900,13 +911,21 @@ class PropertyManagementScreen(Screen):
 
     def show_edit_property_form(self, property_data):
         """Show the form for editing a property."""
-        content = PropertyForm(save_callback=self.update_property, property_data=property_data)
+        # Get the full property data from the database
+        full_property_data = self.api.get_property_by_code(property_data.get('realstatecode'))
+
+        if not full_property_data:
+            self.show_error("Property not found in database.")
+            return
+
+        content = PropertyForm(save_callback=self.update_property, property_data=full_property_data)
         self.popup = Popup(
             title='Edit Property',
             content=content,
             size_hint=(0.9, 0.9)
         )
-        content.cancel_button.unbind(on_press=content.cancel)
+
+        # Make sure to bind the cancel button to close the popup
         content.cancel_button.bind(on_press=lambda x: self.popup.dismiss())
         self.popup.open()
 

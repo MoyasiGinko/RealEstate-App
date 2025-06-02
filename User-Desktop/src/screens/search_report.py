@@ -549,7 +549,7 @@ class SearchReportScreen(Screen):
 
         try:
             if property_types:
-                values = ['All Types'] + [f"{pt.get('Code', 'N/A')} - {pt.get('Name', 'Unknown')}" for pt in property_types]
+                values = ['All Types'] + [f"{pt.get('code', 'N/A')} - {pt.get('name', 'Unknown')}" for pt in property_types]
                 self.property_type_spinner.values = values
         except Exception as e:
             print(f"Error loading property types: {e}")
@@ -561,7 +561,7 @@ class SearchReportScreen(Screen):
 
         try:
             if building_types:
-                values = ['All Types'] + [f"{bt.get('Code', 'N/A')} - {bt.get('Name', 'Unknown')}" for bt in building_types]
+                values = ['All Types'] + [f"{bt.get('code', 'N/A')} - {bt.get('name', 'Unknown')}" for bt in building_types]
                 self.building_type_spinner.values = values
         except Exception as e:
             print(f"Error loading building types: {e}")

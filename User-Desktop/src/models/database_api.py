@@ -115,11 +115,11 @@ class DatabaseAPI:
     def get_all_properties(self):
         """Get all properties from the database."""
         return self.db.execute_query("""
-            SELECT r.*, o.ownername, m1.Name as property_type, m2.Name as building_type
+            SELECT r.*, o.ownername, m1.name as property_type, m2.name as building_type
             FROM Realstatspecification r
             LEFT JOIN Owners o ON r.Ownercode = o.Ownercode
-            LEFT JOIN Maincode m1 ON r.Rstatetcode = m1.Code AND m1.Recty = '03'
-            LEFT JOIN Maincode m2 ON r.Buildtcode = m2.Code AND m2.Recty = '04'
+            LEFT JOIN Maincode m1 ON r.Rstatetcode = m1.code AND m1.recty = '03'
+            LEFT JOIN Maincode m2 ON r.Buildtcode = m2.code AND m2.recty = '04'
             ORDER BY r.realstatecode
         """)
 
@@ -306,7 +306,6 @@ class DatabaseAPI:
         return result
 
     # Lookup Data Functions
-
     def get_main_codes_by_type(self, record_type):
         """
         Get main codes by record type.
@@ -318,7 +317,7 @@ class DatabaseAPI:
             list: List of dictionaries containing Code and Name
         """
         return self.db.execute_query(
-            "SELECT Code, Name FROM Maincode WHERE Recty = ? ORDER BY Name",
+            "SELECT DISTINCT code, name FROM Maincode WHERE recty = ? ORDER BY name",
             (record_type,)
         )
 
@@ -360,7 +359,7 @@ class DatabaseAPI:
             bool: True if successful, False otherwise
         """
         return self.db.execute_query(
-            "INSERT INTO Maincode (Recty, Code, Name, Description) VALUES (?, ?, ?, ?)",
+            "INSERT INTO Maincode (recty, code, name, description) VALUES (?, ?, ?, ?)",
             (record_type, code, name, description)
         )
 
@@ -461,11 +460,11 @@ class DatabaseAPI:
         where_clause = " AND ".join(where_clauses)
 
         query = f"""
-            SELECT r.*, o.ownername, m1.Name as property_type, m2.Name as building_type
+            SELECT r.*, o.ownername, m1.name as property_type, m2.name as building_type
             FROM Realstatspecification r
             LEFT JOIN Owners o ON r.Ownercode = o.Ownercode
-            LEFT JOIN Maincode m1 ON r.Rstatetcode = m1.Code AND m1.Recty = '03'
-            LEFT JOIN Maincode m2 ON r.Buildtcode = m2.Code AND m2.Recty = '04'
+            LEFT JOIN Maincode m1 ON r.Rstatetcode = m1.code AND m1.recty = '03'
+            LEFT JOIN Maincode m2 ON r.Buildtcode = m2.code AND m2.recty = '04'
             WHERE {where_clause}
             ORDER BY r.realstatecode
         """
@@ -517,7 +516,7 @@ class DatabaseAPI:
 
         for code_data in main_codes:
             self.db.execute_query(
-                "INSERT OR IGNORE INTO Maincode (Recty, Code, Name, Description) VALUES (?, ?, ?, ?)",
+                "INSERT OR IGNORE INTO Maincode (recty, code, name, description) VALUES (?, ?, ?, ?)",
                 code_data
             )
 
