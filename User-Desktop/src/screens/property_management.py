@@ -24,6 +24,13 @@ class PropertyForm(BoxLayout):
         self.padding = dp(10)
         self.spacing = dp(10)
 
+        # Set white background
+        with self.canvas.before:
+            from kivy.graphics import Color, Rectangle
+            Color(1, 1, 1, 1)  # White background
+            self.rect = Rectangle(size=self.size, pos=self.pos)
+            self.bind(size=self._update_rect, pos=self._update_rect)
+
         self.api = get_api()
         self.save_callback = save_callback
         self.property_data = property_data
@@ -37,12 +44,14 @@ class PropertyForm(BoxLayout):
 
         # Title
         title = 'Edit Property' if property_data else 'Add New Property'
-        form_layout.add_widget(Label(
+        title_label = Label(
             text=title,
             font_size=dp(24),
             size_hint_y=None,
-            height=dp(40)
-        ))
+            height=dp(40),
+            color=(0.2, 0.2, 0.2, 1)  # Dark gray text
+        )
+        form_layout.add_widget(title_label)
 
         # Property type (dropdown from Maincode where recty = 03)
         property_types = self.api.get_property_types() or []
@@ -61,12 +70,18 @@ class PropertyForm(BoxLayout):
             property_type_values = ['No property types available']
 
         property_type_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        property_type_layout.add_widget(Label(text='Property Type:', size_hint_x=0.3))
+        property_type_layout.add_widget(Label(
+            text='Property Type:',
+            size_hint_x=0.3,
+            color=(0.2, 0.2, 0.2, 1)
+        ))
 
         self.property_type_spinner = Spinner(
             text='Select Property Type',
             values=property_type_values,
-            size_hint_x=0.7
+            size_hint_x=0.7,
+            background_color=(0.95, 0.95, 0.95, 1),
+            color=(0.2, 0.2, 0.2, 1)
         )
 
         # Safely set the spinner value if we have property data
@@ -100,12 +115,18 @@ class PropertyForm(BoxLayout):
             building_type_values = ['No building types available']
 
         building_type_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        building_type_layout.add_widget(Label(text='Building Type:', size_hint_x=0.3))
+        building_type_layout.add_widget(Label(
+            text='Building Type:',
+            size_hint_x=0.3,
+            color=(0.2, 0.2, 0.2, 1)
+        ))
 
         self.building_type_spinner = Spinner(
             text='Select Building Type',
             values=building_type_values,
-            size_hint_x=0.7
+            size_hint_x=0.7,
+            background_color=(0.95, 0.95, 0.95, 1),
+            color=(0.2, 0.2, 0.2, 1)
         )
 
         # Safely set the spinner value if we have property data
@@ -124,7 +145,11 @@ class PropertyForm(BoxLayout):
 
         # Year built
         year_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        year_layout.add_widget(Label(text='Year Built:', size_hint_x=0.3))
+        year_layout.add_widget(Label(
+            text='Year Built:',
+            size_hint_x=0.3,
+            color=(0.2, 0.2, 0.2, 1)
+        ))
 
         current_year = datetime.now().year
         year_values = [str(y) for y in range(1950, current_year + 1)]
@@ -132,7 +157,9 @@ class PropertyForm(BoxLayout):
         self.year_spinner = Spinner(
             text='Select Year',
             values=year_values,
-            size_hint_x=0.7
+            size_hint_x=0.7,
+            background_color=(0.95, 0.95, 0.95, 1),
+            color=(0.2, 0.2, 0.2, 1)
         )
         if property_data and property_data.get('Yearmake'):
             year = property_data['Yearmake'].split('-')[0]  # Extract year from ISO format
@@ -144,77 +171,111 @@ class PropertyForm(BoxLayout):
 
         # Area
         area_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        area_layout.add_widget(Label(text='Area (m²):', size_hint_x=0.3))
+        area_layout.add_widget(Label(
+            text='Area (m²):',
+            size_hint_x=0.3,
+            color=(0.2, 0.2, 0.2, 1)
+        ))
 
         self.area_input = TextInput(
             hint_text='Property Area',
             text=str(property_data.get('Property-area', '')) if property_data else '',
             input_filter='float',
             multiline=False,
-            size_hint_x=0.7
+            size_hint_x=0.7,
+            background_color=(0.98, 0.98, 0.98, 1),
+            foreground_color=(0.2, 0.2, 0.2, 1)
         )
         area_layout.add_widget(self.area_input)
         form_layout.add_widget(area_layout)
 
         # Facade
         facade_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        facade_layout.add_widget(Label(text='Facade (m):', size_hint_x=0.3))
+        facade_layout.add_widget(Label(
+            text='Facade (m):',
+            size_hint_x=0.3,
+            color=(0.2, 0.2, 0.2, 1)
+        ))
 
         self.facade_input = TextInput(
             hint_text='Facade Length',
             text=str(property_data.get('Property-facade', '')) if property_data else '',
             input_filter='float',
             multiline=False,
-            size_hint_x=0.7
+            size_hint_x=0.7,
+            background_color=(0.98, 0.98, 0.98, 1),
+            foreground_color=(0.2, 0.2, 0.2, 1)
         )
         facade_layout.add_widget(self.facade_input)
         form_layout.add_widget(facade_layout)
 
         # Depth
         depth_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        depth_layout.add_widget(Label(text='Depth (m):', size_hint_x=0.3))
+        depth_layout.add_widget(Label(
+            text='Depth (m):',
+            size_hint_x=0.3,
+            color=(0.2, 0.2, 0.2, 1)
+        ))
 
         self.depth_input = TextInput(
             hint_text='Property Depth',
             text=str(property_data.get('Property-depth', '')) if property_data else '',
             input_filter='float',
             multiline=False,
-            size_hint_x=0.7
+            size_hint_x=0.7,
+            background_color=(0.98, 0.98, 0.98, 1),
+            foreground_color=(0.2, 0.2, 0.2, 1)
         )
         depth_layout.add_widget(self.depth_input)
         form_layout.add_widget(depth_layout)
 
         # Bedrooms
         bedrooms_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        bedrooms_layout.add_widget(Label(text='Bedrooms:', size_hint_x=0.3))
+        bedrooms_layout.add_widget(Label(
+            text='Bedrooms:',
+            size_hint_x=0.3,
+            color=(0.2, 0.2, 0.2, 1)
+        ))
 
         self.bedrooms_input = TextInput(
             hint_text='Number of Bedrooms',
             text=str(property_data.get('N-of-bedrooms', '')) if property_data else '',
             input_filter='int',
             multiline=False,
-            size_hint_x=0.7
+            size_hint_x=0.7,
+            background_color=(0.98, 0.98, 0.98, 1),
+            foreground_color=(0.2, 0.2, 0.2, 1)
         )
         bedrooms_layout.add_widget(self.bedrooms_input)
         form_layout.add_widget(bedrooms_layout)
 
         # Bathrooms
         bathrooms_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        bathrooms_layout.add_widget(Label(text='Bathrooms:', size_hint_x=0.3))
+        bathrooms_layout.add_widget(Label(
+            text='Bathrooms:',
+            size_hint_x=0.3,
+            color=(0.2, 0.2, 0.2, 1)
+        ))
 
         self.bathrooms_input = TextInput(
             hint_text='Number of Bathrooms',
             text=str(property_data.get('N-of-bathrooms', '')) if property_data else '',
             input_filter='int',
             multiline=False,
-            size_hint_x=0.7
+            size_hint_x=0.7,
+            background_color=(0.98, 0.98, 0.98, 1),
+            foreground_color=(0.2, 0.2, 0.2, 1)
         )
         bathrooms_layout.add_widget(self.bathrooms_input)
         form_layout.add_widget(bathrooms_layout)
 
         # Is Corner
         corner_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        corner_layout.add_widget(Label(text='Is Corner Property:', size_hint_x=0.3))
+        corner_layout.add_widget(Label(
+            text='Is Corner Property:',
+            size_hint_x=0.3,
+            color=(0.2, 0.2, 0.2, 1)
+        ))
 
         self.corner_checkbox = CheckBox()
         if property_data and property_data.get('Property-corner'):
@@ -239,12 +300,18 @@ class PropertyForm(BoxLayout):
             offer_type_values = ['No offer types available']
 
         offer_type_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        offer_type_layout.add_widget(Label(text='Offer Type:', size_hint_x=0.3))
+        offer_type_layout.add_widget(Label(
+            text='Offer Type:',
+            size_hint_x=0.3,
+            color=(0.2, 0.2, 0.2, 1)
+        ))
 
         self.offer_type_spinner = Spinner(
             text='Select Offer Type',
             values=offer_type_values,
-            size_hint_x=0.7
+            size_hint_x=0.7,
+            background_color=(0.95, 0.95, 0.95, 1),
+            color=(0.2, 0.2, 0.2, 1)
         )
 
         # Safely set the spinner value if we have property data
@@ -276,12 +343,18 @@ class PropertyForm(BoxLayout):
             province_values = ['No provinces available']
 
         province_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        province_layout.add_widget(Label(text='Province:', size_hint_x=0.3))
+        province_layout.add_widget(Label(
+            text='Province:',
+            size_hint_x=0.3,
+            color=(0.2, 0.2, 0.2, 1)
+        ))
 
         self.province_spinner = Spinner(
             text='Select Province',
             values=province_values,
-            size_hint_x=0.7
+            size_hint_x=0.7,
+            background_color=(0.95, 0.95, 0.95, 1),
+            color=(0.2, 0.2, 0.2, 1)
         )
 
         # Safely set the spinner value if we have property data
@@ -313,12 +386,18 @@ class PropertyForm(BoxLayout):
             city_values = ['No regions available']
 
         region_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        region_layout.add_widget(Label(text='Region:', size_hint_x=0.3))
+        region_layout.add_widget(Label(
+            text='Region:',
+            size_hint_x=0.3,
+            color=(0.2, 0.2, 0.2, 1)
+        ))
 
         self.region_spinner = Spinner(
             text='Select Region',
             values=city_values,
-            size_hint_x=0.7
+            size_hint_x=0.7,
+            background_color=(0.95, 0.95, 0.95, 1),
+            color=(0.2, 0.2, 0.2, 1)
         )
 
         # Safely set the spinner value if we have property data
@@ -336,14 +415,20 @@ class PropertyForm(BoxLayout):
 
         # Address
         address_layout = BoxLayout(size_hint_y=None, height=dp(80))
-        address_layout.add_widget(Label(text='Address:', size_hint_x=0.3))
+        address_layout.add_widget(Label(
+            text='Address:',
+            size_hint_x=0.3,
+            color=(0.2, 0.2, 0.2, 1)
+        ))
 
         self.address_input = TextInput(
             hint_text='Property Address',
             text=property_data.get('Property-address', '') if property_data else '',
             multiline=True,
             size_hint_x=0.7,
-            height=dp(80)
+            height=dp(80),
+            background_color=(0.98, 0.98, 0.98, 1),
+            foreground_color=(0.2, 0.2, 0.2, 1)
         )
         address_layout.add_widget(self.address_input)
         form_layout.add_widget(address_layout)
@@ -364,12 +449,18 @@ class PropertyForm(BoxLayout):
             owner_values = ['No owners available']
 
         owner_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        owner_layout.add_widget(Label(text='Owner:', size_hint_x=0.3))
+        owner_layout.add_widget(Label(
+            text='Owner:',
+            size_hint_x=0.3,
+            color=(0.2, 0.2, 0.2, 1)
+        ))
 
         self.owner_spinner = Spinner(
             text='Select Owner',
             values=owner_values,
-            size_hint_x=0.5
+            size_hint_x=0.5,
+            background_color=(0.95, 0.95, 0.95, 1),
+            color=(0.2, 0.2, 0.2, 1)
         )
 
         # Safely set the spinner value if we have property data
@@ -387,7 +478,9 @@ class PropertyForm(BoxLayout):
         # Add owner button
         add_owner_button = Button(
             text='Add Owner',
-            size_hint_x=0.2
+            size_hint_x=0.2,
+            background_color=(0.3, 0.6, 0.9, 1),
+            color=(1, 1, 1, 1)
         )
         add_owner_button.bind(on_press=self.show_add_owner_form)
         owner_layout.add_widget(add_owner_button)
@@ -396,26 +489,39 @@ class PropertyForm(BoxLayout):
 
         # Description
         description_layout = BoxLayout(size_hint_y=None, height=dp(100))
-        description_layout.add_widget(Label(text='Description:', size_hint_x=0.3))
+        description_layout.add_widget(Label(
+            text='Description:',
+            size_hint_x=0.3,
+            color=(0.2, 0.2, 0.2, 1)
+        ))
 
         self.description_input = TextInput(
             hint_text='Property Description',
             text=property_data.get('Descriptions', '') if property_data else '',
             multiline=True,
             size_hint_x=0.7,
-            height=dp(100)
+            height=dp(100),
+            background_color=(0.98, 0.98, 0.98, 1),
+            foreground_color=(0.2, 0.2, 0.2, 1)
         )
         description_layout.add_widget(self.description_input)
         form_layout.add_widget(description_layout)
 
         # Photo Upload
         photo_layout = BoxLayout(orientation='vertical', size_hint_y=None, height=dp(200))
-        photo_layout.add_widget(Label(text='Photos:', size_hint_y=None, height=dp(30)))
+        photo_layout.add_widget(Label(
+            text='Photos:',
+            size_hint_y=None,
+            height=dp(30),
+            color=(0.2, 0.2, 0.2, 1)
+        ))
 
         browse_button = Button(
             text='Browse Photos',
             size_hint_y=None,
-            height=dp(40)
+            height=dp(40),
+            background_color=(0.6, 0.3, 0.9, 1),
+            color=(1, 1, 1, 1)
         )
         browse_button.bind(on_press=self.show_file_chooser)
         photo_layout.add_widget(browse_button)
@@ -430,12 +536,20 @@ class PropertyForm(BoxLayout):
         buttons_layout = BoxLayout(size_hint_y=None, height=dp(50), spacing=dp(10))
 
         # Save button
-        save_button = Button(text='Save')
+        save_button = Button(
+            text='Save',
+            background_color=(0.2, 0.8, 0.3, 1),
+            color=(1, 1, 1, 1)
+        )
         save_button.bind(on_press=self.save)
         buttons_layout.add_widget(save_button)
 
         # Cancel button
-        self.cancel_button = Button(text='Cancel')
+        self.cancel_button = Button(
+            text='Cancel',
+            background_color=(0.8, 0.3, 0.3, 1),
+            color=(1, 1, 1, 1)
+        )
         self.cancel_button.bind(on_press=self.cancel)
         buttons_layout.add_widget(self.cancel_button)
 
@@ -448,6 +562,11 @@ class PropertyForm(BoxLayout):
         if property_data and self.property_code:
             self.load_existing_photos()
 
+    def _update_rect(self, instance, value):
+        """Update the background rectangle."""
+        self.rect.pos = instance.pos
+        self.rect.size = instance.size
+
     def load_existing_photos(self):
         """Load existing photos for the property."""
         photos = self.api.get_property_photos(self.property_code)
@@ -457,7 +576,8 @@ class PropertyForm(BoxLayout):
                 photo_label = Label(
                     text=photo.get('photofilename', 'Unknown'),
                     size_hint_y=None,
-                    height=dp(30)
+                    height=dp(30),
+                    color=(0.2, 0.2, 0.2, 1)
                 )
                 self.photos_grid.add_widget(photo_label)
 
@@ -473,11 +593,19 @@ class PropertyForm(BoxLayout):
 
         buttons = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(10))
 
-        select_button = Button(text='Select')
+        select_button = Button(
+            text='Select',
+            background_color=(0.2, 0.8, 0.3, 1),
+            color=(1, 1, 1, 1)
+        )
         select_button.bind(on_press=lambda x: self.select_photos(file_chooser.selection, file_chooser_popup))
         buttons.add_widget(select_button)
 
-        cancel_button = Button(text='Cancel')
+        cancel_button = Button(
+            text='Cancel',
+            background_color=(0.8, 0.3, 0.3, 1),
+            color=(1, 1, 1, 1)
+        )
         cancel_button.bind(on_press=lambda x: file_chooser_popup.dismiss())
         buttons.add_widget(cancel_button)
 
@@ -506,7 +634,8 @@ class PropertyForm(BoxLayout):
                 photo_label = Label(
                     text=filename,
                     size_hint_y=None,
-                    height=dp(30)
+                    height=dp(30),
+                    color=(0.2, 0.2, 0.2, 1)
                 )
                 self.photos_grid.add_widget(photo_label)
 
@@ -615,7 +744,7 @@ class PropertyForm(BoxLayout):
         """Show a success popup."""
         popup = Popup(
             title='Success',
-            content=Label(text=message),
+            content=Label(text=message, color=(0.2, 0.2, 0.2, 1)),
             size_hint=(0.7, 0.3)
         )
         popup.open()
@@ -624,7 +753,7 @@ class PropertyForm(BoxLayout):
         """Show an error popup."""
         popup = Popup(
             title='Error',
-            content=Label(text=message),
+            content=Label(text=message, color=(0.8, 0.2, 0.2, 1)),
             size_hint=(0.7, 0.3)
         )
         popup.open()
@@ -636,17 +765,30 @@ class PropertyManagementScreen(Screen):
         super(PropertyManagementScreen, self).__init__(**kwargs)
         self.api = get_api()
 
+        # Set white background for the screen
+        with self.canvas.before:
+            from kivy.graphics import Color, Rectangle
+            Color(1, 1, 1, 1)  # White background
+            self.rect = Rectangle(size=self.size, pos=self.pos)
+            self.bind(size=self._update_rect, pos=self._update_rect)
+
         # Main layout
         self.layout = BoxLayout(orientation='vertical', padding=dp(10), spacing=dp(10))
 
         # Header with title and add button
         header = BoxLayout(size_hint_y=None, height=dp(50))
-        header.add_widget(Label(text='Property Management', font_size=dp(24)))
+        header.add_widget(Label(
+            text='Property Management',
+            font_size=dp(24),
+            color=(0.2, 0.2, 0.2, 1)
+        ))
 
         add_button = Button(
             text='Add Property',
             size_hint_x=None,
-            width=dp(120)
+            width=dp(120),
+            background_color=(0.2, 0.8, 0.3, 1),
+            color=(1, 1, 1, 1)
         )
         add_button.bind(on_press=self.show_add_property_form)
         header.add_widget(add_button)
@@ -655,11 +797,11 @@ class PropertyManagementScreen(Screen):
 
         # Properties list header
         list_header = GridLayout(cols=5, size_hint_y=None, height=dp(40))
-        list_header.add_widget(Label(text='Code', bold=True))
-        list_header.add_widget(Label(text='Type', bold=True))
-        list_header.add_widget(Label(text='Area', bold=True))
-        list_header.add_widget(Label(text='Owner', bold=True))
-        list_header.add_widget(Label(text='Actions', bold=True))
+        list_header.add_widget(Label(text='Code', bold=True, color=(0.2, 0.2, 0.2, 1)))
+        list_header.add_widget(Label(text='Type', bold=True, color=(0.2, 0.2, 0.2, 1)))
+        list_header.add_widget(Label(text='Area', bold=True, color=(0.2, 0.2, 0.2, 1)))
+        list_header.add_widget(Label(text='Owner', bold=True, color=(0.2, 0.2, 0.2, 1)))
+        list_header.add_widget(Label(text='Actions', bold=True, color=(0.2, 0.2, 0.2, 1)))
         self.layout.add_widget(list_header)
 
         # Properties list in a scrollview
@@ -674,12 +816,19 @@ class PropertyManagementScreen(Screen):
         back_button = Button(
             text='Back to Dashboard',
             size_hint_y=None,
-            height=dp(50)
+            height=dp(50),
+            background_color=(0.6, 0.6, 0.6, 1),
+            color=(1, 1, 1, 1)
         )
         back_button.bind(on_press=lambda x: self.go_to_dashboard())
         self.layout.add_widget(back_button)
 
         self.add_widget(self.layout)
+
+    def _update_rect(self, instance, value):
+        """Update the background rectangle."""
+        self.rect.pos = instance.pos
+        self.rect.size = instance.size
 
     def on_enter(self):
         """Load the properties list when entering the screen."""
@@ -696,7 +845,8 @@ class PropertyManagementScreen(Screen):
                 Label(
                     text='No properties found. Click "Add Property" to create one.',
                     size_hint_y=None,
-                    height=dp(40)
+                    height=dp(40),
+                    color=(0.5, 0.5, 0.5, 1)
                 )
             )
             return
@@ -705,18 +855,26 @@ class PropertyManagementScreen(Screen):
             property_row = GridLayout(cols=5, size_hint_y=None, height=dp(40))
 
             # Ensure none of the text values are None, replace with 'N/A' if they are
-            property_row.add_widget(Label(text=str(prop.get('realstatecode', 'N/A'))))
-            property_row.add_widget(Label(text=str(prop.get('property_type', 'N/A'))))
-            property_row.add_widget(Label(text=f"{str(prop.get('Property-area', 'N/A'))} m²"))
-            property_row.add_widget(Label(text=str(prop.get('ownername', 'N/A'))))
+            property_row.add_widget(Label(text=str(prop.get('realstatecode', 'N/A')), color=(0.2, 0.2, 0.2, 1)))
+            property_row.add_widget(Label(text=str(prop.get('property_type', 'N/A')), color=(0.2, 0.2, 0.2, 1)))
+            property_row.add_widget(Label(text=f"{str(prop.get('Property-area', 'N/A'))} m²", color=(0.2, 0.2, 0.2, 1)))
+            property_row.add_widget(Label(text=str(prop.get('ownername', 'N/A')), color=(0.2, 0.2, 0.2, 1)))
 
             actions = BoxLayout(spacing=dp(5))
 
-            edit_button = Button(text='Edit')
+            edit_button = Button(
+                text='Edit',
+                background_color=(0.3, 0.6, 0.9, 1),
+                color=(1, 1, 1, 1)
+            )
             edit_button.bind(on_press=lambda x, p=prop: self.show_edit_property_form(p))
             actions.add_widget(edit_button)
 
-            delete_button = Button(text='Delete')
+            delete_button = Button(
+                text='Delete',
+                background_color=(0.8, 0.3, 0.3, 1),
+                color=(1, 1, 1, 1)
+            )
             delete_button.bind(on_press=lambda x, code=prop.get('realstatecode', ''): self.confirm_delete_property(code))
             actions.add_widget(delete_button)
 
@@ -790,15 +948,23 @@ class PropertyManagementScreen(Screen):
     def confirm_delete_property(self, property_code):
         """Show confirmation dialog for deleting a property."""
         content = BoxLayout(orientation='vertical', padding=dp(10), spacing=dp(10))
-        content.add_widget(Label(text='Are you sure you want to delete this property?'))
+        content.add_widget(Label(text='Are you sure you want to delete this property?', color=(0.2, 0.2, 0.2, 1)))
 
         buttons = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(10))
 
-        yes_button = Button(text='Yes')
+        yes_button = Button(
+            text='Yes',
+            background_color=(0.8, 0.3, 0.3, 1),
+            color=(1, 1, 1, 1)
+        )
         yes_button.bind(on_press=lambda x: self.delete_property(property_code))
         buttons.add_widget(yes_button)
 
-        no_button = Button(text='No')
+        no_button = Button(
+            text='No',
+            background_color=(0.6, 0.6, 0.6, 1),
+            color=(1, 1, 1, 1)
+        )
         no_button.bind(on_press=lambda x: self.confirm_popup.dismiss())
         buttons.add_widget(no_button)
 
@@ -826,7 +992,7 @@ class PropertyManagementScreen(Screen):
         """Show a success popup."""
         popup = Popup(
             title='Success',
-            content=Label(text=message),
+            content=Label(text=message, color=(0.2, 0.8, 0.3, 1)),
             size_hint=(0.7, 0.3)
         )
         popup.open()
@@ -835,7 +1001,7 @@ class PropertyManagementScreen(Screen):
         """Show an error popup."""
         popup = Popup(
             title='Error',
-            content=Label(text=message),
+            content=Label(text=message, color=(0.8, 0.2, 0.2, 1)),
             size_hint=(0.7, 0.3)
         )
         popup.open()
