@@ -29,8 +29,10 @@ class FixedApp(App):
     def build(self):
         """Build the application."""
         try:
-            # Load the main kivy file
-            Builder.load_file('assets/kv/main.kv')
+            # Load the main kivy file using absolute path
+            _current_dir = os.path.dirname(os.path.abspath(__file__))
+            _main_kv_path = os.path.join(_current_dir, 'assets', 'kv', 'main.kv')
+            Builder.load_file(_main_kv_path)
 
             # Create the screen manager
             sm = ScreenManager(transition=FadeTransition())

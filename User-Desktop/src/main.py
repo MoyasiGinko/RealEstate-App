@@ -16,8 +16,11 @@ from src.screens.property_management import PropertyManagementScreen
 from src.screens.search_report import SearchReportScreen
 from src.screens.settings import SettingsScreen
 
-# Load the main kivy file
-Builder.load_file('assets/kv/main.kv')
+# Load the main kivy file using absolute path
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_project_root = os.path.dirname(_current_dir)
+_main_kv_path = os.path.join(_project_root, 'assets', 'kv', 'main.kv')
+Builder.load_file(_main_kv_path)
 
 # Set window size for desktop application
 Window.size = (1024, 768)
