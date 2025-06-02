@@ -2,51 +2,99 @@
 
 <DashboardScreen>:
     name: 'dashboard'
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1  # White background
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
     BoxLayout:
         orientation: 'vertical'
-        
+        padding: '15dp'
+        spacing: '10dp'
+
         Label:
             text: 'Dashboard'
             font_size: '24sp'
             size_hint_y: None
             height: '50dp'
-        
+            color: 0.2, 0.2, 0.2, 1  # Dark gray text
+            bold: True
+
         GridLayout:
             cols: 2
-            padding: 10
-            spacing: 10
-            
+            padding: '15dp'
+            spacing: '15dp'
+
             Button:
                 text: 'Owner Management'
                 on_release: app.root.current = 'owner_management'
-                
+                background_color: 0.2, 0.6, 0.9, 1  # Blue button
+                color: 1, 1, 1, 1  # White text
+                font_size: '18sp'
+                size_hint_y: None
+                height: '60dp'
+
             Button:
                 text: 'Property Management'
                 on_release: app.root.current = 'property_management'
-                
+                background_color: 0.2, 0.7, 0.5, 1  # Teal button
+                color: 1, 1, 1, 1  # White text
+                font_size: '18sp'
+                size_hint_y: None
+                height: '60dp'
+
             Button:
                 text: 'Search & Report'
                 on_release: app.root.current = 'search_report'
-                
+                background_color: 0.9, 0.5, 0.2, 1  # Orange button
+                color: 1, 1, 1, 1  # White text
+                font_size: '18sp'
+                size_hint_y: None
+                height: '60dp'
+
             Button:
                 text: 'Settings'
                 on_release: app.root.current = 'settings'
-        
-        Label:
-            text: 'Recent Activity'
-            font_size: '18sp'
-            size_hint_y: None
-            height: '40dp'
-        
-        ScrollView:
-            GridLayout:
-                id: activity_log
-                cols: 1
+                background_color: 0.5, 0.5, 0.5, 1  # Gray button
+                color: 1, 1, 1, 1  # White text
+                font_size: '18sp'
                 size_hint_y: None
-                height: self.minimum_height
-                
-                # Placeholder for activity log items
-                Label:
-                    text: 'No recent activity.'
+                height: '60dp'
+
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: 0.5
+            padding: '10dp'
+            canvas.before:
+                Color:
+                    rgba: 0.95, 0.95, 0.95, 1  # Light gray background
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [10, 10, 10, 10]
+
+            Label:
+                text: 'Recent Activity'
+                font_size: '18sp'
+                size_hint_y: None
+                height: '40dp'
+                color: 0.2, 0.2, 0.2, 1  # Dark gray text
+                bold: True
+
+            ScrollView:
+                GridLayout:
+                    id: activity_log
+                    cols: 1
                     size_hint_y: None
-                    height: '30dp'
+                    height: self.minimum_height
+                    padding: '10dp'
+                    spacing: '5dp'
+
+                    # Placeholder for activity log items
+                    Label:
+                        text: 'No recent activity.'
+                        size_hint_y: None
+                        height: '30dp'
+                        color: 0.4, 0.4, 0.4, 1  # Medium gray text
