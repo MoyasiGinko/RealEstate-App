@@ -84,13 +84,13 @@ def test_property_form_creation():
         from kivy.config import Config        Config.set('graphics', 'width', '1')
         Config.set('graphics', 'height', '1')
         Config.set('graphics', 'show_cursor', '0')
-        
+
         from src.screens.property_management import PropertyForm
 
         # Try to create PropertyForm instance with dummy callback
         def dummy_callback(*args, **kwargs):
             pass
-            
+
         form = PropertyForm(save_callback=dummy_callback)
         print("  ✅ PropertyForm created successfully")
         print(f"  ✅ safe_get_text method exists: {hasattr(form, 'safe_get_text')}")
