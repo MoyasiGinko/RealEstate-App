@@ -1,85 +1,119 @@
-# Real Estate Management System
+# User Desktop App
 
-A desktop application for managing real estate properties, built with Python and Kivy.
+## Overview
+
+The User Desktop App is a Kivy-based application designed for managing real estate properties and owners. It provides a user-friendly interface for property management, owner management, reporting, and settings configuration.
+
+## Features
+
+- **Owner Management**: Add, edit, and delete property owners.
+- **Property Management**: Manage property listings, including details such as type, area, and photos.
+- **Search & Report**: Search properties based on various criteria and generate reports.
+- **Settings**: Configure application settings and preferences.
+- **Recent Activity**: Track recent actions performed within the application.
 
 ## Project Structure
 
 ```
-├── src/                    # Application source code
-│   ├── main.py            # Main application entry point
-│   ├── models/            # Data models and database API
-│   ├── screens/           # UI screens and forms
-│   ├── utils/             # Utility functions
-│   └── widgets/           # Custom UI widgets
-├── assets/                # Application assets
-│   ├── images/           # Image files
-│   └── kv/               # Kivy UI definition files
-├── configs/              # Configuration files
-│   ├── database.py       # Database configuration
-│   └── settings.py       # Application settings
-├── data/                 # Database files
-├── database_utils/       # Database management utilities
-├── tests/                # Test files
-└── requirements.txt      # Python dependencies
+user-desktop-app
+├── src
+│   ├── main.py
+│   ├── screens
+│   ├── widgets
+│   ├── models
+│   └── utils
+├── configs
+│   ├── database.py
+│   └── settings.py
+├── assets
+│   ├── kv
+│   └── images
+├── tests
+│   ├── test_database.py
+│   └── test_models.py
+├── data
+│   └── local.db
+├── requirements.txt
+├── setup.py
+└── README.md
 ```
 
-## Features
+## Installation
 
-- Property management (CRUD operations)
-- Owner management
-- Property search and reporting
-- Photo management for properties
-- Settings configuration
-- Dashboard with statistics
-
-## Database
-
-The application uses SQLite with the following main tables:
-
-- **Maincode**: Classification codes (countries, cities, property types, etc.)
-- **Realstatspecification**: Property details
-- **Owners**: Property owner information
-- **Companyinfo**: Company information
-- **realstatephotos**: Property photos
-
-## Quick Start
-
-1. **Install dependencies:**
-
-   ```bash
+1. Clone the repository:
+   ```
+   git clone <repository-url>
+   ```
+2. Navigate to the project directory:
+   ```
+   cd user-desktop-app
+   ```
+3. Install the required dependencies:
+   ```
    pip install -r requirements.txt
    ```
 
-2. **Set up database:**
+## Usage
 
-   ```bash
-   # Create fresh database with schema
-   python database_utils/create_database.py
+To run the application, execute the following command:
 
-   # Load sample data
-   python database_utils/seed_data.py
-   ```
+```
+python src/main.py
+```
 
-3. **Run application:**
-   ```bash
-   python src/main.py
-   ```
+## Database Setup
 
-## Database Management
+Before running the application, you need to initialize the database:
 
-Use the utilities in `database_utils/` folder:
+```
+python init_db.py
+```
 
-- `create_database.py`: Creates fresh database with proper schema
-- `seed_data.py`: Manages sample data creation and loading
+This will create the necessary tables and insert initial reference data.
 
-See `database_utils/README.md` for detailed usage instructions.
+## Database API
 
-## Requirements
+The application uses a comprehensive database API located in `src/models/database_api.py`. This API provides methods for:
 
-- Python 3.7+
-- Kivy 2.0+
-- SQLite3 (included with Python)
+- Owner management (add, update, delete, query)
+- Property management (add, update, delete, query)
+- Photo management
+- Reference data access
+- Search functionality
+
+Example usage:
+
+```python
+from src.models.database_api import get_api
+
+# Get the API instance
+api = get_api()
+
+# Connect to the database
+api.connect()
+
+# Set the company code
+api.set_company_code('E901')
+
+# Get all owners
+owners = api.get_all_owners()
+
+# Close the connection when done
+api.close()
+```
+
+## Configuration
+
+Database connection settings can be configured in `configs/settings.py`. The application supports both local and cloud SQLite3 connections.
+
+## Testing
+
+To run the tests, use the following command:
+
+```
+python -m unittest discover tests
+```
 
 ## License
 
-This project is developed for Luay Al-Kawaz clients.
+This project is licensed under the MIT License. See the LICENSE file for details.
