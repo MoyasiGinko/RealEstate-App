@@ -441,13 +441,11 @@ class PropertyForm(BoxLayout):
         form_layout.add_widget(address_layout)
 
         # Owner selection
-        owners = self.api.get_all_owners() or []
-
-        # Safely handle owners
+        owners = self.api.get_all_owners() or []        # Safely handle owners
         owner_values = []
         if owners:
             try:
-                owner_values = [f"{o.get('ownercode', 'N/A')} - {o.get('ownername', 'Unknown')}" for o in owners]
+                owner_values = [f"{o.get('Ownercode', 'N/A')} - {o.get('ownername', 'Unknown')}" for o in owners]
             except (KeyError, TypeError, AttributeError) as e:
                 print(f"Error processing owners: {e}")
 
@@ -658,6 +656,8 @@ class PropertyForm(BoxLayout):
             content=content,
             size_hint=(0.8, 0.8)
         )
+        # Bind the cancel button to dismiss the popup
+        content.cancel_button.bind(on_press=lambda x: self.owner_popup.dismiss())
         self.owner_popup.open()
 
     def add_owner(self, owner_name, owner_phone, note, owner_code=None):
@@ -667,7 +667,7 @@ class PropertyForm(BoxLayout):
         if owner_code:
             self.owner_popup.dismiss()            # Refresh the owner dropdown
             owners = self.api.get_all_owners()
-            owner_values = [f"{o.get('ownercode', 'N/A')} - {o.get('ownername', 'Unknown')}" for o in owners]
+            owner_values = [f"{o.get('Ownercode', 'N/A')} - {o.get('ownername', 'Unknown')}" for o in owners]
             self.owner_spinner.values = owner_values
 
             # Select the newly added owner
@@ -759,8 +759,7 @@ class PropertyForm(BoxLayout):
         popup = Popup(
             title='Error',
             content=Label(text=message, color=(0.8, 0.2, 0.2, 1)),
-            size_hint=(0.7, 0.3)
-        )
+            size_hint=(0.7, 0.3)        )
         popup.open()
 
     def on_province_selected(self, spinner, text):
@@ -769,18 +768,29 @@ class PropertyForm(BoxLayout):
         if text in ['Select Province', 'No provinces available']:
             return
 
+        # Safety check - ensure region_spinner exists
+        if not hasattr(self, 'region_spinner'):
+            print("Warning: region_spinner not found in PropertyForm")
+            return
+
         try:
             # Extract province code from the selected text (format: "001 - Iraq")
             province_code = text.split(' - ')[0].strip()
             self.update_region_dropdown(province_code)
         except Exception as e:
             print(f"Error handling province selection: {e}")
-            # Set default values on error
-            self.region_spinner.values = ['Error loading regions']
-            self.region_spinner.text = 'Error loading regions'
+            # Set default values on error if spinner exists
+            if hasattr(self, 'region_spinner'):
+                self.region_spinner.values = ['Error loading regions']
+                self.region_spinner.text = 'Error loading regions'
 
     def update_region_dropdown(self, province_code):
         """Update the region dropdown based on selected province."""
+        # Safety check - ensure region_spinner exists
+        if not hasattr(self, 'region_spinner'):
+            print("Warning: region_spinner not found in PropertyForm")
+            return
+
         try:
             # Get cities for the selected province
             cities = self.api.get_cities_by_province(province_code)
@@ -797,9 +807,10 @@ class PropertyForm(BoxLayout):
 
         except Exception as e:
             print(f"Error updating region dropdown: {e}")
-            # Set error state
-            self.region_spinner.values = ['Error loading regions']
-            self.region_spinner.text = 'Error loading regions'
+            # Set error state if spinner exists
+            if hasattr(self, 'region_spinner'):
+                self.region_spinner.values = ['Error loading regions']
+                self.region_spinner.text = 'Error loading regions'
 
 class PropertyManagementScreen(Screen):
     """Screen for managing properties."""
@@ -1060,44 +1071,6 @@ class PropertyManagementScreen(Screen):
             size_hint=(0.7, 0.3)
         )
         popup.open()
-
-    def on_province_selected(self, spinner, text):
-        """Handle province selection and update region dropdown."""
-        # Ignore default/placeholder text
-        if text in ['Select Province', 'No provinces available']:
-            return
-
-        try:
-            # Extract province code from the selected text (format: "001 - Iraq")
-            province_code = text.split(' - ')[0].strip()
-            self.update_region_dropdown(province_code)
-        except Exception as e:
-            print(f"Error handling province selection: {e}")
-            # Set default values on error
-            self.region_spinner.values = ['Error loading regions']
-            self.region_spinner.text = 'Error loading regions'
-
-    def update_region_dropdown(self, province_code):
-        """Update the region dropdown based on selected province."""
-        try:
-            # Get cities for the selected province
-            cities = self.api.get_cities_by_province(province_code)
-
-            if cities:
-                # Format city options (code - name)
-                city_values = [f"{c.get('code', 'N/A')} - {c.get('name', 'Unknown')}" for c in cities]
-                self.region_spinner.values = city_values
-                self.region_spinner.text = 'Select Region'
-            else:
-                # No cities found for this province
-                self.region_spinner.values = ['No regions available']
-                self.region_spinner.text = 'No regions available'
-
-        except Exception as e:
-            print(f"Error updating region dropdown: {e}")
-            # Set error state
-            self.region_spinner.values = ['Error loading regions']
-            self.region_spinner.text = 'Error loading regions'
 
     def go_to_dashboard(self, instance=None):
         """Navigate back to the dashboard."""
