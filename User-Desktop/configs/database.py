@@ -98,23 +98,24 @@ class DatabaseManager:
             return False
 
         try:
-            # Create Maincode table
+            # Create Maincode table with unique code column
             self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS Maincode (
                 Recty CHAR(2) NOT NULL,
-                Code CHAR(16) NOT NULL,
+                Code CHAR(16) NOT NULL UNIQUE,
                 Name VARCHAR(50) NOT NULL,
                 Description TEXT,
-                PRIMARY KEY (Recty, Code)
+                PRIMARY KEY (Recty, Code),
+                UNIQUE(Code)
             )
             ''')
 
-            # Create Companyinfo table
+            # Create Companyinfo table with foreign key reference to Maincode
             self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS Companyinfo (
                 Companyco CHAR(4) PRIMARY KEY,
                 Companyna VARCHAR(30) NOT NULL,
-                Cityco CHAR(5),
+                Cityco CHAR(16),
                 Caddress VARCHAR(50),
                 Cophoneno CHAR(11),
                 Username CHAR(12),
@@ -123,7 +124,8 @@ class DatabaseManager:
                 Lastpayment DATE,
                 Subscriptionduration CHAR(1),
                 Registrationdate DATE,
-                Descriptions TEXT
+                Descriptions TEXT,
+                FOREIGN KEY (Cityco) REFERENCES Maincode(Code)
             )
             ''')
 
@@ -137,30 +139,36 @@ class DatabaseManager:
             )
             ''')
 
-            # Create Realstatspecification table
+            # Create Realstatspecification table with proper foreign key references
             self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS Realstatspecification (
                 Companyco CHAR(4) NOT NULL,
                 realstatecode CHAR(8) PRIMARY KEY,
-                Rstatetcode CHAR(1),
+                Rstatetcode CHAR(16),
                 Yearmake DATE,
-                Buildtcode CHAR(1),
+                Buildtcode CHAR(16),
                 "Property-area" REAL,
-                "Unitm-code" CHAR(1),
+                "Unitm-code" CHAR(16),
                 "Property-facade" REAL,
                 "Property-depth" REAL,
                 "N-of-bedrooms" INTEGER,
                 "N-of-bathrooms" INTEGER,
                 "Property-corner" BOOLEAN,
-                "Offer-Type-Code" CHAR(1),
-                "Province-code" CHAR(2),
-                "Region-code" CHAR(9),
+                "Offer-Type-Code" CHAR(16),
+                "Province-code" CHAR(16),
+                "Region-code" CHAR(16),
                 "Property-address" TEXT,
                 Photosituation BOOLEAN,
                 Ownercode CHAR(4),
                 Descriptions TEXT,
                 FOREIGN KEY (Ownercode) REFERENCES Owners(Ownercode),
-                FOREIGN KEY (Companyco) REFERENCES Companyinfo(Companyco)
+                FOREIGN KEY (Companyco) REFERENCES Companyinfo(Companyco),
+                FOREIGN KEY (Rstatetcode) REFERENCES Maincode(Code),
+                FOREIGN KEY (Buildtcode) REFERENCES Maincode(Code),
+                FOREIGN KEY ("Unitm-code") REFERENCES Maincode(Code),
+                FOREIGN KEY ("Offer-Type-Code") REFERENCES Maincode(Code),
+                FOREIGN KEY ("Province-code") REFERENCES Maincode(Code),
+                FOREIGN KEY ("Region-code") REFERENCES Maincode(Code)
             )
             ''')
 

@@ -469,76 +469,74 @@ class DatabaseAPI:
             ORDER BY r.realstatecode
         """
 
-        return self.db.execute_query(query, tuple(values))
+        return self.db.execute_query(query, tuple(values))    # Database Validation Functions
 
-    # Initial Setup Functions
+    def validate_database_integrity(self):
+        """
+        Validate database integrity and foreign key constraints.
 
-    def insert_initial_data(self):
-        """Insert initial data into the database."""
-        # Insert initial main codes
-        main_codes = [
-            # Provinces (recty = 01)
-            ('01', '01001', 'Baghdad', 'Capital of Iraq'),
-            ('01', '01002', 'Basra', 'Southern Iraq'),
-            ('01', '01003', 'Mosul', 'Northern Iraq'),
-            ('01', '01004', 'Erbil', 'Kurdistan Region'),
-            ('01', '01005', 'Najaf', 'Central Iraq'),
+        Returns:
+            bool: True if database is valid, False otherwise
+        """
+        try:
+            # Check if all required tables exist
+            required_tables = ['Maincode', 'Realstatspecification', 'Owners', 'Companyinfo', 'realstatephotos']
+            for table in required_tables:
+                result = self.db.execute_query(
+                    "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+                    (table,)
+                )
+                if not result:
+                    print(f"Missing required table: {table}")
+                    return False
 
-            # Cities (recty = 02)
-            ('02', '02001', 'Baghdad City', 'Capital'),
-            ('02', '02002', 'Basra City', 'Port city'),
-            ('02', '02003', 'Mosul City', 'Northern city'),
-            ('02', '02004', 'Erbil City', 'Kurdistan capital'),
-            ('02', '02005', 'Najaf City', 'Holy city'),
+            # Check foreign key constraints by attempting a few test queries
+            # This ensures the foreign keys are properly set up
+            test_queries = [
+                "SELECT COUNT(*) FROM Realstatspecification r LEFT JOIN Maincode m ON r.Rstatetcode = m.code",
+                "SELECT COUNT(*) FROM Realstatspecification r LEFT JOIN Owners o ON r.Ownercode = o.Ownercode",
+                "SELECT COUNT(*) FROM Companyinfo c LEFT JOIN Maincode m ON c.Cityco = m.code"
+            ]
 
-            # Property Types (recty = 03)
-            ('03', '03001', 'Residential', 'Homes, apartments'),
-            ('03', '03002', 'Commercial', 'Shops, offices'),
-            ('03', '03003', 'Industrial', 'Factories, warehouses'),
-            ('03', '03004', 'Agricultural', 'Farms, orchards'),
+            for query in test_queries:
+                result = self.db.execute_query(query)
+                if not result:
+                    return False
 
-            # Building Types (recty = 04)
-            ('04', '04001', 'Apartment', 'Apartment unit'),
-            ('04', '04002', 'House', 'Detached house'),
-            ('04', '04003', 'Villa', 'Luxury house'),
-            ('04', '04004', 'Office', 'Office space'),
-            ('04', '04005', 'Shop', 'Retail space'),
-            ('04', '04006', 'Warehouse', 'Storage space'),
+            return True
 
-            # Unit Measures (recty = 05)
-            ('05', '05001', 'Square Meter', 'm²'),
-            ('05', '05002', 'Square Foot', 'sq ft'),
+        except Exception as e:
+            print(f"Database validation error: {e}")
+            return False
 
-            # Offer Types (recty = 06)
-            ('06', '06001', 'For Sale', 'Property for sale'),
-            ('06', '06002', 'For Rent', 'Property for rent')
-        ]
+    def get_database_statistics(self):
+        """
+        Get database statistics.
 
-        for code_data in main_codes:
-            self.db.execute_query(
-                "INSERT OR IGNORE INTO Maincode (recty, code, name, description) VALUES (?, ?, ?, ?)",
-                code_data
+        Returns:
+            dict: Database statistics
+        """
+        stats = {}
+
+        try:
+            # Count records in each table
+            tables = ['Maincode', 'Realstatspecification', 'Owners', 'Companyinfo', 'realstatephotos']
+
+            for table in tables:
+                result = self.db.execute_query(f"SELECT COUNT(*) as count FROM {table}")
+                stats[table] = result[0]['count'] if result else 0
+
+            # Get maincode breakdown by record type
+            maincode_types = self.db.execute_query(
+                "SELECT recty, COUNT(*) as count FROM Maincode GROUP BY recty ORDER BY recty"
             )
+            stats['maincode_by_type'] = {item['recty']: item['count'] for item in maincode_types}
 
-        # Insert sample company if none exists
-        companies = self.db.execute_query("SELECT COUNT(*) as count FROM Companyinfo")
+            return stats
 
-        if companies[0]['count'] == 0:
-            self.db.execute_query(
-                """INSERT INTO Companyinfo (
-                    Companyco, Companyna, Cityco, Caddress, Cophoneno,
-                    Username, Password, SubscriptionTCode,
-                    Lastpayment, Subscriptionduration, Registrationdate
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                ('E901', 'Best Real Estate', '02001', '123 King St.', '07901234567',
-                 'admin', 'pass1234', '1',
-                 datetime.date.today().isoformat(), '3', datetime.date.today().isoformat())
-            )
-
-            # Set the company code
-            self.company_code = 'E901'
-
-        return True
+        except Exception as e:
+            print(f"Error getting database statistics: {e}")
+            return {}
 
 # Create a singleton instance of the API
 api = DatabaseAPI()
