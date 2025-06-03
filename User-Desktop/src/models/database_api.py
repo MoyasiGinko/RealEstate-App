@@ -297,8 +297,7 @@ class DatabaseAPI:
         )
 
         # If no photos remain, update the Photosituation flag
-        if photos[0]['count'] == 0:
-            self.db.execute_query(
+        if photos[0]['count'] == 0:            self.db.execute_query(
                 "UPDATE Realstatspecification SET Photosituation = ? WHERE realstatecode = ?",
                 (False, property_code)
             )
@@ -306,18 +305,17 @@ class DatabaseAPI:
         return result
 
     # Lookup Data Functions
+
     def get_main_codes_by_type(self, record_type):
         """
         Get main codes by record type.
 
         Args:
-            record_type (str): Record type code (e.g. '01', '02', '03', etc.)
-
-        Returns:
-            list: List of dictionaries containing Code and Name
+            record_type (str): Record type code (e.g. '01', '02', '03', etc.)        Returns:
+            list: List of dictionaries containing code and name
         """
         return self.db.execute_query(
-            "SELECT DISTINCT code, name FROM Maincode WHERE recty = ? ORDER BY name",
+            "SELECT DISTINCT Code as code, Name as name FROM Maincode WHERE Recty = ? ORDER BY Name",
             (record_type,)
         )
 
@@ -328,6 +326,25 @@ class DatabaseAPI:
     def get_cities(self):
         """Get all cities."""
         return self.get_main_codes_by_type('02')
+
+    def get_cities_by_province(self, province_code):
+        """
+        Get cities filtered by province code.
+
+        Args:
+            province_code (str): Province code (e.g., '001' for Iraq)
+
+        Returns:
+            list: List of dictionaries containing code and name for cities matching the province
+        """
+        # Cities have codes that start with the province code (e.g., '00101' for Baghdad in Iraq '001')
+        # The pattern should be the province code directly, not '00' + province_code
+        prefix_pattern = f"{province_code}%"
+
+        return self.db.execute_query(
+            "SELECT DISTINCT Code as code, Name as name FROM Maincode WHERE Recty = ? AND Code LIKE ? ORDER BY Name",
+            ('02', prefix_pattern)
+        )
 
     def get_property_types(self):
         """Get all property types."""

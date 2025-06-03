@@ -154,9 +154,7 @@ class PropertyForm(BoxLayout):
                 # Continue without setting the spinner value
 
         building_type_layout.add_widget(self.building_type_spinner)
-        form_layout.add_widget(building_type_layout)
-
-        # Year built
+        form_layout.add_widget(building_type_layout)        # Year built
         year_layout = BoxLayout(size_hint_y=None, height=dp(40))
         year_layout.add_widget(Label(
             text='Year Built:',
@@ -176,7 +174,13 @@ class PropertyForm(BoxLayout):
         )
 
         if self.property_data and self.property_data.get('Yearmake'):
-            year = self.property_data['Yearmake'].split('-')[0]  # Extract year from ISO format
+            year_value = self.property_data['Yearmake']
+            # Handle different year formats (string with date format, or just integer year)
+            if isinstance(year_value, str) and '-' in year_value:
+                year = year_value.split('-')[0]  # Extract year from ISO format like "2020-01-01"
+            else:
+                year = str(year_value)  # Convert integer year to string
+
             if year in year_values:
                 self.year_spinner.text = year
 
@@ -358,8 +362,7 @@ class PropertyForm(BoxLayout):
 
         province_layout = BoxLayout(size_hint_y=None, height=dp(40))
         province_layout.add_widget(Label(
-            text='Province:',
-            size_hint_x=0.3,
+            text='Province:',            size_hint_x=0.3,
             color=(0.2, 0.2, 0.2, 1)
         ))
 
@@ -370,6 +373,9 @@ class PropertyForm(BoxLayout):
             background_color=(0.95, 0.95, 0.95, 1),
             color=(0.2, 0.2, 0.2, 1)
         )
+
+        # Add event handler for province selection to filter regions
+        self.province_spinner.bind(text=self.on_province_selected)
 
         # Safely set the spinner value if we have property data
         if self.property_data and self.property_data.get('Province-code') and province_values and province_values[0] != 'No provinces available':
@@ -382,22 +388,7 @@ class PropertyForm(BoxLayout):
                 print(f"Error setting province spinner: {e}")
 
         province_layout.add_widget(self.province_spinner)
-        form_layout.add_widget(province_layout)
-
-        # Region (dropdown from Maincode)
-        cities = self.api.get_cities() or []
-
-        # Safely handle cities
-        city_values = []
-        if cities:
-            try:
-                city_values = [f"{c.get('code', 'N/A')} - {c.get('name', 'Unknown')}" for c in cities]
-            except (KeyError, TypeError, AttributeError) as e:
-                print(f"Error processing cities: {e}")
-
-        # Add a default option if the list is empty        if not city_values:
-            city_values = ['No regions available']
-
+        form_layout.add_widget(province_layout)        # Region (dropdown from Maincode) - Initially empty, will be populated when province is selected
         region_layout = BoxLayout(size_hint_y=None, height=dp(40))
         region_layout.add_widget(Label(
             text='Region:',
@@ -407,21 +398,24 @@ class PropertyForm(BoxLayout):
 
         self.region_spinner = Spinner(
             text='Select Region',
-            values=city_values,
+            values=['Select Province First'],
             size_hint_x=0.7,
             background_color=(0.95, 0.95, 0.95, 1),
             color=(0.2, 0.2, 0.2, 1)
         )
 
-        # Safely set the spinner value if we have property data
-        if self.property_data and self.property_data.get('Region-code') and city_values and city_values[0] != 'No regions available':
-            try:
-                for val in city_values:
-                    if val.startswith(self.property_data['Region-code']):
-                        self.region_spinner.text = val
-                        break
-            except Exception as e:
-                print(f"Error setting region spinner: {e}")
+        # If we have property data, populate the region dropdown based on the province
+        if self.property_data and self.property_data.get('Province-code'):
+            self.update_region_dropdown(self.property_data['Province-code'])
+            # Set the region spinner value if we have property data
+            if self.property_data.get('Region-code'):
+                try:
+                    for val in self.region_spinner.values:
+                        if val.startswith(self.property_data['Region-code']):
+                            self.region_spinner.text = val
+                            break
+                except Exception as e:
+                    print(f"Error setting region spinner: {e}")
 
         region_layout.add_widget(self.region_spinner)
         form_layout.add_widget(region_layout)
@@ -769,6 +763,44 @@ class PropertyForm(BoxLayout):
         )
         popup.open()
 
+    def on_province_selected(self, spinner, text):
+        """Handle province selection and update region dropdown."""
+        # Ignore default/placeholder text
+        if text in ['Select Province', 'No provinces available']:
+            return
+
+        try:
+            # Extract province code from the selected text (format: "001 - Iraq")
+            province_code = text.split(' - ')[0].strip()
+            self.update_region_dropdown(province_code)
+        except Exception as e:
+            print(f"Error handling province selection: {e}")
+            # Set default values on error
+            self.region_spinner.values = ['Error loading regions']
+            self.region_spinner.text = 'Error loading regions'
+
+    def update_region_dropdown(self, province_code):
+        """Update the region dropdown based on selected province."""
+        try:
+            # Get cities for the selected province
+            cities = self.api.get_cities_by_province(province_code)
+
+            if cities:
+                # Format city options (code - name)
+                city_values = [f"{c.get('code', 'N/A')} - {c.get('name', 'Unknown')}" for c in cities]
+                self.region_spinner.values = city_values
+                self.region_spinner.text = 'Select Region'
+            else:
+                # No cities found for this province
+                self.region_spinner.values = ['No regions available']
+                self.region_spinner.text = 'No regions available'
+
+        except Exception as e:
+            print(f"Error updating region dropdown: {e}")
+            # Set error state
+            self.region_spinner.values = ['Error loading regions']
+            self.region_spinner.text = 'Error loading regions'
+
 class PropertyManagementScreen(Screen):
     """Screen for managing properties."""
 
@@ -1028,6 +1060,44 @@ class PropertyManagementScreen(Screen):
             size_hint=(0.7, 0.3)
         )
         popup.open()
+
+    def on_province_selected(self, spinner, text):
+        """Handle province selection and update region dropdown."""
+        # Ignore default/placeholder text
+        if text in ['Select Province', 'No provinces available']:
+            return
+
+        try:
+            # Extract province code from the selected text (format: "001 - Iraq")
+            province_code = text.split(' - ')[0].strip()
+            self.update_region_dropdown(province_code)
+        except Exception as e:
+            print(f"Error handling province selection: {e}")
+            # Set default values on error
+            self.region_spinner.values = ['Error loading regions']
+            self.region_spinner.text = 'Error loading regions'
+
+    def update_region_dropdown(self, province_code):
+        """Update the region dropdown based on selected province."""
+        try:
+            # Get cities for the selected province
+            cities = self.api.get_cities_by_province(province_code)
+
+            if cities:
+                # Format city options (code - name)
+                city_values = [f"{c.get('code', 'N/A')} - {c.get('name', 'Unknown')}" for c in cities]
+                self.region_spinner.values = city_values
+                self.region_spinner.text = 'Select Region'
+            else:
+                # No cities found for this province
+                self.region_spinner.values = ['No regions available']
+                self.region_spinner.text = 'No regions available'
+
+        except Exception as e:
+            print(f"Error updating region dropdown: {e}")
+            # Set error state
+            self.region_spinner.values = ['Error loading regions']
+            self.region_spinner.text = 'Error loading regions'
 
     def go_to_dashboard(self, instance=None):
         """Navigate back to the dashboard."""
