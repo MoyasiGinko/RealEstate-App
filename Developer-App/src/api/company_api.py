@@ -269,3 +269,93 @@ class CompanyInfoAPI:
             error_msg = f"Failed to search companies: {str(e)}"
             Logger.error(error_msg)
             return ApiResponse.error_response(error_msg)
+
+    def get_next_company_code(self) -> ApiResponse:
+        """Generate the next available company code"""
+        try:
+            with self.db_manager.get_cursor() as cursor:
+                # Get the highest existing company code
+                cursor.execute("SELECT MAX(Companyco) FROM Companyinfo")
+                result = cursor.fetchone()
+                max_code = result[0] if result and result[0] else None
+
+                if max_code:
+                    # Extract numeric part (assuming format like E001, E002, etc.)
+                    if max_code.startswith('E'):
+                        try:
+                            num_part = int(max_code[1:])
+                            next_num = num_part + 1
+                            next_code = f"E{next_num:03d}"
+                        except ValueError:
+                            # Fallback if format is unexpected
+                            next_code = "E001"
+                    else:
+                        next_code = "E001"
+                else:
+                    next_code = "E001"
+
+                return ApiResponse.success_response(
+                    data={'code': next_code},
+                    message=f"Next available company code: {next_code}"
+                )
+
+        except Exception as e:
+            error_msg = f"Failed to generate company code: {str(e)}"
+            Logger.error(error_msg)
+            return ApiResponse.error_response(error_msg)
+
+    def get_next_subscription_code(self) -> ApiResponse:
+        """Generate the next available subscription code"""
+        try:
+            with self.db_manager.get_cursor() as cursor:
+                # Get the highest existing subscription code
+                cursor.execute("SELECT MAX(SubscriptionTCode) FROM Companyinfo")
+                result = cursor.fetchone()
+                max_code = result[0] if result and result[0] else None
+
+                if max_code:
+                    try:
+                        next_num = int(max_code) + 1
+                        next_code = str(next_num)
+                    except ValueError:
+                        next_code = "1"
+                else:
+                    next_code = "1"
+
+                return ApiResponse.success_response(
+                    data={'code': next_code},
+                    message=f"Next available subscription code: {next_code}"
+                )
+
+        except Exception as e:
+            error_msg = f"Failed to generate subscription code: {str(e)}"
+            Logger.error(error_msg)
+            return ApiResponse.error_response(error_msg)
+
+    def get_cities(self) -> ApiResponse:
+        """Get all cities (record type '02') from MainCode for dropdown"""
+        try:
+            with self.db_manager.get_cursor() as cursor:
+                cursor.execute(
+                    "SELECT Code, Name FROM Maincode WHERE Recty = '02' ORDER BY Name",
+                )
+                rows = cursor.fetchall()
+
+                cities = []
+                for row in rows:
+                    cities.append({
+                        'code': row[0],
+                        'name': row[1],
+                        'display': f"{row[0]} - {row[1]}"
+                    })
+
+                return ApiResponse.success_response(
+                    data=cities,
+                    message=f"Retrieved {len(cities)} cities",
+                    count=len(cities)
+                )
+
+        except Exception as e:
+            error_msg = f"Failed to get cities: {str(e)}"
+            Logger.error(error_msg)
+            return ApiResponse.error_response(error_msg)

@@ -38,7 +38,7 @@ class CompanyInfo:
             'Lastpayment': self.last_payment,
             'Subscriptionduration': self.subscription_duration,
             'Registrationdate': self.registration_date,
-            'descriptions': self.descriptions
+            'Descriptions': self.descriptions
         }
 
     @classmethod
@@ -56,7 +56,7 @@ class CompanyInfo:
             last_payment=data.get('Lastpayment'),
             subscription_duration=data.get('Subscriptionduration'),
             registration_date=data.get('Registrationdate'),
-            descriptions=data.get('descriptions')
+            descriptions=data.get('Descriptions')
         )
 
 

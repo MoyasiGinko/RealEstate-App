@@ -51,35 +51,53 @@ class CompanyInfoCRUDScreen(BoxLayout):
         content_layout = BoxLayout(orientation='horizontal', spacing=20)
 
         # Left panel - Data list
-        left_panel = BoxLayout(orientation='vertical', size_hint_x=0.6, spacing=10)
-        left_panel.add_widget(Label(text='Company Records', font_size=18, bold=True, size_hint_y=None, height=40))
-
-        self.data_scroll = ScrollView()
-        self.data_layout = BoxLayout(orientation='vertical', size_hint_y=None, spacing=5)
-        self.data_layout.bind(minimum_height=self.data_layout.setter('height'))
-        self.data_scroll.add_widget(self.data_layout)
-        left_panel.add_widget(self.data_scroll)
-
+        left_panel = self.create_data_panel()
         content_layout.add_widget(left_panel)
 
         # Right panel - Form
-        right_panel = BoxLayout(orientation='vertical', size_hint_x=0.4, spacing=10)
-        form_header = Label(text='Company Form', font_size=18, bold=True, size_hint_y=None, height=40)
-        right_panel.add_widget(form_header)
+        right_panel = self.create_form_panel()
+        content_layout.add_widget(right_panel)
 
-        # Form scroll view
-        form_scroll = ScrollView()
-        form_layout = BoxLayout(orientation='vertical', size_hint_y=None, spacing=10, padding=[10, 10])
+        self.add_widget(content_layout)
+
+    def create_data_panel(self):
+        """Create the data list panel"""
+        panel = BoxLayout(orientation='vertical', size_hint_x=0.6, spacing=10)
+
+        # Panel title
+        title = Label(text='Company Records', font_size=18, size_hint_y=None, height=40, bold=True)
+        panel.add_widget(title)
+
+        # Data display area
+        scroll = ScrollView()
+        self.data_layout = GridLayout(cols=1, spacing=5, size_hint_y=None)
+        self.data_layout.bind(minimum_height=self.data_layout.setter('height'))
+        scroll.add_widget(self.data_layout)
+        panel.add_widget(scroll)
+
+        return panel
+
+    def create_form_panel(self):
+        """Create the form panel"""
+        panel = BoxLayout(orientation='vertical', size_hint_x=0.4, spacing=10)
+
+        # Panel title
+        title = Label(text='Edit/Create Company', font_size=18, size_hint_y=None, height=40, bold=True)
+        panel.add_widget(title)
+
+        # Form fields in scroll view
+        form_scroll = ScrollView(size_hint=(1, 0.7))
+        form_layout = GridLayout(cols=2, spacing=10, size_hint_y=None, height=500)
         form_layout.bind(minimum_height=form_layout.setter('height'))
 
-        # Input fields
+        # Create input fields
         self.inputs = {}
 
         # Company Code with auto-generation
-        form_layout.add_widget(Label(text='Company Code:', size_hint_y=None, height=30))
+        form_layout.add_widget(Label(text='Company Code:'))
         company_code_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=5)
         self.inputs['company_code'] = TextInput(
-            hint_text='e.g., E001',
+            hint_text='e.g., E901',
             size_hint_y=None,
             height=40
         )
@@ -98,7 +116,7 @@ class CompanyInfoCRUDScreen(BoxLayout):
         form_layout.add_widget(company_code_layout)
 
         # Company Name
-        form_layout.add_widget(Label(text='Company Name:', size_hint_y=None, height=30))
+        form_layout.add_widget(Label(text='Company Name:'))
         self.inputs['company_name'] = TextInput(
             hint_text='e.g., Best Real Estate',
             size_hint_y=None,
@@ -107,7 +125,7 @@ class CompanyInfoCRUDScreen(BoxLayout):
         form_layout.add_widget(self.inputs['company_name'])
 
         # City Code with dropdown
-        form_layout.add_widget(Label(text='City:', size_hint_y=None, height=30))
+        form_layout.add_widget(Label(text='City:'))
         self.inputs['city_code'] = Spinner(
             text='Select City',
             values=['Select City'],
@@ -117,7 +135,7 @@ class CompanyInfoCRUDScreen(BoxLayout):
         form_layout.add_widget(self.inputs['city_code'])
 
         # Company Address
-        form_layout.add_widget(Label(text='Address:', size_hint_y=None, height=30))
+        form_layout.add_widget(Label(text='Address:'))
         self.inputs['company_address'] = TextInput(
             hint_text='e.g., 123 King St.',
             size_hint_y=None,
@@ -126,7 +144,7 @@ class CompanyInfoCRUDScreen(BoxLayout):
         form_layout.add_widget(self.inputs['company_address'])
 
         # Phone Number
-        form_layout.add_widget(Label(text='Phone Number:', size_hint_y=None, height=30))
+        form_layout.add_widget(Label(text='Phone Number:'))
         self.inputs['phone_number'] = TextInput(
             hint_text='e.g., 07901234567',
             size_hint_y=None,
@@ -135,7 +153,7 @@ class CompanyInfoCRUDScreen(BoxLayout):
         form_layout.add_widget(self.inputs['phone_number'])
 
         # Username
-        form_layout.add_widget(Label(text='Username:', size_hint_y=None, height=30))
+        form_layout.add_widget(Label(text='Username:'))
         self.inputs['username'] = TextInput(
             hint_text='e.g., admin',
             size_hint_y=None,
@@ -144,17 +162,15 @@ class CompanyInfoCRUDScreen(BoxLayout):
         form_layout.add_widget(self.inputs['username'])
 
         # Password
-        form_layout.add_widget(Label(text='Password:', size_hint_y=None, height=30))
+        form_layout.add_widget(Label(text='Password:'))
         self.inputs['password'] = TextInput(
             hint_text='e.g., pass1234',
             password=True,
             size_hint_y=None,
             height=40
         )
-        form_layout.add_widget(self.inputs['password'])
-
-        # Subscription Code dropdown
-        form_layout.add_widget(Label(text='Subscription Type:', size_hint_y=None, height=30))
+        form_layout.add_widget(self.inputs['password'])        # Subscription Code dropdown
+        form_layout.add_widget(Label(text='Subscription Type:'))
         self.inputs['subscription_code'] = Spinner(
             text='Select Subscription Type',
             values=[
@@ -169,7 +185,7 @@ class CompanyInfoCRUDScreen(BoxLayout):
         form_layout.add_widget(self.inputs['subscription_code'])
 
         # Subscription Duration dropdown
-        form_layout.add_widget(Label(text='Subscription Duration:', size_hint_y=None, height=30))
+        form_layout.add_widget(Label(text='Subscription Duration:'))
         self.inputs['subscription_duration'] = Spinner(
             text='Select Duration',
             values=[
@@ -185,49 +201,52 @@ class CompanyInfoCRUDScreen(BoxLayout):
         form_layout.add_widget(self.inputs['subscription_duration'])
 
         # Descriptions
-        form_layout.add_widget(Label(text='Description:', size_hint_y=None, height=30))
+        form_layout.add_widget(Label(text='Description:'))
         self.inputs['descriptions'] = TextInput(
-            hint_text='e.g., Real estate company',
+            hint_text='Optional notes',
+            multiline=True,
             size_hint_y=None,
-            height=40
+            height=80
         )
         form_layout.add_widget(self.inputs['descriptions'])
 
-        # Buttons
-        button_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=50, spacing=10)
-
-        create_btn = Button(text='Create', background_color=(0.2, 0.8, 0.2, 1))
-        create_btn.bind(on_press=self.create_company)
-        button_layout.add_widget(create_btn)
-
-        self.update_btn = Button(text='Update', background_color=(0.2, 0.6, 0.8, 1), disabled=True)
-        self.update_btn.bind(on_press=self.update_company)
-        button_layout.add_widget(self.update_btn)
-
-        self.delete_btn = Button(text='Delete', background_color=(0.8, 0.2, 0.2, 1), disabled=True)
-        self.delete_btn.bind(on_press=self.delete_company)
-        button_layout.add_widget(self.delete_btn)
-
-        clear_btn = Button(text='Clear', background_color=(0.6, 0.6, 0.6, 1))
-        clear_btn.bind(on_press=self.clear_form)
-        button_layout.add_widget(clear_btn)
-
-        form_layout.add_widget(button_layout)
-
         form_scroll.add_widget(form_layout)
-        right_panel.add_widget(form_scroll)
+        panel.add_widget(form_scroll)
 
-        content_layout.add_widget(right_panel)
-        self.add_widget(content_layout)
+        # Action buttons
+        btn_layout = GridLayout(cols=2, spacing=10, size_hint_y=None, height=120)
 
-        # Status bar
+        self.create_btn = Button(text='Create New', background_color=(0.2, 0.8, 0.2, 1))
+        self.create_btn.bind(on_press=self.create_company)
+        btn_layout.add_widget(self.create_btn)
+
+        self.update_btn = Button(text='Update Selected', background_color=(0.2, 0.2, 0.8, 1))
+        self.update_btn.bind(on_press=self.update_company)
+        self.update_btn.disabled = True
+        btn_layout.add_widget(self.update_btn)
+
+        self.delete_btn = Button(text='Delete Selected', background_color=(0.8, 0.2, 0.2, 1))
+        self.delete_btn.bind(on_press=self.delete_company)
+        self.delete_btn.disabled = True
+        btn_layout.add_widget(self.delete_btn)
+
+        clear_btn = Button(text='Clear Form', background_color=(0.5, 0.5, 0.5, 1))
+        clear_btn.bind(on_press=self.clear_form)
+        btn_layout.add_widget(clear_btn)
+
+        panel.add_widget(btn_layout)
+
+        # Status area
         self.status_label = Label(
             text='Ready to create new Company record',
             size_hint_y=None,
-            height=30,
-            color=(0.8, 0.8, 0.8, 1)
+            height=60,
+            text_size=(None, None),
+            halign='center'
         )
-        self.add_widget(self.status_label)
+        panel.add_widget(self.status_label)
+
+        return panel
 
     def refresh_data(self):
         """Refresh data from database"""
@@ -287,21 +306,13 @@ class CompanyInfoCRUDScreen(BoxLayout):
             text_size=(None, None),
             halign='left',
             valign='middle',
-            size_hint_y=None,
-            height=40
+            bold=True
         )
         main_row.add_widget(info_label)
 
         # Select button
-        select_btn = Button(
-            text='Select',
-            size_hint_x=None,
-            width=100,
-            size_hint_y=None,
-            height=40,
-            background_color=(0.3, 0.7, 1, 1)
-        )
-        select_btn.bind(on_press=lambda x: self.select_company(company))
+        select_btn = Button(text='Select', size_hint_x=None, width=80)
+        select_btn.bind(on_press=lambda x, comp=company: self.select_company(comp))
         main_row.add_widget(select_btn)
 
         row_layout.add_widget(main_row)
@@ -356,8 +367,7 @@ class CompanyInfoCRUDScreen(BoxLayout):
                     city_found = True
                     break
             if not city_found:
-                self.inputs['city_code'].text = city_code  # Fallback to just the code
-        else:
+                self.inputs['city_code'].text = city_code  # Fallback to just the code        else:
             self.inputs['city_code'].text = 'Select City'
 
         self.inputs['company_address'].text = getattr(company, 'company_address', '') or ''
@@ -460,9 +470,7 @@ class CompanyInfoCRUDScreen(BoxLayout):
 
         try:
             if not self.validate_form():
-                return
-
-            # Extract city code from dropdown selection (format: "00101 - Baghdad" -> "00101")
+                return            # Extract city code from dropdown selection (format: "00101 - Baghdad" -> "00101")
             city_text = self.inputs['city_code'].text
             city_code = None
             if city_text and city_text != 'Select City' and ' - ' in city_text:
@@ -542,17 +550,10 @@ class CompanyInfoCRUDScreen(BoxLayout):
             self.status_label.text = "Please enter a company name"
             return False
 
-        return True
-
-    def clear_form(self, button=None):
+        return True    def clear_form(self, button=None):
         """Clear the form"""
         for input_widget in self.inputs.values():
             input_widget.text = ''
-
-        # Reset dropdowns to default values
-        self.inputs['city_code'].text = 'Select City'
-        self.inputs['subscription_code'].text = 'Select Subscription Type'
-        self.inputs['subscription_duration'].text = 'Select Duration'
 
         self.selected_company = None
         self.update_btn.disabled = True
