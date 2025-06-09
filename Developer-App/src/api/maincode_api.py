@@ -13,6 +13,16 @@ from .models import MainCode, ApiResponse
 class MainCodeAPI:
     """API for Main Code operations"""
 
+    # Record type descriptions mapping
+    RECORD_TYPE_DESCRIPTIONS = {
+        '01': 'Countries',
+        '02': 'Cities',
+        '03': 'Property Types',
+        '04': 'Building Types',
+        '05': 'Unit Measures',
+        '06': 'Offer Types'
+    }
+
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
 
@@ -323,5 +333,117 @@ class MainCodeAPI:
 
         except Exception as e:
             error_msg = f"Failed to bulk insert main codes: {str(e)}"
+            Logger.error(error_msg)
+            return ApiResponse.error_response(error_msg)
+
+    def get_record_type_options(self) -> List[Dict[str, str]]:
+        """Get list of record type options with descriptions"""
+        return [
+            {'value': code, 'text': f"{code} - {desc}"}
+            for code, desc in self.RECORD_TYPE_DESCRIPTIONS.items()
+        ]
+
+    def get_next_available_code(self, record_type: str, country_code: str = None) -> ApiResponse:
+        """Generate the next available code for a given record type"""
+        try:
+            with self.db_manager.get_cursor() as cursor:
+                # Get the highest existing code for this record type
+                cursor.execute(
+                    "SELECT MAX(Code) FROM Maincode WHERE Recty = ?",
+                    (record_type,)
+                )
+                result = cursor.fetchone()
+                max_code = result[0] if result and result[0] else None
+
+                # Generate next code based on pattern
+                if record_type == '01':
+                    # Countries: sequential 3-digit codes (001, 002, 003...)
+                    if max_code:
+                        next_num = int(max_code) + 1
+                        next_code = f"{next_num:03d}"
+                    else:
+                        next_code = "001"
+
+                elif record_type == '02':
+                    # Cities: 5-digit codes based on country code
+                    if country_code:
+                        # Pattern: {country_code}{sequential_2_digits}
+                        # For example, if country is 001 (Iraq), cities would be 00101, 00102, etc.
+                        country_prefix = country_code  # e.g., "001"
+
+                        # Get highest city code for this specific country
+                        cursor.execute(
+                            "SELECT MAX(Code) FROM Maincode WHERE Recty = '02' AND Code LIKE ?",
+                            (f"{country_prefix}%",)
+                        )
+                        result = cursor.fetchone()
+                        country_max_code = result[0] if result and result[0] else None
+
+                        if country_max_code:
+                            # Extract the suffix and increment
+                            suffix = country_max_code[len(country_prefix):]
+                            next_suffix = int(suffix) + 1
+                            next_code = f"{country_prefix}{next_suffix:02d}"
+                        else:
+                            # First city for this country
+                            next_code = f"{country_prefix}01"
+                    else:
+                        # Fallback: use simple sequential approach
+                        if max_code:
+                            next_num = int(max_code) + 1
+                            next_code = f"{next_num:05d}"
+                        else:
+                            next_code = "00101"
+
+                else:
+                    # Types 03-06: Type prefix + sequential 3-digit codes
+                    prefix = record_type
+                    if max_code:
+                        # Extract the numeric part after the prefix
+                        numeric_part = max_code[2:]  # Remove first 2 digits (type prefix)
+                        next_num = int(numeric_part) + 1
+                        next_code = f"{prefix}{next_num:03d}"
+                    else:
+                        next_code = f"{prefix}001"
+
+                return ApiResponse.success_response(
+                    data={'code': next_code},
+                    message=f"Next available code for type {record_type}"
+                )
+
+        except Exception as e:
+            error_msg = f"Failed to generate next code: {str(e)}"
+            Logger.error(error_msg)
+            return ApiResponse.error_response(error_msg)
+
+    def get_record_type_description(self, record_type: str) -> str:
+        """Get description for a record type"""
+        return self.RECORD_TYPE_DESCRIPTIONS.get(record_type, f"Type {record_type}")
+
+    def get_countries(self) -> ApiResponse:
+        """Get all countries (record type '01') for use in city creation"""
+        try:
+            with self.db_manager.get_cursor() as cursor:
+                cursor.execute(
+                    "SELECT Code, Name FROM Maincode WHERE Recty = '01' ORDER BY Name",
+                )
+                rows = cursor.fetchall()
+
+                countries = []
+                for row in rows:
+                    countries.append({
+                        'code': row[0],
+                        'name': row[1],
+                        'display': f"{row[0]} - {row[1]}"
+                    })
+
+                return ApiResponse.success_response(
+                    data=countries,
+                    message=f"Retrieved {len(countries)} countries",
+                    count=len(countries)
+                )
+
+        except Exception as e:
+            error_msg = f"Failed to get countries: {str(e)}"
             Logger.error(error_msg)
             return ApiResponse.error_response(error_msg)

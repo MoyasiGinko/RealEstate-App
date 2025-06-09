@@ -99,23 +99,54 @@ class MainCodeCRUDScreen(BoxLayout):
 
         # Panel title
         title = Label(text='Edit/Create MainCode', font_size=18, size_hint_y=None, height=40, bold=True)
-        panel.add_widget(title)
-
-        # Form fields
-        form_layout = GridLayout(cols=2, spacing=10, size_hint_y=None, height=200)
+        panel.add_widget(title)        # Form fields
+        form_layout = GridLayout(cols=2, spacing=10, size_hint_y=None, height=280)
 
         form_layout.add_widget(Label(text='Record Type:'))
         self.record_type_input = Spinner(
             text='Select Type',
-            values=['01', '02', '03', '04', '05', '06'],
+            values=self.get_record_type_options(),
             size_hint_y=None,
             height=40
         )
+        self.record_type_input.bind(text=self.on_record_type_change)
         form_layout.add_widget(self.record_type_input)
 
+        # Country selection (only shown for cities - record type '02')
+        self.country_label = Label(text='Country:')
+        self.country_input = Spinner(
+            text='Select Country',
+            values=['Select Country'],
+            size_hint_y=None,
+            height=40
+        )
+        self.country_input.bind(text=self.on_country_change)
+
+        # Initially hidden
+        self.country_label.opacity = 0
+        self.country_label.disabled = True
+        self.country_input.opacity = 0
+        self.country_input.disabled = True
+
+        form_layout.add_widget(self.country_label)
+        form_layout.add_widget(self.country_input)
+
         form_layout.add_widget(Label(text='Code:'))
+        code_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=5)
         self.code_input = TextInput(multiline=False, size_hint_y=None, height=40)
-        form_layout.add_widget(self.code_input)
+        code_layout.add_widget(self.code_input)
+
+        self.auto_code_btn = Button(
+            text='Auto',
+            size_hint_x=None,
+            width=60,
+            size_hint_y=None,
+            height=40,
+            background_color=(0.2, 0.8, 0.2, 1)
+        )
+        self.auto_code_btn.bind(on_press=self.generate_auto_code)
+        code_layout.add_widget(self.auto_code_btn)
+        form_layout.add_widget(code_layout)
 
         form_layout.add_widget(Label(text='Name:'))
         self.name_input = TextInput(multiline=False, size_hint_y=None, height=40)
@@ -232,12 +263,20 @@ class MainCodeCRUDScreen(BoxLayout):
 
     def select_maincode(self, maincode):
         """Select a maincode for editing"""
-        self.selected_maincode = maincode
-
-        # Populate form
+        self.selected_maincode = maincode        # Populate form
         record_type = getattr(maincode, 'record_type', '')
-        if record_type and record_type in self.record_type_input.values:
-            self.record_type_input.text = record_type
+        if record_type:
+            # Find the matching option with description
+            matching_option = None
+            for option in self.get_record_type_options():
+                if option.startswith(record_type + ' - '):
+                    matching_option = option
+                    break
+
+            if matching_option:
+                self.record_type_input.text = matching_option
+            else:
+                self.record_type_input.text = 'Select Type'
         else:
             self.record_type_input.text = 'Select Type'
 
@@ -257,9 +296,17 @@ class MainCodeCRUDScreen(BoxLayout):
             if not self.validate_form():
                 return
 
+            # Extract record type code from the display format (e.g., '01' from '01 - Countries')
+            record_type_text = self.record_type_input.text
+            if record_type_text == 'Select Type':
+                self.status_label.text = "Please select a record type"
+                return
+
+            record_type = record_type_text.split(' - ')[0]  # Extract just the code part
+
             # Create dictionary data for API call
             maincode_data = {
-                'record_type': self.record_type_input.text,
+                'record_type': record_type,
                 'code': self.code_input.text,
                 'name': self.name_input.text,
                 'description': self.description_input.text or None
@@ -283,11 +330,17 @@ class MainCodeCRUDScreen(BoxLayout):
 
         try:
             if not self.validate_form():
+                return            # Extract record type code from the display format (e.g., '01' from '01 - Countries')
+            record_type_text = self.record_type_input.text
+            if record_type_text == 'Select Type':
+                self.status_label.text = "Please select a record type"
                 return
+
+            record_type = record_type_text.split(' - ')[0]  # Extract just the code part
 
             # Create dictionary with updated data for API call
             update_data = {
-                'record_type': self.record_type_input.text,
+                'record_type': record_type,
                 'code': self.code_input.text,
                 'name': self.name_input.text,
                 'description': self.description_input.text or None
@@ -337,6 +390,12 @@ class MainCodeCRUDScreen(BoxLayout):
             self.status_label.text = "Please select a record type"
             return False
 
+        # For cities (record type '02'), require country selection
+        if self.record_type_input.text.startswith('02 - '):
+            if self.country_input.text == 'Select Country':
+                self.status_label.text = "Please select a country for city creation"
+                return False
+
         if not self.code_input.text.strip():
             self.status_label.text = "Please enter a code"
             return False
@@ -353,6 +412,8 @@ class MainCodeCRUDScreen(BoxLayout):
         self.code_input.text = ''
         self.name_input.text = ''
         self.description_input.text = ''
+        self.country_input.text = 'Select Country'  # Reset country selection
+        self.hide_country_selection()  # Hide country field
         self.selected_maincode = None
         self.update_btn.disabled = True
         self.delete_btn.disabled = True
@@ -366,3 +427,112 @@ class MainCodeCRUDScreen(BoxLayout):
         """Go back to dashboard"""
         if self.main_screen:
             self.main_screen.show_dashboard()
+
+    def get_record_type_options(self):
+        """Get record type options with descriptions"""
+        if self.api_manager and self.api_manager.maincode:
+            options = self.api_manager.maincode.get_record_type_options()
+            return [option['text'] for option in options]
+        else:
+            # Fallback options
+            return [
+                '01 - Countries',
+                '02 - Cities',
+                '03 - Property Types',
+                '04 - Building Types',
+                '05 - Unit Measures',
+                '06 - Offer Types'
+            ]
+
+    def on_record_type_change(self, spinner, text):
+        """Handle record type selection change"""
+        # Clear the code field when record type changes
+        self.code_input.text = ''
+
+        # Show/hide country selection based on record type
+        if text.startswith('02 - '):  # Cities
+            self.show_country_selection()
+        else:
+            self.hide_country_selection()
+          # Update status
+        if text != 'Select Type':
+            record_type = text.split(' - ')[0]  # Extract just the code part
+            self.status_label.text = f'Selected record type: {text}'
+
+    def show_country_selection(self):
+        """Show the country selection field"""
+        self.country_label.opacity = 1
+        self.country_label.disabled = False
+        self.country_input.opacity = 1
+        self.country_input.disabled = False
+
+        # Load countries
+        self.load_countries()
+
+    def hide_country_selection(self):
+        """Hide the country selection field"""
+        self.country_label.opacity = 0
+        self.country_label.disabled = True
+        self.country_input.opacity = 0
+        self.country_input.disabled = True
+        self.country_input.text = 'Select Country'
+
+    def load_countries(self):
+        """Load countries for the country dropdown"""
+        try:
+            if self.api_manager and self.api_manager.maincode:
+                response = self.api_manager.maincode.get_countries()
+                if response.success:
+                    countries = response.data
+                    country_options = ['Select Country'] + [country['display'] for country in countries]
+                    self.country_input.values = country_options
+                    self.status_label.text = f'Loaded {len(countries)} countries'
+                else:
+                    self.status_label.text = f'Error loading countries: {response.message}'
+            else:
+                self.status_label.text = 'API not available'
+        except Exception as e:
+            Logger.error(f"Error loading countries: {str(e)}")
+            self.status_label.text = f'Error loading countries: {str(e)}'
+
+    def on_country_change(self, spinner, text):
+        """Handle country selection change for cities"""
+        # Clear the code field when country changes
+        self.code_input.text = ''
+
+        if text != 'Select Country':
+            # Extract country code from display format (e.g., '001 - Iraq')
+            country_code = text.split(' - ')[0]
+            self.status_label.text = f'Selected country: {text}'
+
+    def generate_auto_code(self, button):
+        """Generate next available code for selected record type"""
+        if self.record_type_input.text == 'Select Type':
+            self.status_label.text = 'Please select a record type first'
+            return
+
+        try:
+            # Extract the record type code (e.g., '01' from '01 - Countries')
+            record_type = self.record_type_input.text.split(' - ')[0]
+
+            # For cities (record type '02'), we need country selection
+            country_code = None
+            if record_type == '02':  # Cities
+                if self.country_input.text == 'Select Country':
+                    self.status_label.text = 'Please select a country first for city code generation'
+                    return
+                # Extract country code from display format (e.g., '001' from '001 - Iraq')
+                country_code = self.country_input.text.split(' - ')[0]
+
+            if self.api_manager and self.api_manager.maincode:
+                response = self.api_manager.maincode.get_next_available_code(record_type, country_code)
+                if response.success:
+                    self.code_input.text = response.data['code']
+                    self.status_label.text = f'Generated code: {response.data["code"]}'
+                else:
+                    self.status_label.text = f'Error generating code: {response.message}'
+            else:
+                self.status_label.text = 'API not available'
+        except Exception as e:
+            Logger.error(f"Error generating auto code: {str(e)}")
+            self.status_label.text = f'Error generating code: {str(e)}'
