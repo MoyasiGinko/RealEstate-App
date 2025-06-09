@@ -243,7 +243,9 @@ class MainCodeCRUDScreen(BoxLayout):
 
         self.code_input.text = getattr(maincode, 'code', '')
         self.name_input.text = getattr(maincode, 'name', '')
-        self.description_input.text = getattr(maincode, 'description', '') or ''        # Enable update/delete buttons
+        self.description_input.text = getattr(maincode, 'description', '') or ''
+
+        # Enable update/delete buttons
         self.update_btn.disabled = False
         self.delete_btn.disabled = False
 
@@ -283,15 +285,22 @@ class MainCodeCRUDScreen(BoxLayout):
             if not self.validate_form():
                 return
 
-            # Update the selected maincode object
-            self.selected_maincode.record_type = self.record_type_input.text
-            self.selected_maincode.code = self.code_input.text
-            self.selected_maincode.name = self.name_input.text
-            self.selected_maincode.description = self.description_input.text or None
+            # Create dictionary with updated data for API call
+            update_data = {
+                'record_type': self.record_type_input.text,
+                'code': self.code_input.text,
+                'name': self.name_input.text,
+                'description': self.description_input.text or None
+            }
+
+            # Get original code and record type for the update operation
+            original_code = getattr(self.selected_maincode, 'code', '')
+            original_record_type = getattr(self.selected_maincode, 'record_type', '')
 
             response = self.api_manager.maincode.update_main_code(
-                getattr(self.selected_maincode, 'code', ''),
-                self.selected_maincode
+                original_code,
+                update_data,
+                original_record_type
             )
 
             if response.success:
