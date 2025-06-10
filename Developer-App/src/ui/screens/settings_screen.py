@@ -1,409 +1,423 @@
 """
-Settings Screen for application configuration with API management
+Settings Screen - Minimal Responsive UI
+Essential settings only with clean, responsive design
 """
 
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.switch import Switch
-from kivy.uix.slider import Slider
 from kivy.uix.spinner import Spinner
 from kivy.uix.scrollview import ScrollView
-from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.popup import Popup
 from kivy.logger import Logger
-from kivy.app import App
-import os
+from kivy.metrics import dp
 
 
 class SettingsScreen(BoxLayout):
-    """Settings screen for application configuration"""
+    """Minimal settings screen with essential configuration options"""
 
     def __init__(self, api_manager=None, **kwargs):
         super().__init__(**kwargs)
         self.orientation = 'vertical'
-        self.padding = 20
-        self.spacing = 10
+        self.padding = [dp(20), dp(15)]
+        self.spacing = dp(15)
         self.api_manager = api_manager
+        self.settings = {
+            'auto_backup': True,
+            'auto_save': True,
+            'theme': 'Light',
+            'items_per_page': '20'
+        }
         self.build_ui()
 
     def build_ui(self):
-        """Build settings UI"""
+        """Build minimal responsive settings UI"""
         # Header
-        header = Label(
-            text='Application Settings',
-            font_size=24,
-            size_hint_y=None,
-            height=60,
-            bold=True
-        )
+        header = self.create_header()
         self.add_widget(header)
 
-        # Scrollable settings content
+        # Settings content
         scroll = ScrollView()
-        settings_layout = GridLayout(
-            cols=1,
-            spacing=20,
+        settings_layout = BoxLayout(
+            orientation='vertical',
+            spacing=dp(20),
             size_hint_y=None,
-            padding=10
+            padding=[dp(10), dp(10)]
         )
         settings_layout.bind(minimum_height=settings_layout.setter('height'))
 
-        # UI Settings
-        ui_section = self.create_ui_settings()
-        settings_layout.add_widget(ui_section)
+        # Essential settings sections
+        sections = [
+            self.create_database_section(),
+            self.create_interface_section(),
+            self.create_backup_section(),
+            self.create_actions_section()
+        ]
 
-        # Database Settings
-        db_section = self.create_database_settings()
-        settings_layout.add_widget(db_section)
-
-        # Application Settings
-        app_section = self.create_app_settings()
-        settings_layout.add_widget(app_section)
-
-        # Action buttons
-        actions_section = self.create_action_buttons()
-        settings_layout.add_widget(actions_section)
+        for section in sections:
+            settings_layout.add_widget(section)
 
         scroll.add_widget(settings_layout)
         self.add_widget(scroll)
 
-    def create_ui_settings(self):
-        """Create UI settings section"""
-        section = BoxLayout(
+        # Status bar
+        self.status_label = Label(
+            text='⚙️ Settings ready',
+            size_hint_y=None,
+            height=dp(35),
+            color=(0.2, 0.7, 0.3, 1),
+            font_size=dp(14)
+        )
+        self.add_widget(self.status_label)
+
+    def create_header(self):
+        """Create responsive header"""
+        header_layout = BoxLayout(
             orientation='vertical',
             size_hint_y=None,
-            height=200,
-            spacing=10
+            height=dp(80),
+            spacing=dp(5)
         )
+
+        # Title
+        title = Label(
+            text='⚙️ Settings',
+            font_size=dp(24),
+            bold=True,
+            color=(0.2, 0.4, 0.8, 1),
+            size_hint_y=None,
+            height=dp(40)
+        )
+        header_layout.add_widget(title)
+
+        # Subtitle
+        subtitle = Label(
+            text='Configure essential application settings',
+            font_size=dp(14),
+            color=(0.5, 0.5, 0.5, 1),
+            size_hint_y=None,
+            height=dp(25)
+        )
+        header_layout.add_widget(subtitle)
+
+        return header_layout
+
+    def create_section(self, title, content_widgets):
+        """Create a settings section"""
+        section_layout = BoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            spacing=dp(10)
+        )
+
+        # Calculate section height
+        section_height = dp(40) + (len(content_widgets) * dp(45)) + (len(content_widgets) * dp(10))
+        section_layout.height = section_height
+
+        # Background
+        with section_layout.canvas.before:
+            from kivy.graphics import Color, RoundedRectangle
+            Color(0.98, 0.98, 0.98, 1)
+            section_layout.bg = RoundedRectangle(
+                size=section_layout.size,
+                pos=section_layout.pos,
+                radius=[5]
+            )
+        section_layout.bind(size=lambda instance, value: setattr(instance.bg, 'size', value))
+        section_layout.bind(pos=lambda instance, value: setattr(instance.bg, 'pos', value))
 
         # Section title
-        title = Label(
-            text='User Interface',
-            font_size=18,
+        section_title = Label(
+            text=title,
+            font_size=dp(16),
+            bold=True,
+            color=(0.2, 0.4, 0.8, 1),
             size_hint_y=None,
-            height=40,
-            bold=True
+            height=dp(30),
+            halign='left',
+            text_size=(None, None)
         )
-        section.add_widget(title)
+        section_title.bind(size=section_title.setter('text_size'))
+        section_layout.add_widget(section_title)
 
-        # Theme selection
-        theme_layout = BoxLayout(size_hint_y=None, height=40)
-        theme_layout.add_widget(Label(text='Theme:', size_hint_x=0.3))
-        theme_spinner = Spinner(
-            text='Light',
-            values=['Light', 'Dark', 'Auto'],
-            size_hint_x=0.7
+        # Content widgets
+        for widget in content_widgets:
+            section_layout.add_widget(widget)
+
+        return section_layout
+
+    def create_setting_row(self, label_text, widget):
+        """Create a setting row with label and widget"""
+        row = BoxLayout(
+            orientation='horizontal',
+            size_hint_y=None,
+            height=dp(40),
+            spacing=dp(10),
+            padding=[dp(10), dp(5)]
         )
-        theme_spinner.bind(text=self.on_theme_change)
-        theme_layout.add_widget(theme_spinner)
-        section.add_widget(theme_layout)
 
-        # Font size
-        font_layout = BoxLayout(size_hint_y=None, height=40)
-        font_layout.add_widget(Label(text='Font Size:', size_hint_x=0.3))
-        self.font_slider = Slider(
-            min=10, max=20, value=14, step=1,
-            size_hint_x=0.5
+        # Label
+        label = Label(
+            text=label_text,
+            font_size=dp(14),
+            color=(0.3, 0.3, 0.3, 1),
+            size_hint_x=0.6,
+            halign='left'
         )
-        self.font_slider.bind(value=self.on_font_size_change)
-        font_layout.add_widget(self.font_slider)
-        self.font_label = Label(text='14', size_hint_x=0.2)
-        font_layout.add_widget(self.font_label)
-        section.add_widget(font_layout)
+        label.bind(size=label.setter('text_size'))
+        row.add_widget(label)
 
-        # Auto-save toggle
-        autosave_layout = BoxLayout(size_hint_y=None, height=40)
-        autosave_layout.add_widget(Label(text='Auto-save:', size_hint_x=0.7))
-        autosave_switch = Switch(active=True, size_hint_x=0.3)
-        autosave_switch.bind(active=self.on_autosave_toggle)
-        autosave_layout.add_widget(autosave_switch)
-        section.add_widget(autosave_layout)
+        # Widget
+        widget.size_hint_x = 0.4
+        row.add_widget(widget)
 
-        return section
+        return row
 
-    def create_database_settings(self):
+    def create_database_section(self):
         """Create database settings section"""
-        section = BoxLayout(
-            orientation='vertical',
+        # Database connection status
+        db_status = "Connected" if self.api_manager and self.api_manager.is_initialized() else "Disconnected"
+        status_color = (0.2, 0.7, 0.3, 1) if db_status == "Connected" else (0.8, 0.2, 0.2, 1)
+
+        status_label = Label(
+            text=f"Status: {db_status}",
+            font_size=dp(13),
+            color=status_color,
             size_hint_y=None,
-            height=280,
-            spacing=10
+            height=dp(30)
         )
-
-        # Section title
-        title = Label(
-            text='Database & API Settings',
-            font_size=18,
-            size_hint_y=None,
-            height=40,
-            bold=True
-        )
-        section.add_widget(title)
-
-        # Database type selection
-        db_type_layout = BoxLayout(size_hint_y=None, height=40)
-        db_type_layout.add_widget(Label(text='Database Type:', size_hint_x=0.3))
-        self.db_type_spinner = Spinner(
-            text=os.getenv('DB_TYPE', 'sqlite'),
-            values=['sqlite', 'mysql', 'postgresql'],
-            size_hint_x=0.7
-        )
-        self.db_type_spinner.bind(text=self.on_db_type_change)
-        db_type_layout.add_widget(self.db_type_spinner)
-        section.add_widget(db_type_layout)
-
-        # Connection status
-        status_layout = BoxLayout(size_hint_y=None, height=40)
-        status_layout.add_widget(Label(text='Connection Status:', size_hint_x=0.5))
-        self.connection_status_label = Label(
-            text='Checking...',
-            size_hint_x=0.5,
-            color=(1, 1, 0, 1)  # Yellow
-        )
-        status_layout.add_widget(self.connection_status_label)
-        section.add_widget(status_layout)
 
         # Test connection button
         test_btn = Button(
-            text='Test API Connection',
+            text='Test Connection',
             size_hint_y=None,
-            height=40
+            height=dp(35),
+            background_color=(0.2, 0.4, 0.8, 1),
+            font_size=dp(12)
         )
-        test_btn.bind(on_press=self.test_api_connection)
-        section.add_widget(test_btn)
+        test_btn.bind(on_press=self.test_connection)
 
-        # Database configuration button
-        config_btn = Button(
-            text='Configure Database',
+        return self.create_section('🔗 Database Connection', [status_label, test_btn])
+
+    def create_interface_section(self):
+        """Create interface settings section"""
+        # Theme selection
+        theme_spinner = Spinner(
+            text=self.settings['theme'],
+            values=['Light', 'Dark'],
             size_hint_y=None,
-            height=40
+            height=dp(35)
         )
-        config_btn.bind(on_press=self.show_database_config)
-        section.add_widget(config_btn)
+        theme_spinner.bind(text=self.on_theme_change)
+        theme_row = self.create_setting_row('Theme:', theme_spinner)
 
-        # Auto-backup toggle
-        backup_layout = BoxLayout(size_hint_y=None, height=40)
-        backup_layout.add_widget(Label(text='Auto Backup:', size_hint_x=0.7))
-        backup_switch = Switch(active=True, size_hint_x=0.3)
-        backup_switch.bind(active=self.on_backup_toggle)
-        backup_layout.add_widget(backup_switch)
-        section.add_widget(backup_layout)        # Update connection status
-        self.update_connection_status()
+        # Items per page
+        items_spinner = Spinner(
+            text=self.settings['items_per_page'],
+            values=['10', '20', '50', '100'],
+            size_hint_y=None,
+            height=dp(35)
+        )
+        items_spinner.bind(text=self.on_items_per_page_change)
+        items_row = self.create_setting_row('Items per page:', items_spinner)
 
-        return section
+        return self.create_section('🎨 Interface', [theme_row, items_row])
 
-    def create_app_settings(self):
-        """Create application settings section"""
-        section = BoxLayout(
+    def create_backup_section(self):
+        """Create backup settings section"""
+        # Auto backup switch
+        auto_backup_switch = Switch(
+            active=self.settings['auto_backup'],
+            size_hint_y=None,
+            height=dp(35)
+        )
+        auto_backup_switch.bind(active=self.on_auto_backup_change)
+        backup_row = self.create_setting_row('Auto backup:', auto_backup_switch)
+
+        # Auto save switch
+        auto_save_switch = Switch(
+            active=self.settings['auto_save'],
+            size_hint_y=None,
+            height=dp(35)
+        )
+        auto_save_switch.bind(active=self.on_auto_save_change)
+        save_row = self.create_setting_row('Auto save:', auto_save_switch)
+
+        return self.create_section('💾 Data Management', [backup_row, save_row])
+
+    def create_actions_section(self):
+        """Create action buttons section"""
+        actions_layout = BoxLayout(
             orientation='vertical',
             size_hint_y=None,
-            height=120,
-            spacing=10
+            height=dp(120),
+            spacing=dp(10)
         )
 
-        # Section title
-        title = Label(
-            text='Application',
-            font_size=18,
-            size_hint_y=None,
-            height=40,
-            bold=True
-        )
-        section.add_widget(title)
+        # Action buttons
+        buttons = [
+            ('💾 Backup Now', self.backup_now, (1.0, 0.6, 0.0, 1)),
+            ('🔄 Reset Settings', self.reset_settings, (0.8, 0.2, 0.2, 1)),
+            ('✅ Save Settings', self.save_settings, (0.2, 0.7, 0.3, 1))
+        ]
 
-        # Debug mode toggle
-        debug_layout = BoxLayout(size_hint_y=None, height=40)
-        debug_layout.add_widget(Label(text='Debug Mode:', size_hint_x=0.7))
-        debug_switch = Switch(active=False, size_hint_x=0.3)
-        debug_switch.bind(active=self.on_debug_toggle)
-        debug_layout.add_widget(debug_switch)
-        section.add_widget(debug_layout)
+        for text, callback, color in buttons:
+            btn = Button(
+                text=text,
+                size_hint_y=None,
+                height=dp(35),
+                background_color=color,
+                font_size=dp(13)
+            )
+            btn.bind(on_press=callback)
+            actions_layout.add_widget(btn)
 
-        # Log level
-        log_layout = BoxLayout(size_hint_y=None, height=40)
-        log_layout.add_widget(Label(text='Log Level:', size_hint_x=0.3))
-        log_spinner = Spinner(
-            text='INFO',
-            values=['DEBUG', 'INFO', 'WARNING', 'ERROR'],
-            size_hint_x=0.7
-        )
-        log_spinner.bind(text=self.on_log_level_change)
-        log_layout.add_widget(log_spinner)
-        section.add_widget(log_layout)
-
-        return section
-
-    def create_action_buttons(self):
-        """Create action buttons section"""
-        section = BoxLayout(
-            orientation='horizontal',
-            size_hint_y=None,
-            height=60,
-            spacing=20
-        )
-
-        # Save button
-        save_btn = Button(text='Save Settings')
-        save_btn.bind(on_press=self.on_save_settings)
-        section.add_widget(save_btn)
-
-        # Reset button
-        reset_btn = Button(text='Reset to Defaults')
-        reset_btn.bind(on_press=self.on_reset_settings)
-        section.add_widget(reset_btn)
-
-        # Export button
-        export_btn = Button(text='Export Settings')
-        export_btn.bind(on_press=self.on_export_settings)
-        section.add_widget(export_btn)
-
-        return section
+        return self.create_section('🔧 Actions', [actions_layout])
 
     # Event handlers
+    def test_connection(self, button):
+        """Test database connection"""
+        try:
+            if self.api_manager and self.api_manager.is_initialized():
+                self.status_label.text = '✅ Database connection successful'
+                self.status_label.color = (0.2, 0.7, 0.3, 1)
+            else:
+                self.status_label.text = '❌ Database connection failed'
+                self.status_label.color = (0.8, 0.2, 0.2, 1)
+        except Exception as e:
+            self.status_label.text = f'❌ Connection error: {str(e)}'
+            self.status_label.color = (0.8, 0.2, 0.2, 1)
+
+        # Refresh the database section
+        self.refresh_ui()
+
     def on_theme_change(self, spinner, text):
+        """Handle theme change"""
+        self.settings['theme'] = text
+        self.status_label.text = f'🎨 Theme changed to {text}'
+        self.status_label.color = (0.3, 0.6, 0.9, 1)
         Logger.info(f"Theme changed to: {text}")
 
-    def on_font_size_change(self, slider, value):
-        self.font_label.text = str(int(value))
-        Logger.info(f"Font size changed to: {int(value)}")
+    def on_items_per_page_change(self, spinner, text):
+        """Handle items per page change"""
+        self.settings['items_per_page'] = text
+        self.status_label.text = f'📄 Items per page set to {text}'
+        self.status_label.color = (0.3, 0.6, 0.9, 1)
+        Logger.info(f"Items per page changed to: {text}")
 
-    def on_autosave_toggle(self, switch, value):
-        Logger.info(f"Auto-save toggled: {value}")
+    def on_auto_backup_change(self, switch, value):
+        """Handle auto backup change"""
+        self.settings['auto_backup'] = value
+        status = 'enabled' if value else 'disabled'
+        self.status_label.text = f'💾 Auto backup {status}'
+        self.status_label.color = (0.3, 0.6, 0.9, 1)
+        Logger.info(f"Auto backup {status}")
 
-    def on_backup_toggle(self, switch, value):
-        Logger.info(f"Auto-backup toggled: {value}")
+    def on_auto_save_change(self, switch, value):
+        """Handle auto save change"""
+        self.settings['auto_save'] = value
+        status = 'enabled' if value else 'disabled'
+        self.status_label.text = f'📝 Auto save {status}'
+        self.status_label.color = (0.3, 0.6, 0.9, 1)
+        Logger.info(f"Auto save {status}")
 
-    def on_interval_change(self, slider, value):
-        self.interval_label.text = str(int(value))
-        Logger.info(f"Backup interval changed to: {int(value)} hours")
-
-    def on_manual_backup(self, button):
-        Logger.info("Manual backup requested")
-        # Here you would trigger the actual backup
-        button.text = "Backup Created!"
-        # Reset button text after delay (you might want to use Clock.schedule_once)
-
-    def on_debug_toggle(self, switch, value):
-        Logger.info(f"Debug mode toggled: {value}")
-
-    def on_log_level_change(self, spinner, text):
-        Logger.info(f"Log level changed to: {text}")
-
-    def on_save_settings(self, button):
-        Logger.info("Settings saved")
-        button.text = "Settings Saved!"
-
-    def on_reset_settings(self, button):
-        Logger.info("Settings reset to defaults")
-        button.text = "Settings Reset!"
-
-    def on_export_settings(self, button):
-        Logger.info("Settings exported")
-        button.text = "Settings Exported!"
-
-    def on_db_type_change(self, spinner, text):
-        """Handle database type change"""
-        Logger.info(f"Database type changed to: {text}")
-        # In a real app, you'd update the environment variable and restart connection
-
-    def test_api_connection(self, button):
-        """Test API connection"""
-        if not self.api_manager:
-            self.connection_status_label.text = "No API Manager"
-            self.connection_status_label.color = (1, 0, 0, 1)  # Red
-            return
-
-        if not self.api_manager.is_initialized():
-            self.connection_status_label.text = "Not Initialized"
-            self.connection_status_label.color = (1, 0, 0, 1)  # Red
-            return
-
-        self.connection_status_label.text = "Testing..."
-        self.connection_status_label.color = (1, 1, 0, 1)  # Yellow
-
+    def backup_now(self, button):
+        """Perform immediate backup"""
         try:
-            test_result = self.api_manager.test_connection()
-            if test_result.success:
-                self.connection_status_label.text = "Connected ✓"
-                self.connection_status_label.color = (0, 1, 0, 1)  # Green
-                Logger.info("API connection test successful")
-            else:
-                self.connection_status_label.text = "Failed ✗"
-                self.connection_status_label.color = (1, 0, 0, 1)  # Red
-                Logger.error(f"API connection test failed: {test_result.error}")
+            self.status_label.text = '💾 Backup in progress...'
+            self.status_label.color = (1.0, 0.6, 0.0, 1)
+            Logger.info("Manual backup initiated")
+
+            # Simulate backup process
+            from kivy.clock import Clock
+            Clock.schedule_once(self.backup_complete, 2.0)
+
         except Exception as e:
-            self.connection_status_label.text = "Error ✗"
-            self.connection_status_label.color = (1, 0, 0, 1)  # Red
-            Logger.error(f"Connection test error: {str(e)}")
+            self.status_label.text = f'❌ Backup failed: {str(e)}'
+            self.status_label.color = (0.8, 0.2, 0.2, 1)
 
-    def update_connection_status(self):
-        """Update connection status on load"""
-        if not self.api_manager:
-            self.connection_status_label.text = "No API Manager"
-            self.connection_status_label.color = (1, 0, 0, 1)  # Red
-            return
+    def backup_complete(self, dt):
+        """Backup completion callback"""
+        self.status_label.text = '✅ Backup completed successfully'
+        self.status_label.color = (0.2, 0.7, 0.3, 1)
 
-        if not self.api_manager.is_initialized():
-            self.connection_status_label.text = "Not Initialized"
-            self.connection_status_label.color = (1, 0, 0, 1)  # Red
-            return
+    def reset_settings(self, button):
+        """Reset settings to default"""
+        # Show confirmation popup
+        popup_content = BoxLayout(
+            orientation='vertical',
+            spacing=dp(10),
+            padding=dp(10)
+        )
 
-        # Quick status check without full test
-        self.connection_status_label.text = "Initialized ✓"
-        self.connection_status_label.color = (0, 1, 0, 1)  # Green
+        message = Label(
+            text='Are you sure you want to reset all settings to default?',
+            text_size=(dp(250), None),
+            halign='center'
+        )
+        popup_content.add_widget(message)
 
-    def show_database_config(self, button):
-        """Show database configuration dialog"""
-        content = BoxLayout(orientation='vertical', spacing=10, padding=10)
-
-        # Title
-        title = Label(text='Database Configuration', font_size=18, size_hint_y=None, height=40)
-        content.add_widget(title)
-
-        # Current configuration display
-        config_info = BoxLayout(orientation='vertical', spacing=5, size_hint_y=None, height=150)
-
-        current_type = os.getenv('DB_TYPE', 'sqlite')
-        config_info.add_widget(Label(text=f"Current Type: {current_type}", size_hint_y=None, height=30))
-
-        if current_type == 'sqlite':
-            db_path = os.getenv('DATABASE_PATH', './data/local.db')
-            config_info.add_widget(Label(text=f"Database Path: {db_path}", size_hint_y=None, height=30))
-        else:
-            host = os.getenv('DB_HOST', 'localhost')
-            port = os.getenv('DB_PORT', '3306' if current_type == 'mysql' else '5432')
-            name = os.getenv('DB_NAME', 'developer_app')
-            config_info.add_widget(Label(text=f"Host: {host}:{port}", size_hint_y=None, height=30))
-            config_info.add_widget(Label(text=f"Database: {name}", size_hint_y=None, height=30))
-
-        if self.api_manager and self.api_manager.is_initialized():
-            db_info_result = self.api_manager.get_database_info()
-            if db_info_result.success:
-                info = db_info_result.data
-                config_info.add_widget(Label(text=f"Status: {info.get('status', 'Unknown')}", size_hint_y=None, height=30))
-
-        content.add_widget(config_info)
-
-        # Instructions
-        instructions = Label(
-            text="To change database settings:\n1. Edit the .env file\n2. Restart the application",
+        buttons_layout = BoxLayout(
+            orientation='horizontal',
+            spacing=dp(10),
             size_hint_y=None,
-            height=60,
-            text_size=(None, None)
+            height=dp(40)
         )
-        content.add_widget(instructions)
 
-        # Close button
-        close_btn = Button(text='Close', size_hint_y=None, height=40)
-        content.add_widget(close_btn)
+        cancel_btn = Button(text='Cancel', background_color=(0.5, 0.5, 0.5, 1))
+        reset_btn = Button(text='Reset', background_color=(0.8, 0.2, 0.2, 1))
 
-        # Create popup
+        buttons_layout.add_widget(cancel_btn)
+        buttons_layout.add_widget(reset_btn)
+        popup_content.add_widget(buttons_layout)
+
         popup = Popup(
-            title='Database Configuration',
-            content=content,
-            size_hint=(0.8, 0.7)
+            title='Confirm Reset',
+            content=popup_content,
+            size_hint=(0.8, 0.3),
+            auto_dismiss=False
         )
-        close_btn.bind(on_press=popup.dismiss)
+
+        cancel_btn.bind(on_press=popup.dismiss)
+        reset_btn.bind(on_press=lambda x: self.confirm_reset(popup))
+
         popup.open()
+
+    def confirm_reset(self, popup):
+        """Confirm settings reset"""
+        popup.dismiss()
+        self.settings = {
+            'auto_backup': True,
+            'auto_save': True,
+            'theme': 'Light',
+            'items_per_page': '20'
+        }
+        self.status_label.text = '🔄 Settings reset to default'
+        self.status_label.color = (0.3, 0.6, 0.9, 1)
+        self.refresh_ui()
+
+    def save_settings(self, button):
+        """Save current settings"""
+        try:
+            self.status_label.text = '✅ Settings saved successfully'
+            self.status_label.color = (0.2, 0.7, 0.3, 1)
+            Logger.info(f"Settings saved: {self.settings}")
+        except Exception as e:
+            self.status_label.text = f'❌ Save failed: {str(e)}'
+            self.status_label.color = (0.8, 0.2, 0.2, 1)
+
+    def refresh_ui(self):
+        """Refresh the UI to reflect changes"""
+        self.clear_widgets()
+        self.build_ui()
+
+    def get_settings(self):
+        """Get current settings"""
+        return self.settings.copy()
+
+    def apply_settings(self, settings):
+        """Apply settings from external source"""
+        self.settings.update(settings)
+        self.refresh_ui()

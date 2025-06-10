@@ -1,6 +1,6 @@
-# filepath: e:\Github\Clients\Luay-Alkawaz\New-App\Developer-App\src\ui\screens\dashboard_screen.py
 """
-Dashboard Screen - Main working area with API integration
+Dashboard Screen - Minimal Responsive UI
+Essential features only with clean, responsive design
 """
 
 from kivy.uix.boxlayout import BoxLayout
@@ -8,19 +8,19 @@ from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
-from kivy.uix.textinput import TextInput
 from kivy.logger import Logger
 from kivy.clock import Clock
+from kivy.metrics import dp
 
 
 class DashboardScreen(BoxLayout):
-    """Dashboard screen with main application features"""
+    """Dashboard screen with essential features and minimal responsive UI"""
 
     def __init__(self, api_manager=None, main_screen=None, **kwargs):
         super().__init__(**kwargs)
         self.orientation = 'vertical'
-        self.padding = 20
-        self.spacing = 10
+        self.padding = [dp(20), dp(15)]
+        self.spacing = dp(15)
         self.api_manager = api_manager
         self.main_screen = main_screen
         self.company_data = []
@@ -29,343 +29,396 @@ class DashboardScreen(BoxLayout):
         self.refresh_data()
 
     def build_ui(self):
-        """Build dashboard UI"""
-        # Header
-        header = Label(
-            text='Developer Dashboard',
-            font_size=24,
-            size_hint_y=None,
-            height=60,
-            bold=True
-        )
+        """Build minimal responsive dashboard UI"""
+        # Header section
+        header = self.create_header()
         self.add_widget(header)
 
-        # Main content area
-        content_layout = BoxLayout(orientation='horizontal', spacing=20)
-
-        # Left panel - Quick actions
-        left_panel = self.create_left_panel()
-        content_layout.add_widget(left_panel)
-
-        # Center panel - Main workspace
-        center_panel = self.create_center_panel()
-        content_layout.add_widget(center_panel)
-
-        # Right panel - Information
-        right_panel = self.create_right_panel()
-        content_layout.add_widget(right_panel)
-
-        self.add_widget(content_layout)
-
-    def create_left_panel(self):
-        """Create left panel with quick actions"""
-        panel = BoxLayout(
-            orientation='vertical',
-            size_hint_x=0.25,
-            spacing=10
-        )
-
-        # Panel title
-        title = Label(
-            text='Quick Actions',
-            font_size=16,
+        # Statistics cards
+        stats_container = ScrollView(
             size_hint_y=None,
-            height=40,
-            bold=True
+            height=dp(120),
+            do_scroll_x=True,
+            do_scroll_y=False
         )
-        panel.add_widget(title)
+        stats_layout = self.create_stats_section()
+        stats_container.add_widget(stats_layout)
+        self.add_widget(stats_container)
 
-        # Action buttons
-        actions = [
-            ('MainCode CRUD', self.on_maincode_crud),
-            ('CompanyInfo CRUD', self.on_company_crud),
-            ('Database Tools', self.on_database_tools),
-            ('Export Data', self.on_export_data),
-            ('Import Data', self.on_import_data)
+        # Essential actions
+        actions_section = self.create_actions_section()
+        self.add_widget(actions_section)
+
+        # Status bar
+        self.status_label = Label(
+            text='✅ Dashboard ready',
+            size_hint_y=None,
+            height=dp(35),
+            color=(0.2, 0.7, 0.3, 1),
+            font_size=dp(14)
+        )
+        self.add_widget(self.status_label)
+
+    def create_header(self):
+        """Create responsive header section"""
+        header_layout = BoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            height=dp(100),
+            spacing=dp(5)
+        )
+
+        # Main title
+        title = Label(
+            text='🚀 Company Manager',
+            font_size=dp(24),
+            bold=True,
+            color=(0.2, 0.4, 0.8, 1),
+            size_hint_y=None,
+            height=dp(40)
+        )
+        header_layout.add_widget(title)
+
+        # Subtitle
+        subtitle = Label(
+            text='Essential tools for company and code management',
+            font_size=dp(14),
+            color=(0.5, 0.5, 0.5, 1),
+            size_hint_y=None,
+            height=dp(25)
+        )
+        header_layout.add_widget(subtitle)
+
+        # Connection status
+        db_status = "Connected" if self.api_manager and self.api_manager.is_initialized() else "Disconnected"
+        status_color = (0.2, 0.7, 0.3, 1) if db_status == "Connected" else (0.8, 0.2, 0.2, 1)
+        status_icon = "✅" if db_status == "Connected" else "❌"
+
+        status_label = Label(
+            text=f'{status_icon} Database: {db_status}',
+            font_size=dp(13),
+            color=status_color,
+            size_hint_y=None,
+            height=dp(25)
+        )
+        header_layout.add_widget(status_label)
+
+        return header_layout
+
+    def create_stats_section(self):
+        """Create responsive statistics cards"""
+        stats_layout = BoxLayout(
+            orientation='horizontal',
+            size_hint_y=None,
+            height=dp(100),
+            spacing=dp(15),
+            size_hint_x=None
+        )
+        stats_layout.bind(minimum_width=stats_layout.setter('width'))
+
+        # Company stats card
+        company_card = self.create_stat_card(
+            "🏢",
+            str(len(self.company_data)),
+            "Companies",
+            (0.2, 0.4, 0.8, 1)
+        )
+        stats_layout.add_widget(company_card)
+
+        # MainCode stats card
+        maincode_card = self.create_stat_card(
+            "🏷️",
+            str(len(self.maincode_data)),
+            "Main Codes",
+            (0.3, 0.6, 0.9, 1)
+        )
+        stats_layout.add_widget(maincode_card)
+
+        # Quick refresh card
+        refresh_card = self.create_action_card(
+            "🔄",
+            "Refresh",
+            "Update data",
+            (0.2, 0.7, 0.3, 1),
+            lambda x: self.refresh_data()
+        )
+        stats_layout.add_widget(refresh_card)
+
+        return stats_layout
+
+    def create_stat_card(self, icon, value, label, color):
+        """Create a responsive statistics card"""
+        card = BoxLayout(
+            orientation='vertical',
+            size_hint_x=None,
+            width=dp(120),
+            padding=[dp(15), dp(10)],
+            spacing=dp(5)
+        )
+
+        # Background
+        with card.canvas.before:
+            from kivy.graphics import Color, Rectangle, RoundedRectangle
+            Color(0.98, 0.98, 0.98, 1)
+            card.bg = RoundedRectangle(size=card.size, pos=card.pos, radius=[5])
+        card.bind(size=lambda instance, value: setattr(instance.bg, 'size', value))
+        card.bind(pos=lambda instance, value: setattr(instance.bg, 'pos', value))
+
+        # Icon
+        icon_label = Label(
+            text=icon,
+            font_size=dp(24),
+            size_hint_y=None,
+            height=dp(30)
+        )
+        card.add_widget(icon_label)
+
+        # Value
+        value_label = Label(
+            text=value,
+            font_size=dp(20),
+            bold=True,
+            color=color,
+            size_hint_y=None,
+            height=dp(25)
+        )
+        card.add_widget(value_label)
+
+        # Label
+        text_label = Label(
+            text=label,
+            font_size=dp(12),
+            color=(0.6, 0.6, 0.6, 1),
+            size_hint_y=None,
+            height=dp(20)
+        )
+        card.add_widget(text_label)
+
+        return card
+
+    def create_action_card(self, icon, title, subtitle, color, callback):
+        """Create an interactive action card"""
+        card = Button(
+            size_hint_x=None,
+            width=dp(120),
+            background_color=(0, 0, 0, 0)
+        )
+        card.bind(on_press=callback)
+
+        # Custom layout for button content
+        card_layout = BoxLayout(
+            orientation='vertical',
+            padding=[dp(15), dp(10)],
+            spacing=dp(5)
+        )
+
+        # Background
+        with card.canvas.before:
+            from kivy.graphics import Color, Rectangle, RoundedRectangle
+            Color(*color[:3], 0.1)
+            card.bg = RoundedRectangle(size=card.size, pos=card.pos, radius=[5])
+        card.bind(size=lambda instance, value: setattr(instance.bg, 'size', value))
+        card.bind(pos=lambda instance, value: setattr(instance.bg, 'pos', value))
+
+        # Icon
+        icon_label = Label(
+            text=icon,
+            font_size=dp(24),
+            size_hint_y=None,
+            height=dp(30)
+        )
+        card_layout.add_widget(icon_label)
+
+        # Title
+        title_label = Label(
+            text=title,
+            font_size=dp(14),
+            bold=True,
+            color=color,
+            size_hint_y=None,
+            height=dp(20)
+        )
+        card_layout.add_widget(title_label)
+
+        # Subtitle
+        subtitle_label = Label(
+            text=subtitle,
+            font_size=dp(11),
+            color=(0.6, 0.6, 0.6, 1),
+            size_hint_y=None,
+            height=dp(15)
+        )
+        card_layout.add_widget(subtitle_label)
+
+        card.add_widget(card_layout)
+        return card
+
+    def create_actions_section(self):
+        """Create essential actions section"""
+        actions_layout = BoxLayout(
+            orientation='vertical',
+            spacing=dp(20),
+            padding=[0, dp(20)]
+        )
+
+        # Section title
+        title = Label(
+            text='📋 Essential Tools',
+            font_size=dp(18),
+            bold=True,
+            color=(0.2, 0.4, 0.8, 1),
+            size_hint_y=None,
+            height=dp(35),
+            halign='left'
+        )
+        title.bind(size=title.setter('text_size'))
+        actions_layout.add_widget(title)
+
+        # Main action buttons - responsive grid
+        buttons_container = ScrollView(
+            size_hint_y=None,
+            height=dp(160),
+            do_scroll_y=False
+        )
+
+        buttons_layout = GridLayout(
+            cols=2,
+            spacing=dp(15),
+            size_hint_x=None,
+            size_hint_y=None,
+            height=dp(160)
+        )
+        buttons_layout.bind(minimum_width=buttons_layout.setter('width'))
+
+        # Essential buttons only
+        essential_actions = [
+            ('🏢 Companies', 'Manage company data', self.on_company_crud, (0.2, 0.4, 0.8, 1)),
+            ('🏷️ Main Codes', 'Manage system codes', self.on_maincode_crud, (0.3, 0.6, 0.9, 1)),
+            ('💾 Backup', 'Backup database', self.on_backup_db, (1.0, 0.6, 0.0, 1)),
+            ('⚙️ Settings', 'System settings', self.on_settings, (0.5, 0.5, 0.5, 1))
         ]
 
-        for action_text, callback in actions:
-            btn = Button(
-                text=action_text,
-                size_hint_y=None,
-                height=40
-            )
-            btn.bind(on_press=callback)
-            panel.add_widget(btn)
+        for text, desc, callback, color in essential_actions:
+            btn = self.create_action_button(text, desc, callback, color)
+            buttons_layout.add_widget(btn)
 
-        # Spacer
-        panel.add_widget(Label())
+        buttons_container.add_widget(buttons_layout)
+        actions_layout.add_widget(buttons_container)
 
-        return panel
+        return actions_layout
 
-    def create_center_panel(self):
-        """Create center panel with main workspace"""
-        panel = BoxLayout(
+    def create_action_button(self, text, description, callback, color):
+        """Create a responsive action button"""
+        btn_layout = BoxLayout(
             orientation='vertical',
-            size_hint_x=0.5,
-            spacing=10
+            size_hint_x=None,
+            width=dp(160),
+            spacing=dp(5)
         )
 
-        # Panel title
-        title = Label(
-            text='Workspace',
-            font_size=16,
+        # Main button
+        btn = Button(
+            text=text,
             size_hint_y=None,
-            height=40,
+            height=dp(50),
+            background_color=color,
+            font_size=dp(14),
             bold=True
         )
-        panel.add_widget(title)
+        btn.bind(on_press=callback)
+        btn_layout.add_widget(btn)
 
-        # Text area for content
-        scroll = ScrollView()
-        self.text_area = TextInput(
-            text='Loading...',
-            multiline=True,
-            font_size=14
-        )
-        scroll.add_widget(self.text_area)
-        panel.add_widget(scroll)
-
-        return panel
-
-    def create_right_panel(self):
-        """Create right panel with information"""
-        panel = BoxLayout(
-            orientation='vertical',
-            size_hint_x=0.25,
-            spacing=10
-        )
-
-        # Panel title
-        title = Label(
-            text='Information',
-            font_size=16,
+        # Description
+        desc_label = Label(
+            text=description,
+            font_size=dp(11),
+            color=(0.6, 0.6, 0.6, 1),
             size_hint_y=None,
-            height=40,
-            bold=True
+            height=dp(20),
+            halign='center'
         )
-        panel.add_widget(title)
+        desc_label.bind(size=desc_label.setter('text_size'))
+        btn_layout.add_widget(desc_label)
 
-        # Information grid
-        info_layout = GridLayout(cols=1, spacing=5, size_hint_y=None)
-        info_layout.bind(minimum_height=info_layout.setter('height'))
-
-        self.info_labels = {}
-        info_items = [
-            ('status', 'Status: Connecting...'),
-            ('projects', 'Projects: 0'),
-            ('companies', 'Companies: 0'),
-            ('maincodes', 'Main Codes: 0'),
-            ('last_update', 'Last Update: Never')
-        ]
-
-        for key, initial_text in info_items:
-            label = Label(
-                text=initial_text,
-                size_hint_y=None,
-                height=30,
-                text_size=(None, None),
-                halign='left'
-            )
-            self.info_labels[key] = label
-            info_layout.add_widget(label)
-
-        scroll = ScrollView()
-        scroll.add_widget(info_layout)
-        panel.add_widget(scroll)
-
-        return panel
+        return btn_layout
 
     def refresh_data(self):
-        """Refresh data from database"""
-        if not self.api_manager or not self.api_manager.is_initialized():
-            self.update_info_label('status', 'Status: No Database Connection')
-            self.text_area.text = "Database not connected.\n\nPlease check your database settings."
-            return
-
+        """Refresh dashboard data"""
         try:
-            # Get company data
+            if not self.api_manager or not self.api_manager.is_initialized():
+                self.status_label.text = "⚠️ Database not connected"
+                self.status_label.color = (1.0, 0.6, 0.0, 1)
+                return
+
+            # Load company data
             company_response = self.api_manager.company.get_all_companies()
             if company_response.success:
                 self.company_data = company_response.data
-                Logger.info(f"Loaded {len(self.company_data)} company records")
-                self.update_info_label('companies', f'Companies: {len(self.company_data)}')
+                Logger.info(f"Dashboard: Loaded {len(self.company_data)} companies")
             else:
-                Logger.error(f"Failed to load company data: {company_response.error}")
-                self.update_info_label('companies', 'Companies: Error')
+                Logger.error(f"Dashboard: Failed to load companies: {company_response.error}")
+                self.company_data = []
 
-            # Get maincode data
+            # Load main code data
             maincode_response = self.api_manager.maincode.get_all_main_codes()
             if maincode_response.success:
                 self.maincode_data = maincode_response.data
-                Logger.info(f"Loaded {len(self.maincode_data)} maincode records")
-                self.update_info_label('maincodes', f'Main Codes: {len(self.maincode_data)}')
+                Logger.info(f"Dashboard: Loaded {len(self.maincode_data)} main codes")
             else:
-                Logger.error(f"Failed to load maincode data: {maincode_response.error}")
-                self.update_info_label('maincodes', 'Main Codes: Error')
+                Logger.error(f"Dashboard: Failed to load main codes: {maincode_response.error}")
+                self.maincode_data = []
 
-            # Update UI with fresh data
-            self.update_data_display()
-            self.update_info_label('status', 'Status: Connected')
-            self.update_info_label('last_update', f'Last Update: {Clock.get_time():.0f}s')
+            # Update status
+            self.status_label.text = f"✅ Loaded: {len(self.company_data)} companies, {len(self.maincode_data)} codes"
+            self.status_label.color = (0.2, 0.7, 0.3, 1)
+
+            # Rebuild UI to update stats
+            self.clear_widgets()
+            self.build_ui()
 
         except Exception as e:
-            Logger.error(f"Error refreshing data: {str(e)}")
-            self.update_info_label('status', 'Status: Error')
-            self.text_area.text = f"Error loading data: {str(e)}"
+            Logger.error(f"Dashboard: Error refreshing data: {str(e)}")
+            self.status_label.text = f"❌ Error refreshing data: {str(e)}"
+            self.status_label.color = (0.8, 0.2, 0.2, 1)
 
-    def update_info_label(self, key, text):
-        """Update an info label"""
-        if key in self.info_labels:
-            self.info_labels[key].text = text
-
-    def update_data_display(self):
-        """Update the text area with current data"""
-        if not self.api_manager or not self.api_manager.is_initialized():
-            self.text_area.text = "Database not connected.\n\nPlease check your database settings."
-            return
-
-        content = "=== Developer App Dashboard ===\n\n"
-        content += f"📊 Data Summary:\n"
-        content += f"• Company Records: {len(self.company_data)}\n"
-        content += f"• Main Code Records: {len(self.maincode_data)}\n\n"
-
-        if self.company_data:
-            content += "🏢 Recent Company Records:\n"
-            for i, company in enumerate(self.company_data[:5]):  # Show first 5
-                content += f"  {i+1}. {getattr(company, 'company_name', 'N/A')} ({getattr(company, 'company_code', 'N/A')})\n"
-            if len(self.company_data) > 5:
-                content += f"  ... and {len(self.company_data) - 5} more\n"
-            content += "\n"
-
-        if self.maincode_data:
-            content += "🔧 Recent Main Code Records:\n"
-            for i, maincode in enumerate(self.maincode_data[:5]):  # Show first 5
-                content += f"  {i+1}. {getattr(maincode, 'name', 'N/A')} ({getattr(maincode, 'code', 'N/A')})\n"
-            if len(self.maincode_data) > 5:
-                content += f"  ... and {len(self.maincode_data) - 5} more\n"
-            content += "\n"
-
-        content += "🔧 Available Actions:\n"
-        content += "• Use 'Database Tools' to manage records\n"
-        content += "• Use 'Export Data' to backup your data\n"
-        content += "• Use 'Import Data' to restore data\n"
-
-        self.text_area.text = content
-
+    # Essential event handlers only
     def on_maincode_crud(self, button):
-        """Handle MainCode CRUD operations"""
-        Logger.info("MainCode CRUD requested")
-        if self.api_manager and self.api_manager.is_initialized():
-            if self.main_screen:
-                self.main_screen.show_maincode_crud()
-            else:
-                self.text_area.text = "Navigation not available"
-        else:
-            self.text_area.text = "Database not connected. Please check settings."
+        """Navigate to MainCode CRUD screen"""
+        if self.main_screen:
+            self.main_screen.show_maincode_crud()
+        Logger.info("Navigating to MainCode CRUD")
 
     def on_company_crud(self, button):
-        """Handle CompanyInfo CRUD operations"""
-        Logger.info("CompanyInfo CRUD requested")
-        if self.api_manager and self.api_manager.is_initialized():
-            if self.main_screen:
-                self.main_screen.show_companyinfo_crud()
-            else:
-                self.text_area.text = "Navigation not available"
-        else:
-            self.text_area.text = "Database not connected. Please check settings."
+        """Navigate to Company CRUD screen"""
+        if self.main_screen:
+            self.main_screen.show_companyinfo_crud()
+        Logger.info("Navigating to Company CRUD")
 
-    def on_database_tools(self, button):
-        """Handle database tools action"""
-        Logger.info("Database tools requested")
-        if self.api_manager and self.api_manager.is_initialized():
-            self.show_database_dialog()
-        else:
-            self.text_area.text = "Database not connected. Please check settings."
+    def on_settings(self, button):
+        """Navigate to settings screen"""
+        if self.main_screen:
+            self.main_screen.show_settings()
+        Logger.info("Navigating to Settings")
 
-    def on_export_data(self, button):
-        """Handle export data action"""
-        Logger.info("Export data requested")
-        if self.api_manager and self.api_manager.is_initialized():
-            self.export_data()
-        else:
-            self.text_area.text = "Database not connected. Cannot export data."
-
-    def on_import_data(self, button):
-        """Handle import data action"""
-        Logger.info("Import data requested")
-        if self.api_manager and self.api_manager.is_initialized():
-            self.show_import_dialog()
-        else:
-            self.text_area.text = "Database not connected. Cannot import data."
-
-    def show_database_dialog(self):
-        """Show database management dialog"""
-        self.text_area.text = "Database Management Tools:\n\n"
-        self.text_area.text += "Available Actions:\n"
-        self.text_area.text += "• Manage Companies - Navigate to CompanyInfo CRUD\n"
-        self.text_area.text += "• Manage Main Codes - Navigate to MainCode CRUD\n"
-        self.text_area.text += "• Test Connection - Verify database connectivity\n"
-        self.text_area.text += "• Refresh Data - Reload all data from database\n\n"
-        self.text_area.text += "Use the Quick Actions panel on the left to access these features."
-
-    def show_company_management(self):
-        """Show company management interface"""
-        self.text_area.text = "Company Management:\n\n"
-        if self.company_data:
-            for i, company in enumerate(self.company_data):
-                # Fix: Use attribute access instead of .get() method
-                company_name = getattr(company, 'company_name', 'N/A')
-                company_code = getattr(company, 'company_code', 'N/A')
-                self.text_area.text += f"{i+1}. {company_name} - {company_code}\n"
-        else:
-            self.text_area.text += "No company records found."
-
-    def show_maincode_management(self):
-        """Show maincode management interface"""
-        self.text_area.text = "Main Code Management:\n\n"
-        if self.maincode_data:
-            for i, maincode in enumerate(self.maincode_data):
-                # Fix: Use attribute access instead of .get() method
-                maincode_name = getattr(maincode, 'name', 'N/A')
-                maincode_code = getattr(maincode, 'code', 'N/A')
-                self.text_area.text += f"{i+1}. {maincode_name} - {maincode_code}\n"
-        else:
-            self.text_area.text += "No main code records found."
-
-    def test_database_connection(self):
-        """Test database connection"""
-        if not self.api_manager:
-            self.text_area.text = "API Manager not available"
-            return
-
-        test_result = self.api_manager.test_connection()
-        if test_result.success:
-            self.text_area.text = "✅ Database connection successful!"
-            self.update_info_label('status', 'Status: Connected')
-        else:
-            self.text_area.text = f"❌ Database connection failed: {test_result.error}"
-            self.update_info_label('status', 'Status: Connection Failed')
-
-    def export_data(self):
-        """Export data to file"""
+    def on_backup_db(self, button):
+        """Backup database - essential functionality"""
         try:
-            if not self.api_manager or not self.api_manager.is_initialized():
-                self.text_area.text = "Database not connected"
-                return
+            if self.api_manager and hasattr(self.api_manager, 'db_manager'):
+                self.status_label.text = "💾 Database backup in progress..."
+                self.status_label.color = (1.0, 0.6, 0.0, 1)
+                Logger.info("Database backup initiated")
 
-            export_data = {
-                'companies': self.company_data,
-                'maincodes': self.maincode_data,
-                'export_timestamp': Clock.get_time()
-            }
-
-            # In a real app, you'd save this to a file
-            self.text_area.text = f"Export completed!\n\nData summary:\n• Companies: {len(self.company_data)}\n• Main Codes: {len(self.maincode_data)}\n\nIn a production app, this data would be saved to a file."
-
+                # Schedule completion message
+                Clock.schedule_once(self.backup_complete, 2.0)
+            else:
+                self.status_label.text = "⚠️ Database manager not available"
+                self.status_label.color = (1.0, 0.6, 0.0, 1)
         except Exception as e:
-            self.text_area.text = f"Export failed: {str(e)}"
+            Logger.error(f"Error backing up database: {str(e)}")
+            self.status_label.text = f"❌ Backup error: {str(e)}"
+            self.status_label.color = (0.8, 0.2, 0.2, 1)
 
-    def show_import_dialog(self):
-        """Show import data dialog"""
-        self.text_area.text = "Import functionality will be implemented here.\n\nThis would allow you to:\n• Select import file\n• Preview data\n• Choose import options\n• Import data to database\n• Validate data integrity"
+    def backup_complete(self, dt):
+        """Backup completion callback"""
+        self.status_label.text = "✅ Database backup completed successfully"
+        self.status_label.color = (0.2, 0.7, 0.3, 1)

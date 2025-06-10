@@ -121,6 +121,11 @@ class MainScreen(BoxLayout):
         if hasattr(self.companyinfo_crud_widget, 'refresh_data'):
             self.companyinfo_crud_widget.refresh_data()
 
+    def show_settings(self):
+        """Show settings screen"""
+        self.screen_manager.current = 'settings'
+        Logger.info("Navigating to Settings screen")
+
     def exit_app(self):
         """Exit the application"""
         from kivy.app import App
