@@ -14,7 +14,7 @@ from src.screens.dashboard import DashboardScreen
 from src.screens.owner_management import OwnerManagementScreen
 from src.screens.property_management import PropertyManagementScreen
 from src.screens.search_report import SearchReportScreen
-from src.screens.settings import SettingsScreen
+from screens.about_gui import SettingsScreen
 
 # Load the main kivy file using absolute path
 _current_dir = os.path.dirname(os.path.abspath(__file__))

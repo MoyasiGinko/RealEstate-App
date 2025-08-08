@@ -4,7 +4,7 @@ from .dashboard import DashboardScreen
 from .owner_management import OwnerManagementScreen
 from .property_management import PropertyManagementScreen
 from .search_report import SearchReportScreen
-from .settings import SettingsScreen
+from .about_gui import SettingsScreen
 
 __all__ = [
     "DashboardScreen",
