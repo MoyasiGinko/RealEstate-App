@@ -14,13 +14,10 @@ from src.screens.dashboard import DashboardScreen
 from src.screens.owner_management import OwnerManagementScreen
 from src.screens.property_management import PropertyManagementScreen
 from src.screens.search_report import SearchReportScreen
-from screens.about_gui import SettingsScreen
+from screens.about_gui import AboutScreen
+from screens.main_gui import MainScreen
 
-# Load the main kivy file using absolute path
-_current_dir = os.path.dirname(os.path.abspath(__file__))
-_project_root = os.path.dirname(_current_dir)
-_main_kv_path = os.path.join(_project_root, 'assets', 'kv', 'main.kv')
-Builder.load_file(_main_kv_path)
+
 
 # Set window size for desktop application
 Window.size = (1024, 768)
@@ -43,14 +40,16 @@ class MainApp(App):
         self.sm = ScreenManager(transition=FadeTransition())
 
         # Add all screens to the manager
-        self.sm.add_widget(DashboardScreen(name='dashboard'))
+
+        self.sm.add_widget(MainScreen(name='main_gui'))
+        # self.sm.add_widget(DashboardScreen(name='dashboard'))
         self.sm.add_widget(OwnerManagementScreen(name='owner_management'))
         self.sm.add_widget(PropertyManagementScreen(name='property_management'))
         self.sm.add_widget(SearchReportScreen(name='search_report'))
-        self.sm.add_widget(SettingsScreen(name='settings'))
+        self.sm.add_widget(AboutScreen(name='about'))
 
         # Set the default screen
-        self.sm.current = 'dashboard'
+        self.sm.current = 'main_gui'
 
         return self.sm
 
