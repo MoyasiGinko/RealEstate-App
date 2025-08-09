@@ -17,6 +17,7 @@ from screens.about_gui import AboutScreen
 from screens.main_gui import MainScreen
 from screens.upload_gui import UploadScreen
 from screens.insert_gui import InsertScreen
+from screens.update_gui import UpdateGUIScreen
 
 
 
@@ -49,6 +50,7 @@ class MainApp(App):
         self.sm.add_widget(AboutScreen(name='about_gui'))
         self.sm.add_widget(UploadScreen(name='upload_gui'))
         self.sm.add_widget(InsertScreen(name='insert_gui'))
+        self.sm.add_widget(UpdateGUIScreen(name='update_gui'))
 
         # Set the default screen
         self.sm.current = 'main_gui'
