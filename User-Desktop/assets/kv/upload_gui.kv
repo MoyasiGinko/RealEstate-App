@@ -1,0 +1,30 @@
+<UploadScreen@Screen>:
+  name: "upload"
+  BoxLayout:
+    orientation: "vertical"
+    padding: 40
+    spacing: 20
+
+    Label:
+      text: "Upload File"
+      font_size: 32
+      size_hint_y: None
+      height: self.texture_size[1] + 20
+
+    FileChooserIconView:
+      id: filechooser
+      size_hint_y: 0.7
+
+    BoxLayout:
+      orientation: "horizontal"
+      size_hint_y: None
+      height: 50
+      spacing: 10
+
+      Button:
+        text: "Cancel"
+        on_release: app.root.current = "main"
+
+      Button:
+        text: "Upload"
+        on_release: app.upload_file(filechooser.path, filechooser.selection)

@@ -34,7 +34,7 @@
                 width: '100dp'
                 background_color: 0.2, 0.2, 0.8, 1  # Blue button
                 color: 1, 1, 1, 1
-                on_release: app.root.current = 'about'
+                on_release: app.root.current = 'about_gui'
 
         Label:
             text: 'Welcome to the Main Screen'
@@ -69,7 +69,7 @@
 
             Button:
                 text: 'Browse Property'
-                on_release: app.root.current = 'search_report'
+                on_release: app.root.current = 'browse_gui'
                 background_color: 0.9, 0.5, 0.2, 1  # Orange button
                 color: 1, 1, 1, 1  # White text
                 font_size: '18sp'
@@ -78,7 +78,7 @@
 
             Button:
                 text: 'Upload Property'
-                on_release: app.root.current = 'about'
+                on_release: app.root.current = 'upload_gui'
                 background_color: 0.5, 0.5, 0.5, 1  # Gray button
                 color: 1, 1, 1, 1  # White text
                 font_size: '18sp'

@@ -12,9 +12,10 @@ from src.models.database_api import get_api
 # Import screens
 from src.screens.owner_management import OwnerManagementScreen
 from src.screens.property_management import PropertyManagementScreen
-from src.screens.search_report import SearchReportScreen
+from screens.browse_gui import SearchReportScreen
 from screens.about_gui import AboutScreen
 from screens.main_gui import MainScreen
+from screens.upload_gui import UploadScreen
 
 
 
@@ -43,8 +44,9 @@ class MainApp(App):
         self.sm.add_widget(MainScreen(name='main_gui'))
         self.sm.add_widget(OwnerManagementScreen(name='owner_management'))
         self.sm.add_widget(PropertyManagementScreen(name='property_management'))
-        self.sm.add_widget(SearchReportScreen(name='search_report'))
-        self.sm.add_widget(AboutScreen(name='about'))
+        self.sm.add_widget(SearchReportScreen(name='browse_gui'))
+        self.sm.add_widget(AboutScreen(name='about_gui'))
+        self.sm.add_widget(UploadScreen(name='upload_gui'))
 
         # Set the default screen
         self.sm.current = 'main_gui'
