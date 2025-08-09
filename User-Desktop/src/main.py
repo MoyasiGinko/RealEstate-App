@@ -10,7 +10,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.models.database_api import get_api
 
 # Import screens
-from src.screens.dashboard import DashboardScreen
 from src.screens.owner_management import OwnerManagementScreen
 from src.screens.property_management import PropertyManagementScreen
 from src.screens.search_report import SearchReportScreen
@@ -42,7 +41,6 @@ class MainApp(App):
         # Add all screens to the manager
 
         self.sm.add_widget(MainScreen(name='main_gui'))
-        # self.sm.add_widget(DashboardScreen(name='dashboard'))
         self.sm.add_widget(OwnerManagementScreen(name='owner_management'))
         self.sm.add_widget(PropertyManagementScreen(name='property_management'))
         self.sm.add_widget(SearchReportScreen(name='search_report'))

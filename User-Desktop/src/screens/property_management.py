@@ -869,14 +869,14 @@ class PropertyManagementScreen(Screen):
         # Back button with better positioning
         footer_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(60), padding=[0, dp(10), 0, 0])
         back_button = Button(
-            text='← Back to Dashboard',
+            text='← Back to Main',
             size_hint=(None, None),
             size=(dp(200), dp(50)),
             background_color=(0.4, 0.4, 0.8, 1),
             color=(1, 1, 1, 1),
             font_size=dp(16)
         )
-        back_button.bind(on_press=self.go_to_dashboard)
+        back_button.bind(on_press=self.go_to_main_gui)
         footer_layout.add_widget(back_button)
         footer_layout.add_widget(Label())  # Spacer
         self.layout.add_widget(footer_layout)
@@ -1072,6 +1072,6 @@ class PropertyManagementScreen(Screen):
         )
         popup.open()
 
-    def go_to_dashboard(self, instance=None):
-        """Navigate back to the dashboard."""
-        self.manager.current = 'dashboard'
+    def go_to_main_gui(self, instance=None):
+        """Navigate back to the main GUI."""
+        self.manager.current = 'main_gui'
