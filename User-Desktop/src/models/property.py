@@ -1,6 +1,6 @@
 class Property:
     def __init__(self, realstatecode, ownercode, rstatetcode, yearmake, buildtcode,
-                 property_area, unitm_code, property_facade, property_depth,
+                 property_area, Unitm_code, property_facade, property_depth,
                  n_of_bedrooms, n_of_bathrooms, property_corner, offer_type_code,
                  province_code, region_code, property_address, photosituation,
                  descriptions):
@@ -10,7 +10,7 @@ class Property:
         self.yearmake = yearmake
         self.buildtcode = buildtcode
         self.property_area = property_area
-        self.unitm_code = unitm_code
+        self.Unitm_code = Unitm_code
         self.property_facade = property_facade
         self.property_depth = property_depth
         self.n_of_bedrooms = n_of_bedrooms

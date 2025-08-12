@@ -11,10 +11,14 @@ from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.popup import Popup
 from kivy.metrics import dp
 from kivy.clock import Clock
+from kivy.lang import Builder
 from datetime import datetime
 import os
 from screens.property_management import PropertyManagementScreen
 from src.models.database_api import get_api
+
+# Load KV file
+Builder.load_file('assets/kv/update_gui.kv')
 
 class PropertyForm(BoxLayout):
     """Form for adding or editing a property."""
@@ -819,78 +823,14 @@ class UpdateGUIScreen(Screen):
     def __init__(self, **kwargs):
         super(UpdateGUIScreen, self).__init__(**kwargs)
         self.api = get_api()
+        self.properties_container = None
 
-        # Set white background for the screen
-        with self.canvas.before:
-            from kivy.graphics import Color, Rectangle
-            Color(1, 1, 1, 1)  # White background
-            self.rect = Rectangle(size=self.size, pos=self.pos)
-            self.bind(size=self._update_rect, pos=self._update_rect)
-
-        # Main layout
-        self.layout = BoxLayout(orientation='vertical', padding=dp(10), spacing=dp(10))
-
-        # Header with title and add button
-        header = BoxLayout(size_hint_y=None, height=dp(50))
-        header.add_widget(Label(
-            text='Property Management',
-            font_size=dp(24),
-            color=(0.2, 0.2, 0.2, 1)
-        ))
-
-        add_button = Button(
-            text='Add Property',
-            size_hint_x=None,
-            width=dp(120),
-            background_color=(0.2, 0.8, 0.3, 1),
-            color=(1, 1, 1, 1)
-        )
-        add_button.bind(on_press=self.show_add_property_form)
-        header.add_widget(add_button)
-
-        self.layout.add_widget(header)
-
-        # Properties list header
-        list_header = GridLayout(cols=5, size_hint_y=None, height=dp(40))
-        list_header.add_widget(Label(text='Code', bold=True, color=(0.2, 0.2, 0.2, 1)))
-        list_header.add_widget(Label(text='Type', bold=True, color=(0.2, 0.2, 0.2, 1)))
-        list_header.add_widget(Label(text='Area', bold=True, color=(0.2, 0.2, 0.2, 1)))
-        list_header.add_widget(Label(text='Owner', bold=True, color=(0.2, 0.2, 0.2, 1)))
-        list_header.add_widget(Label(text='Actions', bold=True, color=(0.2, 0.2, 0.2, 1)))
-        self.layout.add_widget(list_header)
-
-        # Properties list in a scrollview
-        self.properties_container = GridLayout(cols=1, spacing=dp(2), size_hint_y=None)
-        self.properties_container.bind(minimum_height=self.properties_container.setter('height'))
-
-        scroll_view = ScrollView(size_hint=(1, 1), do_scroll_x=False)
-        scroll_view.add_widget(self.properties_container)
-        self.layout.add_widget(scroll_view)
-
-        # Back button with better positioning
-        footer_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(60), padding=[0, dp(10), 0, 0])
-        back_button = Button(
-            text='← Back to Main',
-            size_hint=(None, None),
-            size=(dp(200), dp(50)),
-            background_color=(0.4, 0.4, 0.8, 1),
-            color=(1, 1, 1, 1),
-            font_size=dp(16)
-        )
-        back_button.bind(on_press=self.go_to_main_gui)
-        footer_layout.add_widget(back_button)
-        footer_layout.add_widget(Label())  # Spacer
-        self.layout.add_widget(footer_layout)
-
-        self.add_widget(self.layout)
-
-    def _update_rect(self, instance, value):
-        """Update the background rectangle."""
-        self.rect.pos = instance.pos
-        self.rect.size = instance.size
+    # Layout is now managed by the Kivy file
 
     def on_enter(self):
         """Load the properties list when entering the screen."""
+        # Get the properties container from the kv file
+        self.properties_container = self.ids.properties_container
         self.load_properties()
 
     def load_properties(self):
@@ -941,18 +881,6 @@ class UpdateGUIScreen(Screen):
 
             self.properties_container.add_widget(property_row)
 
-    def show_add_property_form(self, instance):
-        """Show the form for adding a new property."""
-        content = PropertyForm(save_callback=self.add_property)
-        self.popup = Popup(
-            title='Add New Property',
-            content=content,
-            size_hint=(0.9, 0.9)
-        )
-        content.cancel_button.unbind(on_press=content.cancel)  # Remove old binding
-        content.cancel_button.bind(on_press=lambda x: self.popup.dismiss())
-        self.popup.open()
-
     def show_edit_property_form(self, property_data):
         """Show the form for editing a property."""
         # Get the full property data from the database
@@ -972,21 +900,6 @@ class UpdateGUIScreen(Screen):
         # Make sure to bind the cancel button to close the popup
         content.cancel_button.bind(on_press=lambda x: self.popup.dismiss())
         self.popup.open()
-
-    def add_property(self, property_data, photos, property_code=None):
-        """Add a new property to the database."""
-        property_code = self.api.add_property(property_data)
-
-        if property_code:
-            # Upload photos
-            if photos:
-                self.upload_photos(property_code, photos)
-
-            self.popup.dismiss()
-            self.show_success(f"Property '{property_code}' added successfully!")
-            self.load_properties()
-        else:
-            self.show_error("Failed to add property. Please try again.")
 
     def update_property(self, property_data, photos, property_code):
         """Update an existing property in the database."""

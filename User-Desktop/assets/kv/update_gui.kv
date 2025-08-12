@@ -1,0 +1,68 @@
+<UpdateGUIScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 10
+        spacing: 10
+
+        # Header with title
+        BoxLayout:
+            size_hint_y: None
+            height: 50
+            Label:
+                text: 'Property Management'
+                font_size: 24
+                color: 0.2, 0.2, 0.2, 1
+
+        # Properties list header
+        GridLayout:
+            cols: 5
+            size_hint_y: None
+            height: 40
+            Label:
+                text: 'Code'
+                bold: True
+                color: 0.2, 0.2, 0.2, 1
+            Label:
+                text: 'Type'
+                bold: True
+                color: 0.2, 0.2, 0.2, 1
+            Label:
+                text: 'Area'
+                bold: True
+                color: 0.2, 0.2, 0.2, 1
+            Label:
+                text: 'Owner'
+                bold: True
+                color: 0.2, 0.2, 0.2, 1
+            Label:
+                text: 'Actions'
+                bold: True
+                color: 0.2, 0.2, 0.2, 1
+
+        # Properties list in a scrollview
+        ScrollView:
+            size_hint: 1, 1
+            do_scroll_x: False
+            GridLayout:
+                id: properties_container
+                cols: 1
+                spacing: 2
+                size_hint_y: None
+                height: self.minimum_height
+
+        # Back button
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 60
+            padding: 0, 10, 0, 0
+            Button:
+                text: '← Back to Main'
+                size_hint: None, None
+                size: 200, 50
+                background_color: 0.4, 0.4, 0.8, 1
+                color: 1, 1, 1, 1
+                font_size: 16
+                on_press: root.go_to_main_gui()
+            Label:
+                # Spacer

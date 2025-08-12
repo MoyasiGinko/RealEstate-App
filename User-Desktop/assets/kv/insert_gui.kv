@@ -1,233 +1,430 @@
-<InsertScreen@BoxLayout>:
-	orientation: 'vertical'
-	padding: 20
-	spacing: 10
-	ScrollView:
-		do_scroll_x: False
-		do_scroll_y: True
-		BoxLayout:
-			orientation: 'vertical'
-			size_hint_y: None
-			height: self.minimum_height
-			spacing: 10
-			# 1. Property Code
-			BoxLayout:
-				size_hint_y: None
-				height: 40
-				Label:
-					text: 'Property Code'
-					size_hint_x: 0.4
-				TextInput:
-					id: property_code
-					multiline: False
-			# 2. Property Type
-			BoxLayout:
-				size_hint_y: None
-				height: 40
-				Label:
-					text: 'Property Type'
-					size_hint_x: 0.4
-				Spinner:
-					id: property_type
-					text: 'Select Type'
-					values: ['House', 'Apartment', 'Land', 'Commercial']
-			# 3. Year of Construction
-			BoxLayout:
-				size_hint_y: None
-				height: 40
-				Label:
-					text: 'Year of Construction'
-					size_hint_x: 0.4
-				TextInput:
-					id: year_construction
-					multiline: False
-					input_filter: 'int'
-			# 4. Building Type
-			BoxLayout:
-				size_hint_y: None
-				height: 40
-				Label:
-					text: 'Building Type'
-					size_hint_x: 0.4
-				Spinner:
-					id: building_type
-					text: 'Select Building Type'
-					values: ['Concrete', 'Brick', 'Steel', 'Other']
-			# 5. Unit of Measurement
-			BoxLayout:
-				size_hint_y: None
-				height: 40
-				Label:
-					text: 'Unit of Measurement'
-					size_hint_x: 0.4
-				Spinner:
-					id: unit_measurement
-					text: 'Select Unit'
-					values: ['m²', 'ft²']
-			# 6. Facade
-			BoxLayout:
-				size_hint_y: None
-				height: 40
-				Label:
-					text: 'Facade'
-					size_hint_x: 0.4
-				TextInput:
-					id: facade
-					multiline: False
-			# 7. Floors/Levels
-			BoxLayout:
-				size_hint_y: None
-				height: 40
-				Label:
-					text: 'Floors/Levels'
-					size_hint_x: 0.4
-				TextInput:
-					id: floors
-					multiline: False
-					input_filter: 'int'
-			# 8. Area
-			BoxLayout:
-				size_hint_y: None
-				height: 40
-				Label:
-					text: 'Area'
-					size_hint_x: 0.4
-				TextInput:
-					id: area
-					multiline: False
-					input_filter: 'float'
-			# 9. Number of Bedrooms
-			BoxLayout:
-				size_hint_y: None
-				height: 40
-				Label:
-					text: 'Bedrooms'
-					size_hint_x: 0.4
-				TextInput:
-					id: bedrooms
-					multiline: False
-					input_filter: 'int'
-			# 10. Number of Bathrooms
-			BoxLayout:
-				size_hint_y: None
-				height: 40
-				Label:
-					text: 'Bathrooms'
-					size_hint_x: 0.4
-				TextInput:
-					id: bathrooms
-					multiline: False
-					input_filter: 'int'
-			# 11. Corner or Not?
-			BoxLayout:
-				size_hint_y: None
-				height: 40
-				Label:
-					text: 'Corner?'
-					size_hint_x: 0.4
-				CheckBox:
-					id: corner_yes
-					group: 'corner'
-				Label:
-					text: 'Yes'
-					size_hint_x: 0.1
-				CheckBox:
-					id: corner_no
-					group: 'corner'
-				Label:
-					text: 'No'
-					size_hint_x: 0.1
-			# 12. Offer Type
-			BoxLayout:
-				size_hint_y: None
-				height: 40
-				Label:
-					text: 'Offer Type'
-					size_hint_x: 0.4
-				Spinner:
-					id: offer_type
-					text: 'Select Offer Type'
-					values: ['Sale', 'Rent', 'Lease']
-			# 13. Governorate/Province
-			BoxLayout:
-				size_hint_y: None
-				height: 40
-				Label:
-					text: 'Governorate/Province'
-					size_hint_x: 0.4
-				TextInput:
-					id: governorate
-					multiline: False
-			# 14. Area/Neighborhood
-			BoxLayout:
-				size_hint_y: None
-				height: 40
-				Label:
-					text: 'Area/Neighborhood'
-					size_hint_x: 0.4
-				TextInput:
-					id: neighborhood
-					multiline: False
-			# 15. Price
-			BoxLayout:
-				size_hint_y: None
-				height: 40
-				Label:
-					text: 'Price'
-					size_hint_x: 0.4
-				TextInput:
-					id: price
-					multiline: False
-					input_filter: 'float'
-				ToggleButton:
-					id: price_dinar
-					text: 'Dinar'
-					group: 'currency'
-				ToggleButton:
-					id: price_dollar
-					text: 'Dollar'
-					group: 'currency'
-			# 16. Property Owner
-			BoxLayout:
-				size_hint_y: None
-				height: 40
-				Label:
-					text: 'Property Owner'
-					size_hint_x: 0.4
-				TextInput:
-					id: property_owner
-					multiline: False
-			# 17. Photos
-			BoxLayout:
-				size_hint_y: None
-				height: 40
-				Label:
-					text: 'Photos'
-					size_hint_x: 0.4
-				Button:
-					id: add_photo
-					text: 'Add Photo'
-					# icon can be added with a custom widget or image
-			# 18. Notes
-			BoxLayout:
-				size_hint_y: None
-				height: 80
-				Label:
-					text: 'Notes'
-					size_hint_x: 0.4
-				TextInput:
-					id: notes
-					multiline: True
+<InsertScreen>:
+	property_code: property_code
+	property_type: property_type
+	year_construction: year_construction
+	building_type: building_type
+	unit_measurement: unit_measurement
+	facade: facade
+	depth: depth
+	floors: floors
+	area: area
+	bedrooms: bedrooms
+	bathrooms: bathrooms
+	corner_yes: corner_yes
+	corner_no: corner_no
+	offer_type: offer_type
+	governorate: governorate
+	neighborhood: neighborhood
+	price: price
+	price_dinar: price_dinar
+	price_dollar: price_dollar
+	property_owner: property_owner
+	add_photo: add_photo
+	address: address
+	notes: notes
+	save_btn: save_btn
+	new_btn: new_btn
+
 	BoxLayout:
-		size_hint_y: None
-		height: 60
-		spacing: 20
-		padding: [0, 10]
-		Button:
-			id: save_btn
-			text: 'Save'
-			# icon can be added with a custom widget or image
-		Button:
-			id: new_btn
-			text: 'New'
-			# icon can be added with a custom widget or image
+		orientation: 'vertical'
+		padding: 20
+		spacing: 10
+		canvas.before:
+			Color:
+				rgba: 0.95, 0.95, 0.95, 1
+			Rectangle:
+				pos: self.pos
+				size: self.size
+
+		# Header
+		BoxLayout:
+			size_hint_y: None
+			height: 50
+			padding: [0, 0, 0, 10]
+			Label:
+				text: 'Add New Property'
+				font_size: 24
+				color: 0.2, 0.2, 0.2, 1
+				bold: True
+
+		ScrollView:
+			do_scroll_x: False
+			do_scroll_y: True
+			BoxLayout:
+				orientation: 'vertical'
+				size_hint_y: None
+				height: self.minimum_height
+				spacing: 15
+
+				# Grid layout for form fields - 2 columns for better responsiveness
+				GridLayout:
+					cols: 2
+					spacing: 10, 15
+					padding: 5
+					size_hint_y: None
+					height: self.minimum_height
+
+					# 1. Property Code
+					Label:
+						text: 'Property Code'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					TextInput:
+						id: property_code
+						multiline: False
+						hint_text: 'Auto-generated if empty'
+						size_hint_y: None
+						height: 40
+					# 2. Property Type
+					Label:
+						text: 'Property Type*'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					Spinner:
+						id: property_type
+						text: 'Select Type'
+						values: ['House', 'Apartment', 'Land', 'Commercial']
+						size_hint_y: None
+						height: 40
+						background_color: 0.9, 0.9, 0.9, 1
+
+					# 3. Year of Construction
+					Label:
+						text: 'Year of Construction'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					TextInput:
+						id: year_construction
+						multiline: False
+						input_filter: 'int'
+						hint_text: 'Enter year (e.g., 2020)'
+						size_hint_y: None
+						height: 40
+
+					# 4. Building Type
+					Label:
+						text: 'Building Type*'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					Spinner:
+						id: building_type
+						text: 'Select Building Type'
+						values: ['Concrete', 'Brick', 'Steel', 'Other']
+						size_hint_y: None
+						height: 40
+						background_color: 0.9, 0.9, 0.9, 1
+
+					# 5. Unit of Measurement
+					Label:
+						text: 'Unit of Measurement'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					Spinner:
+						id: unit_measurement
+						text: 'Select Unit'
+						values: ['m²', 'ft²']
+						size_hint_y: None
+						height: 40
+						background_color: 0.9, 0.9, 0.9, 1
+
+
+					# 6. Facade
+					Label:
+						text: 'Facade'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					TextInput:
+						id: facade
+						multiline: False
+						hint_text: 'Enter facade measurement'
+						input_filter: 'float'
+						size_hint_y: None
+						height: 40
+
+					# 6b. Depth
+					Label:
+						text: 'Depth'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					TextInput:
+						id: depth
+						multiline: False
+						hint_text: 'Enter depth measurement'
+						input_filter: 'float'
+						size_hint_y: None
+						height: 40
+
+					# 7. Floors/Levels
+					Label:
+						text: 'Floors/Levels'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					TextInput:
+						id: floors
+						multiline: False
+						input_filter: 'int'
+						hint_text: 'Enter number of floors'
+						size_hint_y: None
+						height: 40
+
+					# 8. Area
+					Label:
+						text: 'Area'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					TextInput:
+						id: area
+						multiline: False
+						input_filter: 'float'
+						hint_text: 'Enter area'
+						size_hint_y: None
+						height: 40
+
+					# 9. Number of Bedrooms
+					Label:
+						text: 'Bedrooms'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					TextInput:
+						id: bedrooms
+						multiline: False
+						input_filter: 'int'
+						hint_text: 'Enter number of bedrooms'
+						size_hint_y: None
+						height: 40
+
+					# 10. Number of Bathrooms
+					Label:
+						text: 'Bathrooms'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					TextInput:
+						id: bathrooms
+						multiline: False
+						input_filter: 'int'
+						hint_text: 'Enter number of bathrooms'
+						size_hint_y: None
+						height: 40
+					# 11. Corner or Not?
+					Label:
+						text: 'Corner?'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					BoxLayout:
+						size_hint_y: None
+						height: 40
+						CheckBox:
+							id: corner_yes
+							group: 'corner'
+						Label:
+							text: 'Yes'
+							size_hint_x: 0.3
+						CheckBox:
+							id: corner_no
+							group: 'corner'
+						Label:
+							text: 'No'
+							size_hint_x: 0.3
+
+					# 12. Offer Type
+					Label:
+						text: 'Offer Type'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					Spinner:
+						id: offer_type
+						text: 'Select Offer Type'
+						values: ['Sale', 'Rent', 'Lease']
+						size_hint_y: None
+						height: 40
+						background_color: 0.9, 0.9, 0.9, 1
+
+					# 13. Governorate/Province
+					Label:
+						text: 'Governorate/Province'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					TextInput:
+						id: governorate
+						multiline: False
+						hint_text: 'Enter governorate/province'
+						size_hint_y: None
+						height: 40
+
+
+					# 14. Area/Neighborhood
+					Label:
+						text: 'Area/Neighborhood'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					TextInput:
+						id: neighborhood
+						multiline: False
+						hint_text: 'Enter area/neighborhood'
+						size_hint_y: None
+						height: 40
+
+					# 14b. Property Address
+					Label:
+						text: 'Property Address'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					TextInput:
+						id: address
+						multiline: False
+						hint_text: 'Enter property address'
+						size_hint_y: None
+						height: 40
+
+					# 15. Price
+					Label:
+						text: 'Price'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					BoxLayout:
+						size_hint_y: None
+						height: 40
+						TextInput:
+							id: price
+							multiline: False
+							input_filter: 'float'
+							hint_text: 'Enter price'
+							size_hint_x: 0.6
+						ToggleButton:
+							id: price_dinar
+							text: 'Dinar'
+							group: 'currency'
+							size_hint_x: 0.2
+						ToggleButton:
+							id: price_dollar
+							text: 'Dollar'
+							group: 'currency'
+							size_hint_x: 0.2
+
+					# 16. Property Owner
+					Label:
+						text: 'Property Owner*'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					BoxLayout:
+						size_hint_y: None
+						height: 40
+						spacing: 5
+						orientation: 'horizontal'
+						TextInput:
+							id: owner_search
+							hint_text: 'Search owner by name/code'
+							multiline: False
+							size_hint_x: 0.5
+							on_text: root.filter_owners(self.text)
+						Spinner:
+							id: property_owner
+							text: 'Select Owner'
+							values: []
+							size_hint_x: 0.35
+						Button:
+							text: 'Add Owner'
+							size_hint_x: 0.15
+							background_color: 0.3, 0.6, 0.9, 1
+							color: 1, 1, 1, 1
+							on_press: root.show_owner_form(self)
+
+					# 17. Photos
+					Label:
+						text: 'Photos'
+						size_hint_y: None
+						height: 40
+						color: 0.2, 0.2, 0.2, 1
+					Button:
+						id: add_photo
+						text: 'Add Photo'
+						background_color: 0.3, 0.6, 0.9, 1
+						color: 1, 1, 1, 1
+						size_hint_y: None
+						height: 40
+						on_press: root.show_file_chooser(self)
+
+				# 18. Notes - full width
+				BoxLayout:
+					size_hint_y: None
+					height: 120
+					orientation: 'vertical'
+					spacing: 5
+
+					Label:
+						text: 'Notes'
+						size_hint_y: None
+						height: 30
+						color: 0.2, 0.2, 0.2, 1
+						halign: 'left'
+						valign: 'middle'
+						text_size: self.size
+
+					TextInput:
+						id: notes
+						multiline: True
+						hint_text: 'Enter any additional notes about the property'
+						size_hint_y: None
+						height: 80
+		# Required fields notice
+		Label:
+			text: '* Required fields'
+			size_hint_y: None
+			height: 20
+			color: 0.5, 0.5, 0.5, 1
+			halign: 'left'
+			text_size: self.size
+
+		# Action buttons
+		BoxLayout:
+			size_hint_y: None
+			height: 60
+			spacing: 20
+			padding: [0, 10]
+
+			Button:
+				text: '← Back'
+				size_hint_x: None
+				width: 100
+				background_color: 0.4, 0.4, 0.8, 1
+				color: 1, 1, 1, 1
+				on_press: app.sm.current = 'main_gui'
+
+			Widget:
+				# Spacer
+
+			Button:
+				id: new_btn
+				text: 'Clear Form'
+				background_color: 0.4, 0.6, 0.8, 1
+				color: 1, 1, 1, 1
+				size_hint_x: None
+				width: 150
+				on_press: root.on_new()
+
+			Button:
+				id: save_btn
+				text: 'Save Property'
+				background_color: 0.2, 0.8, 0.3, 1
+				color: 1, 1, 1, 1
+				size_hint_x: None
+				width: 150
+				on_press: root.on_save()
