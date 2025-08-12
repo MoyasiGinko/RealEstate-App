@@ -21,6 +21,58 @@ from src.models.database_api import get_api
 Builder.load_file('assets/kv/update_gui.kv')
 
 class PropertyForm(BoxLayout):
+    def open_photo_chooser(self):
+        """Open a file chooser to add new photos, with an Open button."""
+        from kivy.uix.boxlayout import BoxLayout
+        filechooser = FileChooserListView(filters=['*.png', '*.jpg', '*.jpeg', '*.bmp'], multiselect=True)
+        btn_open = Button(text='Open', size_hint=(1, None), height=40)
+        btn_cancel = Button(text='Cancel', size_hint=(1, None), height=40)
+        btn_box = BoxLayout(size_hint_y=None, height=40, spacing=10)
+        btn_box.add_widget(btn_open)
+        btn_box.add_widget(btn_cancel)
+        layout = BoxLayout(orientation='vertical')
+        layout.add_widget(filechooser)
+        layout.add_widget(btn_box)
+        popup = Popup(title='Select Photos', content=layout, size_hint=(0.9, 0.9))
+
+        def on_open_press(instance):
+            selection = filechooser.selection
+            if selection:
+                for path in selection:
+                    if path not in self.selected_photos:
+                        self.selected_photos.append(path)
+                self.update_photo_gallery()
+            popup.dismiss()
+
+        def on_cancel_press(instance):
+            popup.dismiss()
+
+        btn_open.bind(on_press=on_open_press)
+        btn_cancel.bind(on_press=on_cancel_press)
+        popup.open()
+
+    def update_photo_gallery(self):
+        """Update the photo gallery UI with current selected_photos."""
+        gallery = self.ids.photo_gallery
+        gallery.clear_widgets()
+        for photo_path in self.selected_photos:
+            box = BoxLayout(orientation='vertical', size_hint=(None, None), size=(80, 80), spacing=2)
+            try:
+                from kivy.uix.image import Image
+                img = Image(source=photo_path, size_hint=(1, 0.8))
+            except Exception:
+                img = Label(text='[Image]', size_hint=(1, 0.8))
+            remove_btn = Button(text='X', size_hint=(1, 0.2), background_color=(0.8,0.2,0.2,1), color=(1,1,1,1))
+            remove_btn.bind(on_press=lambda btn, p=photo_path: self.remove_photo(p))
+            box.add_widget(img)
+            box.add_widget(remove_btn)
+            gallery.add_widget(box)
+
+    def remove_photo(self, photo_path):
+        """Remove a photo from the gallery and selection."""
+        if photo_path in self.selected_photos:
+            self.selected_photos.remove(photo_path)
+            self.update_photo_gallery()
     def on_kv_post(self, base_widget):
         # Set API
         self.api = get_api()
@@ -68,6 +120,8 @@ class PropertyForm(BoxLayout):
         # Populate fields if editing
         if self.property_data:
             self.populate_fields()
+        # Always update photo gallery on form open
+        self.update_photo_gallery()
 
     from kivy.properties import ObjectProperty, ListProperty
     save_callback = ObjectProperty(None)
@@ -154,7 +208,7 @@ class PropertyForm(BoxLayout):
 
 
     def populate_fields(self):
-        """Populate form fields with property_data for editing."""
+        """Populate form fields with property_data for editing, including photos."""
         data = self.property_data
         # Set property_code if available
         if data.get('realstatecode'):
@@ -205,6 +259,22 @@ class PropertyForm(BoxLayout):
             match = next((v for v in self.unit_spinner.values if v.startswith(str(data['Unitm-code']))), None)
             if match:
                 self.unit_spinner.text = match
+
+        # Load and display existing property photos if editing
+        if self.property_code:
+            # Only load from DB if not already loaded
+            if not self.selected_photos:
+                try:
+                    photos = self.api.get_property_photos(self.property_code)
+                    for photo in photos or []:
+                        # Construct the full path to the photo (adjust as needed for your storage)
+                        # Example assumes Storagepath is a relative or absolute path
+                        path = os.path.join(photo.get('Storagepath', ''), photo.get('photofilename', '') + (photo.get('Photoextension', '') or ''))
+                        if os.path.exists(path):
+                            self.selected_photos.append(path)
+                except Exception as e:
+                    print(f"Error loading property photos: {e}")
+            self.update_photo_gallery()
 
 
     def show_add_owner_form(self, instance):

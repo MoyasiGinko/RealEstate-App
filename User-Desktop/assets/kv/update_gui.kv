@@ -16,6 +16,8 @@
         size_hint_y: None
         height: 40
 
+
+
     ScrollView:
         do_scroll_x: False
         do_scroll_y: True
@@ -300,6 +302,38 @@
                 color: 0.2, 0.2, 0.2, 1
                 size_hint_x: 0.6
                 minimum_width: 120
+
+
+    # Photo Gallery Section (moved to end)
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint_y: None
+        height: 120
+        spacing: 5
+        Label:
+            text: 'Photos:'
+            color: 0.2, 0.2, 0.2, 1
+            size_hint_y: None
+            height: 24
+        ScrollView:
+            do_scroll_x: True
+            do_scroll_y: False
+            size_hint_y: None
+            height: 80
+            BoxLayout:
+                id: photo_gallery
+                orientation: 'horizontal'
+                size_hint_x: None
+                width: self.minimum_width
+                spacing: 10
+        Button:
+            text: 'Add Photo'
+            size_hint: None, None
+            size: 120, 32
+            on_press: root.open_photo_chooser()
+
+
+
 
     BoxLayout:
         size_hint_y: None
