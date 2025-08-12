@@ -17,7 +17,7 @@ def create_fresh_database(db_path="data/local.db"):
 
     try:
         # Import database configuration
-        from configs.database import get_database_connection, create_tables
+        from configs.database import DatabaseManager
 
         # Ensure data directory exists
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
@@ -29,21 +29,18 @@ def create_fresh_database(db_path="data/local.db"):
                 print(f"✓ Removed existing database: {db_path}")
             except OSError as e:
                 print(f"⚠️  Could not remove existing database: {e}")
-                # Create with different name if locked
-                base_name = db_path.replace('.db', '')
-                db_path = f"{base_name}_fresh.db"
-                print(f"✓ Creating database with new name: {db_path}")
+                print("⚠️  Please close any applications using the database and try again")
+                return None
 
-        # Create new database
-        conn = sqlite3.connect(db_path)
-        conn.close()
-        print(f"✓ Created database file: {db_path}")
-
-        # Create tables using database configuration
-        create_tables()
-        print("✓ Database tables created successfully")
-
-        return db_path
+        # Create new database using DatabaseManager
+        db = DatabaseManager(db_path)
+        if db.connect_local() and db.create_tables():
+            print("✓ Database tables created successfully")
+            db.close()
+            return db_path
+        else:
+            print("✗ Failed to create tables")
+            return None
 
     except Exception as e:
         print(f"✗ Error creating database: {e}")

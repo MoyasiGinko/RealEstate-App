@@ -446,14 +446,38 @@ class UpdateGUIScreen(Screen):
 
     def upload_photos(self, property_code, photo_paths):
         """Upload photos for a property."""
-        for photo_path in photo_paths:
-            # Get the filename and extension
-            filename = os.path.basename(photo_path)
-            name, ext = os.path.splitext(filename)
+        import shutil
+        import uuid
+        from pathlib import Path
 
-            # Add to database
-            storage_path = f"/photos/{self.api.company_code}/"
-            self.api.add_property_photo(property_code, storage_path, name, ext)
+        # Create storage directory for this property
+        storage_dir = Path("realstateimages") / property_code
+        storage_dir.mkdir(parents=True, exist_ok=True)
+
+        for photo_path in photo_paths:
+            try:
+                # Generate unique filename to avoid conflicts
+                original_file = Path(photo_path)
+                file_extension = original_file.suffix.lower()
+                unique_filename = f"{uuid.uuid4().hex[:8]}_{original_file.stem}{file_extension}"
+
+                # Copy file to storage directory
+                destination = storage_dir / unique_filename
+                shutil.copy2(photo_path, destination)
+
+                # Add to database
+                success = self.api.add_property_photo(
+                    property_code=property_code,
+                    file_path=str(storage_dir),
+                    photo_filename=unique_filename,
+                    photo_extension=file_extension
+                )
+
+                if not success:
+                    self.show_error(f"Failed to save photo metadata for {original_file.name}")
+
+            except Exception as e:
+                self.show_error(f"Failed to upload photo {Path(photo_path).name}: {str(e)}")
 
     def confirm_delete_property(self, property_code):
         """Show confirmation dialog for deleting a property."""

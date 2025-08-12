@@ -203,31 +203,29 @@ def create_seed_database():
         print(f"✗ Error creating seed database: {e}")
         return None
 
-def load_seed_data(target_db="data/local.db", replace_existing=True):
+def load_seed_data(main_db_path="data/local.db", seed_db_path="data/seed.db", strategy="skip"):
     """Load seed data from seed.db into target database.
 
     Args:
-        target_db: Path to target database
-        replace_existing: If True, replace existing records with same unique keys.
-                         If False, skip existing records (INSERT OR IGNORE).
+        main_db_path: Path to target database
+        seed_db_path: Path to seed database
+        strategy: 'replace' to replace existing records, 'skip' to skip existing records
     """
-    print(f"Loading seed data into: {target_db}")
-    print(f"Strategy: {'Replace existing' if replace_existing else 'Skip existing'} records")
-
-    seed_db_path = "data/seed.db"
+    print(f"Loading seed data into: {main_db_path}")
+    print(f"Strategy: {'Replace existing' if strategy == 'replace' else 'Skip existing'} records")
 
     # Create seed database if it doesn't exist
     if not os.path.exists(seed_db_path):
         print("Seed database not found. Creating it...")
         create_seed_database()
 
-    if not os.path.exists(target_db):
-        print(f"✗ Target database not found: {target_db}")
+    if not os.path.exists(main_db_path):
+        print(f"✗ Target database not found: {main_db_path}")
         return False
 
     try:
         # Connect to both databases
-        main_conn = sqlite3.connect(target_db)
+        main_conn = sqlite3.connect(main_db_path)
         main_conn.row_factory = sqlite3.Row
         main_cursor = main_conn.cursor()
 
@@ -241,7 +239,7 @@ def load_seed_data(target_db="data/local.db", replace_existing=True):
         tables_order = ['Maincode', 'Companyinfo', 'Owners', 'Realstatspecification', 'realstatephotos']
 
         # Define which strategy to use for each table
-        insert_strategy = "INSERT OR REPLACE" if replace_existing else "INSERT OR IGNORE"
+        insert_strategy = "INSERT OR REPLACE" if strategy == "replace" else "INSERT OR IGNORE"
 
         for table in tables_order:
             print(f"Loading {table} data...")
@@ -451,9 +449,9 @@ if __name__ == "__main__":
     elif args.smart_merge:
         smart_merge_seed_data(args.smart_merge)
     elif args.load_seed:
-        replace_existing = not args.skip_existing
-        load_seed_data(args.load_seed, replace_existing)
+        strategy = "skip" if args.skip_existing else "replace"
+        load_seed_data(args.load_seed, "data/seed.db", strategy)
     else:
         # Default: load seed data into main database
-        replace_existing = not args.skip_existing
-        load_seed_data(replace_existing=replace_existing)
+        strategy = "skip" if args.skip_existing else "replace"
+        load_seed_data("data/local.db", "data/seed.db", strategy)

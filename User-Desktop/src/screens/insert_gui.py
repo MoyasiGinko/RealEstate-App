@@ -39,6 +39,7 @@ class InsertScreen(Screen):
 	property_owner = ObjectProperty(None)
 	owner_search = ObjectProperty(None)
 	add_photo = ObjectProperty(None)
+	photo_count = ObjectProperty(None)
 	notes = ObjectProperty(None)
 	save_btn = ObjectProperty(None)
 	new_btn = ObjectProperty(None)
@@ -246,6 +247,7 @@ class InsertScreen(Screen):
 		self.address.text = ''
 		self.notes.text = ''
 		self.selected_photos = []  # Clear selected photos
+		self.update_photo_count()  # Update photo count display
 
 	def show_file_chooser(self, instance):
 		"""Show file chooser for selecting property photos."""
@@ -283,15 +285,54 @@ class InsertScreen(Screen):
 		if selection:
 			self.selected_photos.extend(selection)
 			popup.dismiss()
+			self.update_photo_count()
 			self.show_success(f"Selected {len(selection)} photo(s)")
+
+	def update_photo_count(self):
+		"""Update the photo count display."""
+		if hasattr(self, 'photo_count') and self.photo_count:
+			count = len(self.selected_photos)
+			if count == 0:
+				self.photo_count.text = 'No photos selected'
+			elif count == 1:
+				self.photo_count.text = '1 photo selected'
+			else:
+				self.photo_count.text = f'{count} photos selected'
 
 	def upload_photos(self, property_code, photo_paths):
 		"""Upload photos for a property."""
+		import shutil
+		import uuid
+		from pathlib import Path
+
+		# Create storage directory for this property
+		storage_dir = Path("realstateimages") / property_code
+		storage_dir.mkdir(parents=True, exist_ok=True)
+
 		for photo_path in photo_paths:
 			try:
-				self.api.add_property_photo(property_code, photo_path)
+				# Generate unique filename to avoid conflicts
+				original_file = Path(photo_path)
+				file_extension = original_file.suffix.lower()
+				unique_filename = f"{uuid.uuid4().hex[:8]}_{original_file.stem}{file_extension}"
+
+				# Copy file to storage directory
+				destination = storage_dir / unique_filename
+				shutil.copy2(photo_path, destination)
+
+				# Add to database
+				success = self.api.add_property_photo(
+					property_code=property_code,
+					file_path=str(storage_dir),
+					photo_filename=unique_filename,
+					photo_extension=file_extension
+				)
+
+				if not success:
+					self.show_error(f"Failed to save photo metadata for {original_file.name}")
+
 			except Exception as e:
-				self.show_error(f"Failed to upload photo {photo_path}: {str(e)}")
+				self.show_error(f"Failed to upload photo {Path(photo_path).name}: {str(e)}")
 
 	def show_owner_form(self, instance):
 		"""Show form for adding a new owner"""
