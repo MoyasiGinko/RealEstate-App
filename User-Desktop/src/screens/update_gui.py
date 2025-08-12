@@ -21,667 +21,41 @@ from src.models.database_api import get_api
 Builder.load_file('assets/kv/update_gui.kv')
 
 class PropertyForm(BoxLayout):
+    def on_kv_post(self, base_widget):
+        # Bind all widget references to their ids for kv linkage
+        self.property_type_spinner = self.ids.property_type
+        self.building_type_spinner = self.ids.building_type
+        self.year_spinner = self.ids.year_spinner
+        self.area_input = self.ids.area
+        self.facade_input = self.ids.facade
+        self.depth_input = self.ids.depth
+        self.bedrooms_input = self.ids.bedrooms
+        self.bathrooms_input = self.ids.bathrooms
+        self.corner_checkbox = self.ids.corner
+        self.offer_type_spinner = self.ids.offer_type
+        self.province_spinner = self.ids.province
+        self.region_spinner = self.ids.region
+        self.address_input = self.ids.address
+        self.owner_spinner = self.ids.owner
+        self.description_input = self.ids.description
+        # New fields for updated DB
+        self.floors_input = self.ids.floors
+        self.price_input = self.ids.price
+        self.currency_spinner = self.ids.currency
+        self.unit_spinner = self.ids.unit
+        # Optionally, connect save/cancel buttons if needed
+        if 'save_btn' in self.ids:
+            self.ids.save_btn.bind(on_press=self.save)
+        if 'cancel_btn' in self.ids:
+            self.ids.cancel_btn.bind(on_press=self.cancel)
+        # Populate fields if editing
+        if self.property_data:
+            self.populate_fields()
+
+    from kivy.properties import ObjectProperty
+    save_callback = ObjectProperty(None)
+    property_data = ObjectProperty(None)
     """Form for adding or editing a property."""
-
-    def __init__(self, save_callback, property_data=None, **kwargs):
-        super(PropertyForm, self).__init__(**kwargs)
-        self.orientation = 'vertical'
-        self.padding = dp(10)
-        self.spacing = dp(10)
-
-        # Set white background
-        with self.canvas.before:
-            from kivy.graphics import Color, Rectangle
-            Color(1, 1, 1, 1)  # White background
-            self.rect = Rectangle(size=self.size, pos=self.pos)
-            self.bind(size=self._update_rect, pos=self._update_rect)
-
-        self.api = get_api()
-        self.save_callback = save_callback
-        self.property_data = property_data
-        self.property_code = property_data.get('realstatecode') if property_data else None
-        self.selected_photos = []
-
-        # Create the form
-        self.create_form()
-
-    def safe_get_text(self, field_name, default=''):
-        """Safely get text value from property data, handling None values."""
-        if not self.property_data:
-            return default
-
-        value = self.property_data.get(field_name, default)
-        if value is None:
-            return default
-
-        return str(value)
-
-    def create_form(self):
-        """Create the property form UI."""
-        scroll_view = ScrollView(do_scroll_x=False)
-        form_layout = GridLayout(cols=1, spacing=dp(10), size_hint_y=None)
-        form_layout.bind(minimum_height=form_layout.setter('height'))
-
-        # Title
-        title = 'Edit Property' if self.property_data else 'Add New Property'
-        title_label = Label(
-            text=title,
-            font_size=dp(24),
-            size_hint_y=None,
-            height=dp(40),
-            color=(0.2, 0.2, 0.2, 1)  # Dark gray text
-        )
-        form_layout.add_widget(title_label)
-
-        # Property type (dropdown from Maincode where recty = 03)
-        property_types = self.api.get_property_types() or []
-        # Safely handle property types - ensure it's a list even if None is returned
-        property_type_values = []
-        if property_types:
-            try:
-                property_type_values = [f"{t.get('code', 'N/A')} - {t.get('name', 'Unknown')}" for t in property_types]
-            except (KeyError, TypeError, AttributeError) as e:
-                print(f"Error processing property types: {e}")
-                # Fallback to empty list if there's an error
-
-        # Add a default option if the list is empty
-        if not property_type_values:
-            property_type_values = ['No property types available']
-
-        property_type_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        property_type_layout.add_widget(Label(
-            text='Property Type:',
-            size_hint_x=0.3,
-            color=(0.2, 0.2, 0.2, 1)
-        ))
-
-        self.property_type_spinner = Spinner(
-            text='Select Property Type',
-            values=property_type_values,
-            size_hint_x=0.7,
-            background_color=(0.95, 0.95, 0.95, 1),
-            color=(0.2, 0.2, 0.2, 1)
-        )
-
-        # Safely set the spinner value if we have property data
-        if self.property_data and self.property_data.get('Rstatetcode') and property_type_values and property_type_values[0] != 'No property types available':
-            try:
-                for val in property_type_values:
-                    if val.startswith(self.property_data['Rstatetcode']):
-                        self.property_type_spinner.text = val
-                        break
-            except Exception as e:
-                print(f"Error setting property type spinner: {e}")
-                # Continue without setting the spinner value
-
-        property_type_layout.add_widget(self.property_type_spinner)
-        form_layout.add_widget(property_type_layout)
-
-        # Building type (dropdown from Maincode where recty = 04)
-        building_types = self.api.get_building_types() or []
-        # Safely handle building types
-        building_type_values = []
-        if building_types:
-            try:
-                building_type_values = [f"{t.get('code', 'N/A')} - {t.get('name', 'Unknown')}" for t in building_types]
-            except (KeyError, TypeError, AttributeError) as e:
-                print(f"Error processing building types: {e}")
-                # Fallback to empty list if there's an error
-
-        # Add a default option if the list is empty
-        if not building_type_values:
-            building_type_values = ['No building types available']
-
-        building_type_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        building_type_layout.add_widget(Label(
-            text='Building Type:',
-            size_hint_x=0.3,
-            color=(0.2, 0.2, 0.2, 1)
-        ))
-
-        self.building_type_spinner = Spinner(
-            text='Select Building Type',
-            values=building_type_values,
-            size_hint_x=0.7,
-            background_color=(0.95, 0.95, 0.95, 1),
-            color=(0.2, 0.2, 0.2, 1)
-        )
-
-        # Safely set the spinner value if we have property data
-        if self.property_data and self.property_data.get('Buildtcode') and building_type_values and building_type_values[0] != 'No building types available':
-            try:
-                for val in building_type_values:
-                    if val.startswith(self.property_data['Buildtcode']):
-                        self.building_type_spinner.text = val
-                        break
-            except Exception as e:
-                print(f"Error setting building type spinner: {e}")
-                # Continue without setting the spinner value
-
-        building_type_layout.add_widget(self.building_type_spinner)
-        form_layout.add_widget(building_type_layout)        # Year built
-        year_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        year_layout.add_widget(Label(
-            text='Year Built:',
-            size_hint_x=0.3,
-            color=(0.2, 0.2, 0.2, 1)
-        ))
-
-        current_year = datetime.now().year
-        year_values = [str(y) for y in range(1950, current_year + 1)]
-
-        self.year_spinner = Spinner(
-            text='Select Year',
-            values=year_values,
-            size_hint_x=0.7,
-            background_color=(0.95, 0.95, 0.95, 1),
-            color=(0.2, 0.2, 0.2, 1)
-        )
-
-        if self.property_data and self.property_data.get('Yearmake'):
-            year_value = self.property_data['Yearmake']
-            # Handle different year formats (string with date format, or just integer year)
-            if isinstance(year_value, str) and '-' in year_value:
-                year = year_value.split('-')[0]  # Extract year from ISO format like "2020-01-01"
-            else:
-                year = str(year_value)  # Convert integer year to string
-
-            if year in year_values:
-                self.year_spinner.text = year
-
-        year_layout.add_widget(self.year_spinner)
-        form_layout.add_widget(year_layout)
-
-        # Area
-        area_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        area_layout.add_widget(Label(
-            text='Area (m²):',
-            size_hint_x=0.3,
-            color=(0.2, 0.2, 0.2, 1)
-        ))
-
-        self.area_input = TextInput(
-            hint_text='Property Area',
-            text=self.safe_get_text('Property-area'),
-            input_filter='float',
-            multiline=False,
-            size_hint_x=0.7,
-            background_color=(0.98, 0.98, 0.98, 1),
-            foreground_color=(0.2, 0.2, 0.2, 1)
-        )
-        area_layout.add_widget(self.area_input)
-        form_layout.add_widget(area_layout)
-
-        # Facade
-        facade_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        facade_layout.add_widget(Label(
-            text='Facade (m):',
-            size_hint_x=0.3,
-            color=(0.2, 0.2, 0.2, 1)
-        ))
-
-        self.facade_input = TextInput(
-            hint_text='Facade Length',
-            text=self.safe_get_text('Property-facade'),
-            input_filter='float',
-            multiline=False,
-            size_hint_x=0.7,
-            background_color=(0.98, 0.98, 0.98, 1),
-            foreground_color=(0.2, 0.2, 0.2, 1)
-        )
-        facade_layout.add_widget(self.facade_input)
-        form_layout.add_widget(facade_layout)
-
-        # Depth
-        depth_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        depth_layout.add_widget(Label(
-            text='Depth (m):',
-            size_hint_x=0.3,
-            color=(0.2, 0.2, 0.2, 1)
-        ))
-
-        self.depth_input = TextInput(
-            hint_text='Property Depth',
-            text=self.safe_get_text('Property-depth'),
-            input_filter='float',
-            multiline=False,
-            size_hint_x=0.7,
-            background_color=(0.98, 0.98, 0.98, 1),
-            foreground_color=(0.2, 0.2, 0.2, 1)
-        )
-        depth_layout.add_widget(self.depth_input)
-        form_layout.add_widget(depth_layout)
-
-        # Bedrooms
-        bedrooms_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        bedrooms_layout.add_widget(Label(
-            text='Bedrooms:',
-            size_hint_x=0.3,
-            color=(0.2, 0.2, 0.2, 1)
-        ))
-
-        self.bedrooms_input = TextInput(
-            hint_text='Number of Bedrooms',
-            text=self.safe_get_text('N-of-bedrooms'),
-            input_filter='int',
-            multiline=False,
-            size_hint_x=0.7,
-            background_color=(0.98, 0.98, 0.98, 1),
-            foreground_color=(0.2, 0.2, 0.2, 1)
-        )
-        bedrooms_layout.add_widget(self.bedrooms_input)
-        form_layout.add_widget(bedrooms_layout)
-
-        # Bathrooms
-        bathrooms_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        bathrooms_layout.add_widget(Label(
-            text='Bathrooms:',
-            size_hint_x=0.3,
-            color=(0.2, 0.2, 0.2, 1)
-        ))
-
-        self.bathrooms_input = TextInput(
-            hint_text='Number of Bathrooms',
-            text=self.safe_get_text('N-of-bathrooms'),
-            input_filter='int',
-            multiline=False,
-            size_hint_x=0.7,
-            background_color=(0.98, 0.98, 0.98, 1),
-            foreground_color=(0.2, 0.2, 0.2, 1)
-        )
-        bathrooms_layout.add_widget(self.bathrooms_input)
-        form_layout.add_widget(bathrooms_layout)
-
-        # Is Corner
-        corner_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        corner_layout.add_widget(Label(
-            text='Is Corner Property:',
-            size_hint_x=0.3,
-            color=(0.2, 0.2, 0.2, 1)
-        ))
-
-        self.corner_checkbox = CheckBox()
-        if self.property_data and self.property_data.get('Property-corner'):
-            self.corner_checkbox.active = bool(self.property_data['Property-corner'])
-
-        corner_layout.add_widget(self.corner_checkbox)
-        form_layout.add_widget(corner_layout)
-
-        # Offer Type (dropdown from Maincode where recty = 06)
-        offer_types = self.api.get_offer_types() or []
-
-        # Safely handle offer types
-        offer_type_values = []
-        if offer_types:
-            try:
-                offer_type_values = [f"{t.get('code', 'N/A')} - {t.get('name', 'Unknown')}" for t in offer_types]
-            except (KeyError, TypeError, AttributeError) as e:
-                print(f"Error processing offer types: {e}")
-
-        # Add a default option if the list is empty
-        if not offer_type_values:
-            offer_type_values = ['No offer types available']
-
-        offer_type_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        offer_type_layout.add_widget(Label(
-            text='Offer Type:',
-            size_hint_x=0.3,
-            color=(0.2, 0.2, 0.2, 1)
-        ))
-
-        self.offer_type_spinner = Spinner(
-            text='Select Offer Type',
-            values=offer_type_values,
-            size_hint_x=0.7,
-            background_color=(0.95, 0.95, 0.95, 1),
-            color=(0.2, 0.2, 0.2, 1)
-        )
-
-        # Safely set the spinner value if we have property data
-        if self.property_data and self.property_data.get('Offer-Type-Code') and offer_type_values and offer_type_values[0] != 'No offer types available':
-            try:
-                for val in offer_type_values:
-                    if val.startswith(self.property_data['Offer-Type-Code']):
-                        self.offer_type_spinner.text = val
-                        break
-            except Exception as e:
-                print(f"Error setting offer type spinner: {e}")
-
-        offer_type_layout.add_widget(self.offer_type_spinner)
-        form_layout.add_widget(offer_type_layout)
-
-        # Province (dropdown from Maincode)
-        provinces = self.api.get_provinces() or []
-
-        # Safely handle provinces
-        province_values = []
-        if provinces:
-            try:
-                province_values = [f"{p.get('code', 'N/A')} - {p.get('name', 'Unknown')}" for p in provinces]
-            except (KeyError, TypeError, AttributeError) as e:
-                print(f"Error processing provinces: {e}")
-
-        # Add a default option if the list is empty
-        if not province_values:
-            province_values = ['No provinces available']
-
-        province_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        province_layout.add_widget(Label(
-            text='Province:',            size_hint_x=0.3,
-            color=(0.2, 0.2, 0.2, 1)
-        ))
-
-        self.province_spinner = Spinner(
-            text='Select Province',
-            values=province_values,
-            size_hint_x=0.7,
-            background_color=(0.95, 0.95, 0.95, 1),
-            color=(0.2, 0.2, 0.2, 1)
-        )
-
-        # Add event handler for province selection to filter regions
-        self.province_spinner.bind(text=self.on_province_selected)
-
-        # Safely set the spinner value if we have property data
-        if self.property_data and self.property_data.get('Province-code') and province_values and province_values[0] != 'No provinces available':
-            try:
-                for val in province_values:
-                    if val.startswith(self.property_data['Province-code']):
-                        self.province_spinner.text = val
-                        break
-            except Exception as e:
-                print(f"Error setting province spinner: {e}")
-
-        province_layout.add_widget(self.province_spinner)
-        form_layout.add_widget(province_layout)        # Region (dropdown from Maincode) - Initially empty, will be populated when province is selected
-        region_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        region_layout.add_widget(Label(
-            text='Region:',
-            size_hint_x=0.3,
-            color=(0.2, 0.2, 0.2, 1)
-        ))
-
-        self.region_spinner = Spinner(
-            text='Select Region',
-            values=['Select Province First'],
-            size_hint_x=0.7,
-            background_color=(0.95, 0.95, 0.95, 1),
-            color=(0.2, 0.2, 0.2, 1)
-        )
-
-        # If we have property data, populate the region dropdown based on the province
-        if self.property_data and self.property_data.get('Province-code'):
-            self.update_region_dropdown(self.property_data['Province-code'])
-            # Set the region spinner value if we have property data
-            if self.property_data.get('Region-code'):
-                try:
-                    for val in self.region_spinner.values:
-                        if val.startswith(self.property_data['Region-code']):
-                            self.region_spinner.text = val
-                            break
-                except Exception as e:
-                    print(f"Error setting region spinner: {e}")
-
-        region_layout.add_widget(self.region_spinner)
-        form_layout.add_widget(region_layout)
-
-        # Address
-        address_layout = BoxLayout(size_hint_y=None, height=dp(80))
-        address_layout.add_widget(Label(
-            text='Address:',
-            size_hint_x=0.3,
-            color=(0.2, 0.2, 0.2, 1)
-        ))
-
-        self.address_input = TextInput(
-            hint_text='Property Address',
-            text=self.safe_get_text('Property-address'),
-            multiline=True,
-            size_hint_x=0.7,
-            height=dp(80),
-            background_color=(0.98, 0.98, 0.98, 1),
-            foreground_color=(0.2, 0.2, 0.2, 1)
-        )
-        address_layout.add_widget(self.address_input)
-        form_layout.add_widget(address_layout)
-
-        # Owner selection
-        owners = self.api.get_all_owners() or []        # Safely handle owners
-        owner_values = []
-        if owners:
-            try:
-                owner_values = [f"{o.get('Ownercode', 'N/A')} - {o.get('ownername', 'Unknown')}" for o in owners]
-            except (KeyError, TypeError, AttributeError) as e:
-                print(f"Error processing owners: {e}")
-
-        # Add a default option if the list is empty
-        if not owner_values:
-            owner_values = ['No owners available']
-
-        owner_layout = BoxLayout(size_hint_y=None, height=dp(40))
-        owner_layout.add_widget(Label(
-            text='Owner:',
-            size_hint_x=0.3,
-            color=(0.2, 0.2, 0.2, 1)
-        ))
-
-        self.owner_spinner = Spinner(
-            text='Select Owner',
-            values=owner_values,
-            size_hint_x=0.5,
-            background_color=(0.95, 0.95, 0.95, 1),
-            color=(0.2, 0.2, 0.2, 1)
-        )
-
-        # Safely set the spinner value if we have property data
-        if self.property_data and self.property_data.get('Ownercode') and owner_values and owner_values[0] != 'No owners available':
-            try:
-                for val in owner_values:
-                    if val.startswith(self.property_data['Ownercode']):
-                        self.owner_spinner.text = val
-                        break
-            except Exception as e:
-                print(f"Error setting owner spinner: {e}")
-
-        owner_layout.add_widget(self.owner_spinner)
-
-        # Add owner button
-        add_owner_button = Button(
-            text='Add Owner',
-            size_hint_x=0.2,
-            background_color=(0.3, 0.6, 0.9, 1),
-            color=(1, 1, 1, 1)
-        )
-        add_owner_button.bind(on_press=self.show_add_owner_form)
-        owner_layout.add_widget(add_owner_button)
-
-        form_layout.add_widget(owner_layout)
-
-        # Description
-        description_layout = BoxLayout(size_hint_y=None, height=dp(100))
-        description_layout.add_widget(Label(
-            text='Description:',
-            size_hint_x=0.3,
-            color=(0.2, 0.2, 0.2, 1)
-        ))
-
-        self.description_input = TextInput(
-            hint_text='Property Description',
-            text=self.safe_get_text('Descriptions'),
-            multiline=True,
-            size_hint_x=0.7,
-            height=dp(100),
-            background_color=(0.98, 0.98, 0.98, 1),
-            foreground_color=(0.2, 0.2, 0.2, 1)
-        )
-        description_layout.add_widget(self.description_input)
-        form_layout.add_widget(description_layout)
-
-        # Photo Upload
-        photo_layout = BoxLayout(orientation='vertical', size_hint_y=None, height=dp(200))
-        photo_layout.add_widget(Label(
-            text='Photos:',
-            size_hint_y=None,
-            height=dp(30),
-            color=(0.2, 0.2, 0.2, 1)
-        ))
-
-        browse_button = Button(
-            text='Browse Photos',
-            size_hint_y=None,
-            height=dp(40),
-            background_color=(0.6, 0.3, 0.9, 1),
-            color=(1, 1, 1, 1)
-        )
-        browse_button.bind(on_press=self.show_file_chooser)
-        photo_layout.add_widget(browse_button)
-
-        # Selected photos
-        self.photos_grid = GridLayout(cols=4, spacing=dp(5), size_hint_y=None, height=dp(130))
-        photo_layout.add_widget(self.photos_grid)
-
-        form_layout.add_widget(photo_layout)
-
-        # Buttons layout
-        buttons_layout = BoxLayout(size_hint_y=None, height=dp(50), spacing=dp(10))
-
-        # Save button
-        save_button = Button(
-            text='Save',
-            background_color=(0.2, 0.8, 0.3, 1),
-            color=(1, 1, 1, 1)
-        )
-        save_button.bind(on_press=self.save)
-        buttons_layout.add_widget(save_button)
-
-        # Cancel button
-        self.cancel_button = Button(
-            text='Cancel',
-            background_color=(0.8, 0.3, 0.3, 1),
-            color=(1, 1, 1, 1)
-        )
-        self.cancel_button.bind(on_press=self.cancel)
-        buttons_layout.add_widget(self.cancel_button)
-
-        form_layout.add_widget(buttons_layout)
-
-        scroll_view.add_widget(form_layout)
-        self.add_widget(scroll_view)
-
-        # Load existing photos if editing
-        if self.property_data and self.property_code:
-            self.load_existing_photos()
-
-    def _update_rect(self, instance, value):
-        """Update the background rectangle."""
-        self.rect.pos = instance.pos
-        self.rect.size = instance.size
-
-    def load_existing_photos(self):
-        """Load existing photos for the property."""
-        photos = self.api.get_property_photos(self.property_code)
-        if photos:
-            for photo in photos:
-                # Create a label to display the photo filename
-                photo_label = Label(
-                    text=photo.get('photofilename', 'Unknown'),
-                    size_hint_y=None,
-                    height=dp(30),
-                    color=(0.2, 0.2, 0.2, 1)
-                )
-                self.photos_grid.add_widget(photo_label)
-
-    def show_file_chooser(self, instance):
-        """Show file chooser to select photos."""
-        content = BoxLayout(orientation='vertical')
-
-        file_chooser = FileChooserListView(
-            path=os.path.expanduser('~'),
-            filters=['*.jpg', '*.jpeg', '*.png']
-        )
-        content.add_widget(file_chooser)
-
-        buttons = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(10))
-
-        select_button = Button(
-            text='Select',
-            background_color=(0.2, 0.8, 0.3, 1),
-            color=(1, 1, 1, 1)
-        )
-        select_button.bind(on_press=lambda x: self.select_photos(file_chooser.selection, file_chooser_popup))
-        buttons.add_widget(select_button)
-
-        cancel_button = Button(
-            text='Cancel',
-            background_color=(0.8, 0.3, 0.3, 1),
-            color=(1, 1, 1, 1)
-        )
-        cancel_button.bind(on_press=lambda x: file_chooser_popup.dismiss())
-        buttons.add_widget(cancel_button)
-
-        content.add_widget(buttons)
-
-        file_chooser_popup = Popup(
-            title='Select Photos',
-            content=content,
-            size_hint=(0.9, 0.9)
-        )
-        file_chooser_popup.open()
-
-    def select_photos(self, selection, popup):
-        """Handle selected photos."""
-        if selection:
-            self.selected_photos.extend(selection)
-
-            # Update the photos grid
-            self.photos_grid.clear_widgets()
-
-            for photo_path in self.selected_photos:
-                # Get just the filename
-                filename = os.path.basename(photo_path)
-
-                # Create a label to display the photo filename
-                photo_label = Label(
-                    text=filename,
-                    size_hint_y=None,
-                    height=dp(30),
-                    color=(0.2, 0.2, 0.2, 1)
-                )
-                self.photos_grid.add_widget(photo_label)
-
-        popup.dismiss()
-
-    def show_add_owner_form(self, instance):
-        """Show the form for adding a new owner."""
-        from src.screens.owner_management import OwnerForm
-
-        content = OwnerForm(save_callback=self.add_owner)
-        self.owner_popup = Popup(
-            title='Add New Owner',
-            content=content,
-            size_hint=(0.8, 0.8)
-        )
-        # Bind the cancel button to dismiss the popup
-        content.cancel_button.bind(on_press=lambda x: self.owner_popup.dismiss())
-        self.owner_popup.open()
-
-    def add_owner(self, owner_name, owner_phone, note, owner_code=None):
-        """Add a new owner to the database."""
-        owner_code = self.api.add_owner(owner_name, owner_phone, note)
-
-        if owner_code:
-            self.owner_popup.dismiss()            # Refresh the owner dropdown
-            owners = self.api.get_all_owners()
-            owner_values = [f"{o.get('Ownercode', 'N/A')} - {o.get('ownername', 'Unknown')}" for o in owners]
-            self.owner_spinner.values = owner_values
-
-            # Select the newly added owner
-            new_owner_value = f"{owner_code} - {owner_name}"
-            self.owner_spinner.text = new_owner_value
-
-            self.show_success(f"Owner '{owner_name}' added successfully!")
-        else:
-            self.show_error("Failed to add owner. Please try again.")
 
     def save(self, instance):
         """Save the property data."""
@@ -719,6 +93,10 @@ class PropertyForm(BoxLayout):
             address = self.address_input.text
             owner_code = self.owner_spinner.text.split(' - ')[0] if self.owner_spinner.text not in ['Select Owner', 'No owners available'] else None
             description = self.description_input.text
+            floors = int(self.floors_input.text) if self.floors_input.text else None
+            price = float(self.price_input.text) if self.price_input.text else None
+            currency_code = self.currency_spinner.text.split(' - ')[0] if self.currency_spinner.text and self.currency_spinner.text != 'Select Currency' else None
+            unit_code = self.unit_spinner.text.split(' - ')[0] if self.unit_spinner.text and self.unit_spinner.text != 'Select Unit' else None
 
             # Prepare property data
             property_data = {
@@ -726,7 +104,7 @@ class PropertyForm(BoxLayout):
                 'Buildtcode': building_type_code,
                 'Yearmake': year,
                 'Property-area': area,
-                'Unitm-code': '05001',  # Default to Square Meter
+                'Unitm-code': unit_code,
                 'Property-facade': facade,
                 'Property-depth': depth,
                 'N-of-bedrooms': bedrooms,
@@ -737,13 +115,84 @@ class PropertyForm(BoxLayout):
                 'Region-code': region_code,
                 'Property-address': address,
                 'Ownercode': owner_code,
-                'Descriptions': description
+                'Descriptions': description,
+                'Property-floors': floors,
+                'Property-price': price,
+                'Property-currency': currency_code
             }
 
             # Call the save callback with the property data and photos
             self.save_callback(property_data, self.selected_photos, self.property_code)
         except Exception as e:
             self.show_error(f"Error saving property: {str(e)}")
+
+    def populate_fields(self):
+        """Populate form fields with property_data for editing."""
+        data = self.property_data
+        # Set spinner/text fields, handle None values
+        if data.get('Rstatetcode') and self.property_type_spinner.values:
+            match = next((v for v in self.property_type_spinner.values if v.startswith(str(data['Rstatetcode']))), None)
+            if match:
+                self.property_type_spinner.text = match
+        if data.get('Buildtcode') and self.building_type_spinner.values:
+            match = next((v for v in self.building_type_spinner.values if v.startswith(str(data['Buildtcode']))), None)
+            if match:
+                self.building_type_spinner.text = match
+        if data.get('Yearmake'):
+            # Expecting format 'YYYY-MM-DD'
+            self.year_spinner.text = str(data['Yearmake'])[:4]
+        self.area_input.text = str(data.get('Property-area', '') or '')
+        self.facade_input.text = str(data.get('Property-facade', '') or '')
+        self.depth_input.text = str(data.get('Property-depth', '') or '')
+        self.bedrooms_input.text = str(data.get('N-of-bedrooms', '') or '')
+        self.bathrooms_input.text = str(data.get('N-of-bathrooms', '') or '')
+        self.corner_checkbox.active = bool(data.get('Property-corner', False))
+        if data.get('Offer-Type-Code') and self.offer_type_spinner.values:
+            match = next((v for v in self.offer_type_spinner.values if v.startswith(str(data['Offer-Type-Code']))), None)
+            if match:
+                self.offer_type_spinner.text = match
+        if data.get('Province-code') and self.province_spinner.values:
+            match = next((v for v in self.province_spinner.values if v.startswith(str(data['Province-code']))), None)
+            if match:
+                self.province_spinner.text = match
+        if data.get('Region-code') and self.region_spinner.values:
+            match = next((v for v in self.region_spinner.values if v.startswith(str(data['Region-code']))), None)
+            if match:
+                self.region_spinner.text = match
+        self.address_input.text = str(data.get('Property-address', '') or '')
+        if data.get('Ownercode') and self.owner_spinner.values:
+            match = next((v for v in self.owner_spinner.values if v.startswith(str(data['Ownercode']))), None)
+            if match:
+                self.owner_spinner.text = match
+        self.description_input.text = str(data.get('Descriptions', '') or '')
+        self.floors_input.text = str(data.get('Property-floors', '') or '')
+        self.price_input.text = str(data.get('Property-price', '') or '')
+        if data.get('Property-currency') and self.currency_spinner.values:
+            match = next((v for v in self.currency_spinner.values if v.startswith(str(data['Property-currency']))), None)
+            if match:
+                self.currency_spinner.text = match
+        if data.get('Unitm-code') and self.unit_spinner.values:
+            match = next((v for v in self.unit_spinner.values if v.startswith(str(data['Unitm-code']))), None)
+            if match:
+                self.unit_spinner.text = match
+
+
+    def show_add_owner_form(self, instance):
+        """Show the form for adding a new owner."""
+        from src.screens.owner_management import OwnerForm
+
+        content = OwnerForm(save_callback=self.add_owner)
+        self.owner_popup = Popup(
+            title='Add New Owner',
+            content=content,
+            size_hint=(0.8, 0.8)
+        )
+        # Bind the cancel button to dismiss the popup
+
+    def add_owner(self, owner_name, owner_phone, note, owner_code=None):
+        """Add a new owner to the database."""
+        owner_code = self.api.add_owner(owner_name, owner_phone, note)
+        # You may want to refresh the owner spinner or update the UI here after adding the owner.
 
     def cancel(self, instance):
         """Cancel the form and close the popup."""
@@ -770,33 +219,14 @@ class PropertyForm(BoxLayout):
     def on_province_selected(self, spinner, text):
         """Handle province selection and update region dropdown."""
         # Ignore default/placeholder text
-        if text in ['Select Province', 'No provinces available']:
-            return
-
-        # Safety check - ensure region_spinner exists
         if not hasattr(self, 'region_spinner'):
             print("Warning: region_spinner not found in PropertyForm")
             return
 
         try:
-            # Extract province code from the selected text (format: "001 - Iraq")
-            province_code = text.split(' - ')[0].strip()
-            self.update_region_dropdown(province_code)
-        except Exception as e:
-            print(f"Error handling province selection: {e}")
-            # Set default values on error if spinner exists
-            if hasattr(self, 'region_spinner'):
-                self.region_spinner.values = ['Error loading regions']
-                self.region_spinner.text = 'Error loading regions'
+            # Extract province_code from the spinner text (format: "code - name")
+            province_code = text.split(' - ')[0] if text and ' - ' in text else text
 
-    def update_region_dropdown(self, province_code):
-        """Update the region dropdown based on selected province."""
-        # Safety check - ensure region_spinner exists
-        if not hasattr(self, 'region_spinner'):
-            print("Warning: region_spinner not found in PropertyForm")
-            return
-
-        try:
             # Get cities for the selected province
             cities = self.api.get_cities_by_province(province_code)
 
@@ -896,9 +326,9 @@ class UpdateGUIScreen(Screen):
             content=content,
             size_hint=(0.9, 0.9)
         )
-
-        # Make sure to bind the cancel button to close the popup
-        content.cancel_button.bind(on_press=lambda x: self.popup.dismiss())
+        # Bind the cancel button to close the popup
+        if hasattr(content.ids, 'cancel_btn'):
+            content.ids.cancel_btn.bind(on_press=lambda x: self.popup.dismiss())
         self.popup.open()
 
     def update_property(self, property_data, photos, property_code):
@@ -942,31 +372,12 @@ class UpdateGUIScreen(Screen):
 
         no_button = Button(
             text='No',
-            background_color=(0.6, 0.6, 0.6, 1),
-            color=(1, 1, 1, 1)
+            background_color=(0.7, 0.7, 0.7, 1),
+            color=(0.2, 0.2, 0.2, 1)
         )
-        no_button.bind(on_press=lambda x: self.confirm_popup.dismiss())
+        no_button.bind(on_press=lambda x: self.dismiss_popup())
+
         buttons.add_widget(no_button)
-
-        content.add_widget(buttons)
-
-        self.confirm_popup = Popup(
-            title='Confirm Delete',
-            content=content,
-            size_hint=(0.6, 0.3),
-            auto_dismiss=False
-        )
-        self.confirm_popup.open()
-
-    def delete_property(self, property_code):
-        """Delete a property from the database."""
-        if self.api.delete_property(property_code):
-            self.confirm_popup.dismiss()
-            self.show_success("Property deleted successfully!")
-            self.load_properties()
-        else:
-            self.confirm_popup.dismiss()
-            self.show_error("Failed to delete property. Please try again.")
 
     def show_success(self, message):
         """Show a success popup."""

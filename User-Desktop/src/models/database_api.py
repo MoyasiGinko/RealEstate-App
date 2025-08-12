@@ -177,6 +177,9 @@ class DatabaseAPI:
                 - Property-address: Address
                 - Ownercode: Owner code
                 - Descriptions: Description
+                - Property-floors: Number of floors
+                - Property-price: Price
+                - Property-currency: Currency
 
         Returns:
             str: The property code if successful, None otherwise

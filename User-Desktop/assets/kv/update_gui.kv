@@ -1,8 +1,333 @@
+<PropertyForm@BoxLayout>:
+    orientation: 'vertical'
+    padding: 30, 30, 30, 30
+    spacing: 20
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    Label:
+        text: root.title if hasattr(root, 'title') else 'Property Form'
+        font_size: 22
+        color: 0.2, 0.2, 0.2, 1
+        size_hint_y: None
+        height: 40
+
+    ScrollView:
+        do_scroll_x: False
+        do_scroll_y: True
+        size_hint: 1, 1
+        GridLayout:
+            id: form_grid
+            cols: 2
+            spacing: 16
+            padding: 10, 10, 10, 10
+            size_hint_y: None
+            height: self.minimum_height
+            size_hint_x: None
+            width: self.parent.width if self.parent else 600
+            row_default_height: 48
+            row_force_default: True
+
+            # Property Type
+            Label:
+                text: 'Property Type:'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            Spinner:
+                id: property_type
+                text: 'Select Property Type'
+                values: root.property_type_values if hasattr(root, 'property_type_values') else []
+                background_color: 0.95, 0.95, 0.95, 1
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 180
+
+            # Building Type
+            Label:
+                text: 'Building Type:'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            Spinner:
+                id: building_type
+                text: 'Select Building Type'
+                values: root.building_type_values if hasattr(root, 'building_type_values') else []
+                background_color: 0.95, 0.95, 0.95, 1
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 180
+
+            # Year Built
+            Label:
+                text: 'Year Built:'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            Spinner:
+                id: year_spinner
+                text: 'Select Year'
+                values: root.year_values if hasattr(root, 'year_values') else []
+                background_color: 0.95, 0.95, 0.95, 1
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 120
+
+            # Area
+            Label:
+                text: 'Area (m²):'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            TextInput:
+                id: area
+                hint_text: 'Property Area'
+                input_filter: 'float'
+                multiline: False
+                background_color: 0.98, 0.98, 0.98, 1
+                foreground_color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 120
+
+            # Facade
+            Label:
+                text: 'Facade (m):'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            TextInput:
+                id: facade
+                hint_text: 'Facade Length'
+                input_filter: 'float'
+                multiline: False
+                background_color: 0.98, 0.98, 0.98, 1
+                foreground_color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 120
+
+            # Depth
+            Label:
+                text: 'Depth (m):'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            TextInput:
+                id: depth
+                hint_text: 'Property Depth'
+                input_filter: 'float'
+                multiline: False
+                background_color: 0.98, 0.98, 0.98, 1
+                foreground_color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 120
+
+            # Bedrooms
+            Label:
+                text: 'Bedrooms:'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            TextInput:
+                id: bedrooms
+                hint_text: 'Number of Bedrooms'
+                input_filter: 'int'
+                multiline: False
+                background_color: 0.98, 0.98, 0.98, 1
+                foreground_color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 120
+
+            # Bathrooms
+            Label:
+                text: 'Bathrooms:'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            TextInput:
+                id: bathrooms
+                hint_text: 'Number of Bathrooms'
+                input_filter: 'int'
+                multiline: False
+                background_color: 0.98, 0.98, 0.98, 1
+                foreground_color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 120
+
+            # Is Corner Property
+            Label:
+                text: 'Is Corner Property:'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            CheckBox:
+                id: corner
+                size_hint_x: 0.6
+
+            # Offer Type
+            Label:
+                text: 'Offer Type:'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            Spinner:
+                id: offer_type
+                text: 'Select Offer Type'
+                values: root.offer_type_values if hasattr(root, 'offer_type_values') else []
+                background_color: 0.95, 0.95, 0.95, 1
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 120
+
+            # Province
+            Label:
+                text: 'Province:'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            Spinner:
+                id: province
+                text: 'Select Province'
+                values: root.province_values if hasattr(root, 'province_values') else []
+                background_color: 0.95, 0.95, 0.95, 1
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 120
+
+            # Region
+            Label:
+                text: 'Region:'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            Spinner:
+                id: region
+                text: 'Select Region'
+                values: root.region_values if hasattr(root, 'region_values') else []
+                background_color: 0.95, 0.95, 0.95, 1
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 120
+
+            # Address
+            Label:
+                text: 'Address:'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            TextInput:
+                id: address
+                hint_text: 'Property Address'
+                multiline: True
+                background_color: 0.98, 0.98, 0.98, 1
+                foreground_color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 180
+
+            # Owner
+            Label:
+                text: 'Owner:'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            Spinner:
+                id: owner
+                text: 'Select Owner'
+                values: root.owner_values if hasattr(root, 'owner_values') else []
+                background_color: 0.95, 0.95, 0.95, 1
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 120
+
+            # Description
+
+            Label:
+                text: 'Description:'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            TextInput:
+                id: description
+                hint_text: 'Property Description'
+                multiline: True
+                background_color: 0.98, 0.98, 0.98, 1
+                foreground_color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 180
+
+            # Floors
+            Label:
+                text: 'Floors:'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            TextInput:
+                id: floors
+                hint_text: 'Number of Floors'
+                input_filter: 'int'
+                multiline: False
+                background_color: 0.98, 0.98, 0.98, 1
+                foreground_color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 120
+
+            # Price
+            Label:
+                text: 'Price:'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            TextInput:
+                id: price
+                hint_text: 'Property Price'
+                input_filter: 'float'
+                multiline: False
+                background_color: 0.98, 0.98, 0.98, 1
+                foreground_color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 120
+
+            # Currency
+            Label:
+                text: 'Currency:'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            Spinner:
+                id: currency
+                text: 'Select Currency'
+                values: root.currency_values if hasattr(root, 'currency_values') else []
+                background_color: 0.95, 0.95, 0.95, 1
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 120
+
+            # Unit
+            Label:
+                text: 'Unit:'
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
+            Spinner:
+                id: unit
+                text: 'Select Unit'
+                values: root.unit_values if hasattr(root, 'unit_values') else []
+                background_color: 0.95, 0.95, 0.95, 1
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.6
+                minimum_width: 120
+
+    BoxLayout:
+        size_hint_y: None
+        height: 50
+        spacing: 10
+        Button:
+            id: save_btn
+            text: 'Save'
+            background_color: 0.2, 0.8, 0.3, 1
+            color: 1, 1, 1, 1
+            on_press: root.on_save() if hasattr(root, 'on_save') else None
+        Button:
+            id: cancel_btn
+            text: 'Cancel'
+            background_color: 0.8, 0.3, 0.3, 1
+            color: 1, 1, 1, 1
+            on_press: root.on_cancel() if hasattr(root, 'on_cancel') else None
 <UpdateGUIScreen>:
     BoxLayout:
         orientation: 'vertical'
         padding: 10
         spacing: 10
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
 
         # Header with title
         BoxLayout:
