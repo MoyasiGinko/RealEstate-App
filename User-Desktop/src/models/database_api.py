@@ -187,8 +187,11 @@ class DatabaseAPI:
         if not self.company_code:
             raise ValueError("Company code not set")
 
-        # Generate a unique property code
-        property_code = self.generate_property_code()
+        # Use provided property code or generate a unique one
+        if 'realstatecode' in property_data and property_data['realstatecode']:
+            property_code = property_data['realstatecode']
+        else:
+            property_code = self.generate_property_code()
 
         # Prepare data for insertion
         data = {

@@ -303,34 +303,57 @@
                 size_hint_x: 0.6
                 minimum_width: 120
 
-
-    # Photo Gallery Section (moved to end)
-    BoxLayout:
-        orientation: 'vertical'
-        size_hint_y: None
-        height: 120
-        spacing: 5
-        Label:
-            text: 'Photos:'
-            color: 0.2, 0.2, 0.2, 1
-            size_hint_y: None
-            height: 24
-        ScrollView:
-            do_scroll_x: True
-            do_scroll_y: False
-            size_hint_y: None
-            height: 80
+            # Photos
+            Label:
+                text: 'Photos'
+                size_hint_y: None
+                height: 40
+                color: 0.2, 0.2, 0.2, 1
+                size_hint_x: 0.4
             BoxLayout:
-                id: photo_gallery
+                size_hint_y: None
+                height: 40
                 orientation: 'horizontal'
-                size_hint_x: None
-                width: self.minimum_width
                 spacing: 10
-        Button:
-            text: 'Add Photo'
-            size_hint: None, None
-            size: 120, 32
-            on_press: root.open_photo_chooser()
+                size_hint_x: 0.6
+                Button:
+                    id: add_photo
+                    text: 'Add Photo'
+                    background_color: 0.3, 0.6, 0.9, 1
+                    color: 1, 1, 1, 1
+                    size_hint_x: 0.4
+                    on_press: root.open_photo_chooser()
+                Label:
+                    id: photo_count
+                    text: 'No photos selected'
+                    color: 0.5, 0.5, 0.5, 1
+                    size_hint_x: 0.6
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+
+            # Photo Preview Gallery (spans both columns)
+            Label:
+                text: 'Photo Preview'
+                size_hint_y: None
+                height: 30
+                color: 0.2, 0.2, 0.2, 1
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+            ScrollView:
+                do_scroll_y: False
+                do_scroll_x: True
+                size_hint_y: None
+                height: 115
+
+                GridLayout:
+                    id: photo_gallery
+                    rows: 1
+                    size_hint_x: None
+                    width: self.minimum_width
+                    spacing: 10
+                    height: 100
 
 
 

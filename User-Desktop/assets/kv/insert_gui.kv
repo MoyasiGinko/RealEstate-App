@@ -21,6 +21,7 @@
 	property_owner: property_owner
 	add_photo: add_photo
 	photo_count: photo_count
+	photo_gallery: photo_gallery
 	address: address
 	notes: notes
 	save_btn: save_btn
@@ -374,6 +375,36 @@
 							halign: 'left'
 							valign: 'middle'
 							text_size: self.size
+
+				# Photo Preview Gallery
+				BoxLayout:
+					size_hint_y: None
+					height: 150
+					orientation: 'vertical'
+					spacing: 5
+
+					Label:
+						text: 'Photo Preview'
+						size_hint_y: None
+						height: 30
+						color: 0.2, 0.2, 0.2, 1
+						halign: 'left'
+						valign: 'middle'
+						text_size: self.size
+
+					ScrollView:
+						do_scroll_y: False
+						do_scroll_x: True
+						size_hint_y: None
+						height: 115
+
+						GridLayout:
+							id: photo_gallery
+							rows: 1
+							size_hint_x: None
+							width: self.minimum_width
+							spacing: 10
+							height: 100
 
 				# 18. Notes - full width
 				BoxLayout:

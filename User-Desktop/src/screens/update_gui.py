@@ -55,11 +55,22 @@ class PropertyForm(BoxLayout):
         """Update the photo gallery UI with current selected_photos."""
         gallery = self.ids.photo_gallery
         gallery.clear_widgets()
+
+        # Update photo count
+        if hasattr(self, 'photo_count') and self.photo_count:
+            count = len(self.selected_photos)
+            if count == 0:
+                self.photo_count.text = 'No photos selected'
+            elif count == 1:
+                self.photo_count.text = '1 photo selected'
+            else:
+                self.photo_count.text = f'{count} photos selected'
+
         for photo_path in self.selected_photos:
-            box = BoxLayout(orientation='vertical', size_hint=(None, None), size=(80, 80), spacing=2)
+            box = BoxLayout(orientation='vertical', size_hint=(None, None), size=(100, 100), spacing=2)
             try:
                 from kivy.uix.image import Image
-                img = Image(source=photo_path, size_hint=(1, 0.8))
+                img = Image(source=photo_path, size_hint=(1, 0.8), fit_mode='contain')
             except Exception:
                 img = Label(text='[Image]', size_hint=(1, 0.8))
             remove_btn = Button(text='X', size_hint=(1, 0.2), background_color=(0.8,0.2,0.2,1), color=(1,1,1,1))
@@ -109,6 +120,8 @@ class PropertyForm(BoxLayout):
         self.price_input = self.ids.price
         self.currency_spinner = self.ids.currency
         self.unit_spinner = self.ids.unit
+        # Photo-related widgets
+        self.photo_count = self.ids.photo_count
         # Optionally, connect save/cancel buttons if needed
         if 'save_btn' in self.ids:
             self.ids.save_btn.bind(on_press=self.save)
@@ -126,6 +139,7 @@ class PropertyForm(BoxLayout):
     from kivy.properties import ObjectProperty, ListProperty
     save_callback = ObjectProperty(None)
     property_data = ObjectProperty(None)
+    photo_count = ObjectProperty(None)
     property_type_values = ListProperty([])
     building_type_values = ListProperty([])
     year_values = ListProperty([])

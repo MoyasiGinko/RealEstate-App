@@ -40,6 +40,7 @@ class InsertScreen(Screen):
 	owner_search = ObjectProperty(None)
 	add_photo = ObjectProperty(None)
 	photo_count = ObjectProperty(None)
+	photo_gallery = ObjectProperty(None)
 	notes = ObjectProperty(None)
 	save_btn = ObjectProperty(None)
 	new_btn = ObjectProperty(None)
@@ -248,6 +249,7 @@ class InsertScreen(Screen):
 		self.notes.text = ''
 		self.selected_photos = []  # Clear selected photos
 		self.update_photo_count()  # Update photo count display
+		self.update_photo_gallery()  # Clear photo gallery
 
 	def show_file_chooser(self, instance):
 		"""Show file chooser for selecting property photos."""
@@ -286,6 +288,7 @@ class InsertScreen(Screen):
 			self.selected_photos.extend(selection)
 			popup.dismiss()
 			self.update_photo_count()
+			self.update_photo_gallery()
 			self.show_success(f"Selected {len(selection)} photo(s)")
 
 	def update_photo_count(self):
@@ -298,6 +301,62 @@ class InsertScreen(Screen):
 				self.photo_count.text = '1 photo selected'
 			else:
 				self.photo_count.text = f'{count} photos selected'
+
+	def update_photo_gallery(self):
+		"""Update the photo gallery preview with selected photos."""
+		if hasattr(self, 'photo_gallery') and self.photo_gallery:
+			# Clear existing preview items
+			self.photo_gallery.clear_widgets()
+
+			for photo_path in self.selected_photos:
+				# Create a container for each photo preview
+				photo_container = BoxLayout(
+					orientation='vertical',
+					size_hint=(None, 1),
+					width=100,
+					spacing=2
+				)
+
+				try:
+					# Try to display the image
+					from kivy.uix.image import Image
+					img = Image(
+						source=photo_path,
+						size_hint=(1, 0.8),
+						fit_mode='contain'
+					)
+				except Exception:
+					# Fallback if image can't be loaded
+					img = Label(
+						text='[Image]',
+						size_hint=(1, 0.8),
+						color=(0.5, 0.5, 0.5, 1)
+					)
+
+				# Add remove button
+				remove_btn = Button(
+					text='×',
+					size_hint=(1, 0.2),
+					background_color=(0.8, 0.2, 0.2, 1),
+					color=(1, 1, 1, 1)
+				)
+
+				# Bind remove button with photo path
+				remove_btn.bind(on_press=lambda btn, path=photo_path: self.remove_photo(path))
+
+				# Add widgets to container
+				photo_container.add_widget(img)
+				photo_container.add_widget(remove_btn)
+
+				# Add container to gallery
+				self.photo_gallery.add_widget(photo_container)
+
+	def remove_photo(self, photo_path):
+		"""Remove a photo from the selection."""
+		if photo_path in self.selected_photos:
+			self.selected_photos.remove(photo_path)
+			self.update_photo_count()
+			self.update_photo_gallery()
 
 	def upload_photos(self, property_code, photo_paths):
 		"""Upload photos for a property."""
