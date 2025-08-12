@@ -22,6 +22,20 @@ Builder.load_file('assets/kv/update_gui.kv')
 
 class PropertyForm(BoxLayout):
     def on_kv_post(self, base_widget):
+        # Set API
+        self.api = get_api()
+
+        # Populate dropdown values
+        self.property_type_values = [f"{x['code']} - {x['name']}" for x in self.api.get_property_types() or []]
+        self.building_type_values = [f"{x['code']} - {x['name']}" for x in self.api.get_building_types() or []]
+        self.year_values = [str(y) for y in range(1980, datetime.now().year + 1)]
+        self.offer_type_values = [f"{x['code']} - {x['name']}" for x in self.api.get_offer_types() or []]
+        self.province_values = [f"{x['code']} - {x['name']}" for x in self.api.get_provinces() or []]
+        self.region_values = []  # Will be set when province is selected
+        self.owner_values = [f"{x['Ownercode']} - {x['ownername']}" for x in self.api.get_all_owners() or []]
+        self.currency_values = ['IQD - Iraqi Dinar', 'USD - US Dollar', 'EUR - Euro']  # Example, adjust as needed
+        self.unit_values = [f"{x['code']} - {x['name']}" for x in self.api.get_unit_measures() or []]
+
         # Bind all widget references to their ids for kv linkage
         self.property_type_spinner = self.ids.property_type
         self.building_type_spinner = self.ids.building_type
@@ -48,13 +62,25 @@ class PropertyForm(BoxLayout):
             self.ids.save_btn.bind(on_press=self.save)
         if 'cancel_btn' in self.ids:
             self.ids.cancel_btn.bind(on_press=self.cancel)
+        # Always define selected_photos and property_code to avoid attribute errors
+        self.selected_photos = []
+        self.property_code = None
         # Populate fields if editing
         if self.property_data:
             self.populate_fields()
 
-    from kivy.properties import ObjectProperty
+    from kivy.properties import ObjectProperty, ListProperty
     save_callback = ObjectProperty(None)
     property_data = ObjectProperty(None)
+    property_type_values = ListProperty([])
+    building_type_values = ListProperty([])
+    year_values = ListProperty([])
+    offer_type_values = ListProperty([])
+    province_values = ListProperty([])
+    region_values = ListProperty([])
+    owner_values = ListProperty([])
+    currency_values = ListProperty([])
+    unit_values = ListProperty([])
     """Form for adding or editing a property."""
 
     def save(self, instance):
@@ -126,9 +152,13 @@ class PropertyForm(BoxLayout):
         except Exception as e:
             self.show_error(f"Error saving property: {str(e)}")
 
+
     def populate_fields(self):
         """Populate form fields with property_data for editing."""
         data = self.property_data
+        # Set property_code if available
+        if data.get('realstatecode'):
+            self.property_code = data['realstatecode']
         # Set spinner/text fields, handle None values
         if data.get('Rstatetcode') and self.property_type_spinner.values:
             match = next((v for v in self.property_type_spinner.values if v.startswith(str(data['Rstatetcode']))), None)
