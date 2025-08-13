@@ -1,30 +1,154 @@
-<UploadScreen@Screen>:
-  name: "upload"
-  BoxLayout:
-    orientation: "vertical"
-    padding: 40
-    spacing: 20
+<UploadScreen>:
+    name: 'upload'
 
-    Label:
-      text: "Upload File"
-      font_size: 32
-      size_hint_y: None
-      height: self.texture_size[1] + 20
-
-    FileChooserIconView:
-      id: filechooser
-      size_hint_y: 0.7
+    # White background
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
     BoxLayout:
-      orientation: "horizontal"
-      size_hint_y: None
-      height: 50
-      spacing: 10
+        orientation: 'vertical'
+        padding: 30
+        spacing: 20
 
-      Button:
-        text: "Cancel"
-        on_release: app.root.current = "main"
+        # Screen title
+        Label:
+            text: 'Database Management'
+            font_size: 32
+            size_hint_y: None
+            height: 60
+            color: 0.1, 0.1, 0.1, 1
+            bold: True
 
-      Button:
-        text: "Upload"
-        on_release: app.upload_file(filechooser.path, filechooser.selection)
+        # Description
+        Label:
+            text: 'Manage your database: reset, backup, seed with sample data, or upload a new database file'
+            font_size: 16
+            size_hint_y: None
+            height: 40
+            color: 0.4, 0.4, 0.4, 1
+            text_size: self.width, None
+            halign: 'center'
+
+        # Spacer
+        Widget:
+            size_hint_y: 0.1
+
+        # Main buttons grid
+        GridLayout:
+            cols: 2
+            spacing: 20
+            size_hint_y: None
+            height: 300
+            row_default_height: 140
+
+            # Reset Database button
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: 10
+
+                Button:
+                    text: 'Reset Database'
+                    font_size: 18
+                    background_color: 0.8, 0.2, 0.2, 1
+                    color: 1, 1, 1, 1
+                    size_hint_y: None
+                    height: 80
+                    on_press: root.create_fresh_database(self)
+
+                Label:
+                    text: 'Create a fresh empty database\n(Deletes all existing data)'
+                    font_size: 12
+                    color: 0.5, 0.5, 0.5, 1
+                    text_size: self.width, None
+                    halign: 'center'
+                    size_hint_y: None
+                    height: 50
+
+            # Export Database button
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: 10
+
+                Button:
+                    text: 'Export Database'
+                    font_size: 18
+                    background_color: 0.2, 0.6, 0.8, 1
+                    color: 1, 1, 1, 1
+                    size_hint_y: None
+                    height: 80
+                    on_press: root.export_database(self)
+
+                Label:
+                    text: 'Create a backup copy of\nyour current database'
+                    font_size: 12
+                    color: 0.5, 0.5, 0.5, 1
+                    text_size: self.width, None
+                    halign: 'center'
+                    size_hint_y: None
+                    height: 50
+
+            # Seed Database button
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: 10
+
+                Button:
+                    text: 'Seed Database'
+                    font_size: 18
+                    background_color: 0.6, 0.8, 0.2, 1
+                    color: 1, 1, 1, 1
+                    size_hint_y: None
+                    height: 80
+                    on_press: root.seed_database(self)
+
+                Label:
+                    text: 'Add sample data to database\n(Preserves existing data)'
+                    font_size: 12
+                    color: 0.5, 0.5, 0.5, 1
+                    text_size: self.width, None
+                    halign: 'center'
+                    size_hint_y: None
+                    height: 50
+
+            # Upload Database button
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: 10
+
+                Button:
+                    text: 'Upload Database'
+                    font_size: 18
+                    background_color: 0.8, 0.6, 0.2, 1
+                    color: 1, 1, 1, 1
+                    size_hint_y: None
+                    height: 80
+                    on_press: root.upload_database(self)
+
+                Label:
+                    text: 'Replace current database\nwith a new file'
+                    font_size: 12
+                    color: 0.5, 0.5, 0.5, 1
+                    text_size: self.width, None
+                    halign: 'center'
+                    size_hint_y: None
+                    height: 50
+
+        # Spacer
+        Widget:
+            size_hint_y: 0.2
+
+        # Back button
+        Button:
+            text: 'Back to Main'
+            font_size: 16
+            size_hint_y: None
+            height: 50
+            size_hint_x: 0.3
+            pos_hint: {'center_x': 0.5}
+            background_color: 0.6, 0.6, 0.6, 1
+            color: 1, 1, 1, 1
+            on_press: root.go_to_main_gui(self)
