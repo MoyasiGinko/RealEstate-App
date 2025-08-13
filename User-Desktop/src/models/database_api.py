@@ -237,7 +237,7 @@ class DatabaseAPI:
 
     def delete_property(self, property_code):
         """
-        Delete a property from the database.
+        Delete a property from the database and remove all associated photos.
 
         Args:
             property_code (str): The code of the property to delete
@@ -245,11 +245,46 @@ class DatabaseAPI:
         Returns:
             bool: True if successful, False otherwise
         """
-        # First delete all photos
-        self.db.execute_query("DELETE FROM realstatephotos WHERE realstatecode = ?", (property_code,))
+        import os
+        import shutil
+        from pathlib import Path
 
-        # Then delete the property
-        return self.db.execute_query("DELETE FROM Realstatspecification WHERE realstatecode = ?", (property_code,))
+        try:
+            # Get all photos for this property before deletion
+            photos = self.db.execute_query("SELECT * FROM realstatephotos WHERE realstatecode = ?", (property_code,))
+
+            # Delete photo files from filesystem
+            if photos:
+                for photo in photos:
+                    try:
+                        storage_path = photo.get('Storagepath', '')
+                        filename = photo.get('photofilename', '')
+                        if storage_path and filename:
+                            photo_file_path = os.path.join(storage_path, filename)
+                            if os.path.exists(photo_file_path):
+                                os.remove(photo_file_path)
+                                print(f"Deleted photo file: {photo_file_path}")
+                    except Exception as e:
+                        print(f"Error deleting photo file: {e}")
+
+                # Remove the entire property photo directory if it exists
+                try:
+                    property_dir = Path("realstateimages") / property_code
+                    if property_dir.exists():
+                        shutil.rmtree(property_dir)
+                        print(f"Deleted property photo directory: {property_dir}")
+                except Exception as e:
+                    print(f"Error deleting property directory: {e}")
+
+            # Delete photos from database
+            self.db.execute_query("DELETE FROM realstatephotos WHERE realstatecode = ?", (property_code,))
+
+            # Then delete the property
+            return self.db.execute_query("DELETE FROM Realstatspecification WHERE realstatecode = ?", (property_code,))
+
+        except Exception as e:
+            print(f"Error deleting property: {e}")
+            return False
 
     def add_property_photo(self, property_code, file_path, photo_filename, photo_extension):
         """
@@ -282,7 +317,7 @@ class DatabaseAPI:
 
     def delete_property_photo(self, property_code, photo_filename):
         """
-        Delete a photo for a property.
+        Delete a photo for a property from both database and filesystem.
 
         Args:
             property_code (str): The code of the property
@@ -291,24 +326,48 @@ class DatabaseAPI:
         Returns:
             bool: True if successful, False otherwise
         """
-        result = self.db.execute_query(
-            "DELETE FROM realstatephotos WHERE realstatecode = ? AND photofilename = ?",
-            (property_code, photo_filename)
-        )
+        import os
 
-        # Check if any photos remain for this property
-        photos = self.db.execute_query(
-            "SELECT COUNT(*) as count FROM realstatephotos WHERE realstatecode = ?",
-            (property_code,)
-        )
-
-        # If no photos remain, update the Photosituation flag
-        if photos[0]['count'] == 0:            self.db.execute_query(
-                "UPDATE Realstatspecification SET Photosituation = ? WHERE realstatecode = ?",
-                (False, property_code)
+        try:
+            # First get the photo record to find the file path
+            photo_record = self.db.execute_query(
+                "SELECT * FROM realstatephotos WHERE realstatecode = ? AND photofilename = ?",
+                (property_code, photo_filename)
             )
 
-        return result
+            # Delete the physical file if it exists
+            if photo_record:
+                storage_path = photo_record[0].get('Storagepath', '')
+                if storage_path:
+                    photo_file_path = os.path.join(storage_path, photo_filename)
+                    if os.path.exists(photo_file_path):
+                        os.remove(photo_file_path)
+                        print(f"Deleted photo file: {photo_file_path}")
+
+            # Delete from database
+            result = self.db.execute_query(
+                "DELETE FROM realstatephotos WHERE realstatecode = ? AND photofilename = ?",
+                (property_code, photo_filename)
+            )
+
+            # Check if any photos remain for this property
+            photos = self.db.execute_query(
+                "SELECT COUNT(*) as count FROM realstatephotos WHERE realstatecode = ?",
+                (property_code,)
+            )
+
+            # If no photos remain, update the Photosituation flag
+            if photos[0]['count'] == 0:
+                self.db.execute_query(
+                    "UPDATE Realstatspecification SET Photosituation = ? WHERE realstatecode = ?",
+                    (False, property_code)
+                )
+
+            return result
+
+        except Exception as e:
+            print(f"Error deleting photo: {e}")
+            return False
 
     # Lookup Data Functions
 

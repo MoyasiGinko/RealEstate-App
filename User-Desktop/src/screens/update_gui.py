@@ -83,6 +83,14 @@ class PropertyForm(BoxLayout):
         """Remove a photo from the gallery and selection."""
         if photo_path in self.selected_photos:
             self.selected_photos.remove(photo_path)
+
+            # If this is an existing photo (starts with realstateimages/),
+            # mark it for deletion from database
+            if photo_path.startswith("realstateimages") and hasattr(self, 'property_code') and self.property_code:
+                if not hasattr(self, 'photos_to_delete'):
+                    self.photos_to_delete = []
+                self.photos_to_delete.append(photo_path)
+
             self.update_photo_gallery()
     def on_kv_post(self, base_widget):
         # Set API
@@ -129,6 +137,8 @@ class PropertyForm(BoxLayout):
             self.ids.cancel_btn.bind(on_press=self.cancel)
         # Always define selected_photos and property_code to avoid attribute errors
         self.selected_photos = []
+        self.existing_photos = []  # Track existing photos separately from new ones
+        self.photos_to_delete = []  # Track photos marked for deletion
         self.property_code = None
         # Populate fields if editing - delay this to ensure UI is ready
         if self.property_data:
@@ -282,7 +292,7 @@ class PropertyForm(BoxLayout):
         # Load and display existing property photos if editing
         if self.property_code:
             # Only load from DB if not already loaded
-            if not self.selected_photos:
+            if not self.selected_photos and not self.existing_photos:
                 try:
                     photos = self.api.get_property_photos(self.property_code)
                     for photo in photos or []:
@@ -295,6 +305,7 @@ class PropertyForm(BoxLayout):
                             path = os.path.join(storage_path, filename)
                             if os.path.exists(path):
                                 self.selected_photos.append(path)
+                                self.existing_photos.append(path)  # Track as existing
                 except Exception as e:
                     print(f"Error loading property photos: {e}")
             self.update_photo_gallery()
@@ -455,9 +466,27 @@ class UpdateGUIScreen(Screen):
     def update_property(self, property_data, photos, property_code):
         """Update an existing property in the database."""
         if self.api.update_property(property_code, property_data):
-            # Upload new photos
-            if photos:
-                self.upload_photos(property_code, photos)
+            # Handle photo deletions first
+            if hasattr(self, 'photos_to_delete') and self.photos_to_delete:
+                for photo_path in self.photos_to_delete:
+                    # Extract filename from path
+                    import os
+                    filename = os.path.basename(photo_path)
+                    success = self.api.delete_property_photo(property_code, filename)
+                    if not success:
+                        self.show_error(f"Failed to delete photo {filename}")
+
+            # Filter out existing photos - only upload truly new ones
+            new_photos = []
+            existing_photos = getattr(self, 'existing_photos', [])
+
+            for photo in photos:
+                if photo not in existing_photos:
+                    new_photos.append(photo)
+
+            # Upload only new photos
+            if new_photos:
+                self.upload_photos(property_code, new_photos)
 
             self.popup.dismiss()
             self.show_success(f"Property '{property_code}' updated successfully!")
@@ -466,7 +495,7 @@ class UpdateGUIScreen(Screen):
             self.show_error("Failed to update property. Please try again.")
 
     def upload_photos(self, property_code, photo_paths):
-        """Upload photos for a property."""
+        """Upload photos for a property (only new photos, not existing ones)."""
         import shutil
         import uuid
         from pathlib import Path
@@ -477,11 +506,17 @@ class UpdateGUIScreen(Screen):
 
         for photo_path in photo_paths:
             try:
+                # Skip if this is already an existing photo in the storage directory
+                if photo_path.startswith(str(storage_dir)):
+                    continue  # This is already an existing photo, skip it
+
                 # Generate unique filename to avoid conflicts
                 original_file = Path(photo_path)
                 file_extension = original_file.suffix.lower()
                 unique_filename = f"{uuid.uuid4().hex[:8]}_{original_file.stem}{file_extension}"
 
+                # Copy file to storage directory
+                destination = storage_dir / unique_filename
                 # Copy file to storage directory
                 destination = storage_dir / unique_filename
                 shutil.copy2(photo_path, destination)
@@ -503,7 +538,7 @@ class UpdateGUIScreen(Screen):
     def confirm_delete_property(self, property_code):
         """Show confirmation dialog for deleting a property."""
         content = BoxLayout(orientation='vertical', padding=dp(10), spacing=dp(10))
-        content.add_widget(Label(text='Are you sure you want to delete this property?', color=(0.2, 0.2, 0.2, 1)))
+        content.add_widget(Label(text='Are you sure you want to delete this property?\nThis will also delete all associated photos.', color=(0.2, 0.2, 0.2, 1)))
 
         buttons = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(10))
 
@@ -520,9 +555,26 @@ class UpdateGUIScreen(Screen):
             background_color=(0.7, 0.7, 0.7, 1),
             color=(0.2, 0.2, 0.2, 1)
         )
-        no_button.bind(on_press=lambda x: self.dismiss_popup())
-
+        no_button.bind(on_press=lambda x: self.delete_popup.dismiss())
         buttons.add_widget(no_button)
+
+        content.add_widget(buttons)
+
+        self.delete_popup = Popup(
+            title='Confirm Delete',
+            content=content,
+            size_hint=(0.6, 0.4)
+        )
+        self.delete_popup.open()
+
+    def delete_property(self, property_code):
+        """Delete a property and all its photos from database and filesystem."""
+        if self.api.delete_property(property_code):
+            self.delete_popup.dismiss()
+            self.show_success(f"Property '{property_code}' and all its photos deleted successfully!")
+            self.load_properties()
+        else:
+            self.show_error("Failed to delete property. Please try again.")
 
     def show_success(self, message):
         """Show a success popup."""
