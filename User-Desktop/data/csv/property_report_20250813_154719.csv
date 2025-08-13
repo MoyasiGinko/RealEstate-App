@@ -1,0 +1,7 @@
+Property Code,Property Type,Building Type,Year Built,Area (m²),Facade (m),Depth (m),Bedrooms,Bathrooms,Floors,Corner Property,Price,Currency,Address,Owner Name,Owner Code,Description
+E901E9F0,Residential,Apartment,2019,95.0,12.0,8.0,2,1,,No,,,"Abdoun Area, Tower B, Floor 15, Apt 1502",Sara Ahmed,A005,"Modern apartment in upscale area, great investment opportunity"
+E901D7E8,Commercial,Shop,2018,75.25,8.0,12.0,0,1,,Yes,,,"Karrada District, Main Street, Shop 45",Omar Rashid,A004,Prime location retail shop in busy commercial area
+E901C5D6,Residential,Villa,2020,350.5,20.0,35.0,5,4,,Yes,,,"Dream City Complex, Villa A-15",Fatima Ali,A003,"Luxury modern villa with pool, landscaping, and smart home features"
+E901B3C4,Industrial,Warehouse,2015,500.0,25.0,40.0,0,2,,No,,,"Industrial Zone, Building 7, Warehouse 3",Ahmad Hassan,A002,Large warehouse space suitable for storage and distribution
+E901A7F2,Residential,House,2010,145.75,12.5,30.75,3,2,,Yes,,,"Al-Mansour District, Street 15, House 28",Mohammed Khaled,A001,Well maintained family house with garden and parking
+E90113N3,Agricultural,Factory,2025-01-01,2222.0,,,,,,Yes,,,,Ahmad Hassan,A002,

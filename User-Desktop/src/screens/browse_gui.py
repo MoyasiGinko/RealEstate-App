@@ -566,8 +566,12 @@ class SearchReportScreen(Screen):
     def export_to_csv(self, properties):
         """Export properties to CSV file."""
         try:
+            # Create data/csv directory if it doesn't exist
+            csv_dir = os.path.join("data", "csv")
+            os.makedirs(csv_dir, exist_ok=True)
+
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"property_report_{timestamp}.csv"
+            filename = os.path.join(csv_dir, f"property_report_{timestamp}.csv")
 
             with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
                 fieldnames = [

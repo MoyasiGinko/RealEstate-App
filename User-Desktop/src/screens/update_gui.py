@@ -18,7 +18,6 @@ import shutil
 import uuid
 import tkinter as tk
 from tkinter import filedialog
-from screens.property_management import PropertyManagementScreen
 from src.models.database_api import get_api
 
 # Load KV file

@@ -10,8 +10,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.models.database_api import get_api
 
 # Import screens
-from src.screens.owner_management import OwnerManagementScreen
-from src.screens.property_management import PropertyManagementScreen
 from screens.browse_gui import SearchReportScreen
 from screens.about_gui import AboutScreen
 from screens.main_gui import MainScreen
@@ -44,13 +42,11 @@ class MainApp(App):
         # Add all screens to the manager
 
         self.sm.add_widget(MainScreen(name='main_gui'))
-        self.sm.add_widget(OwnerManagementScreen(name='owner_management'))
-        self.sm.add_widget(PropertyManagementScreen(name='property_management'))
-        self.sm.add_widget(SearchReportScreen(name='browse_gui'))
-        self.sm.add_widget(AboutScreen(name='about_gui'))
-        self.sm.add_widget(UploadScreen(name='upload_gui'))
         self.sm.add_widget(InsertScreen(name='insert_gui'))
         self.sm.add_widget(UpdateGUIScreen(name='update_gui'))
+        self.sm.add_widget(SearchReportScreen(name='browse_gui'))
+        self.sm.add_widget(UploadScreen(name='upload_gui'))
+        self.sm.add_widget(AboutScreen(name='about_gui'))
 
         # Set the default screen
         self.sm.current = 'main_gui'

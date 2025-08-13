@@ -1,15 +1,16 @@
 # src/screens/__init__.py
-
-from .owner_management import OwnerManagementScreen
-from .property_management import PropertyManagementScreen
-from .browse_gui import SearchReportScreen
-from .about_gui import AboutScreen
 from .main_gui import MainScreen
+from .insert_gui import InsertScreen
+from .update_gui import UpdateGUIScreen
+from .browse_gui import SearchReportScreen
+from .upload_gui import UploadScreen
+from .about_gui import AboutScreen
 
 __all__ = [
-    "OwnerManagementScreen",
-    "PropertyManagementScreen",
+    "InsertScreen",
+    "UpdateGUIScreen",
     "SearchReportScreen",
     "AboutScreen",
     "MainScreen",
+    "UploadScreen"
 ]
