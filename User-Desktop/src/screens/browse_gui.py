@@ -27,36 +27,47 @@ class PropertyDetailContent(BoxLayout):
         super(PropertyDetailContent, self).__init__(**kwargs)
         self.property_data = property_data
         self.popup = popup_instance  # Reference to the popup for dismiss functionality
-        
+
         # Set up the layout
         self.orientation = 'vertical'
         self.padding = dp(20)
         self.spacing = dp(15)
-        
+
+        # Set white background
+        with self.canvas.before:
+            Color(1, 1, 1, 1)  # White background
+            self.rect = Rectangle(pos=self.pos, size=self.size)
+        self.bind(pos=self.update_rect, size=self.update_rect)
+
         # Create the UI immediately
         self.build_ui()
         self.populate_data()
+
+    def update_rect(self, instance, value):
+        """Update background rectangle when widget size/position changes."""
+        self.rect.pos = instance.pos
+        self.rect.size = instance.size
 
     def build_ui(self):
         """Build the UI components programmatically."""
         # Main content area
         main_layout = BoxLayout(orientation='horizontal', spacing=dp(20))
-        
+
         # Property details on the left (60% width)
         details_scroll = ScrollView(size_hint=(0.6, 1))
         self.details_grid = GridLayout(
             cols=2,
-            spacing=dp(10),
+            spacing=dp(30),
             size_hint_y=None,
             padding=dp(10)
         )
         self.details_grid.bind(minimum_height=self.details_grid.setter('height'))
         details_scroll.add_widget(self.details_grid)
         main_layout.add_widget(details_scroll)
-        
+
         # Photo gallery on the right (40% width)
         photo_layout = BoxLayout(orientation='vertical', size_hint=(0.4, 1))
-        
+
         # Photo section title
         photo_title = Label(
             text='Property Photos',
@@ -67,7 +78,7 @@ class PropertyDetailContent(BoxLayout):
             bold=True
         )
         photo_layout.add_widget(photo_title)
-        
+
         # Photo gallery scroll view
         photo_scroll = ScrollView()
         self.photo_gallery = GridLayout(
@@ -79,10 +90,10 @@ class PropertyDetailContent(BoxLayout):
         self.photo_gallery.bind(minimum_height=self.photo_gallery.setter('height'))
         photo_scroll.add_widget(self.photo_gallery)
         photo_layout.add_widget(photo_scroll)
-        
+
         main_layout.add_widget(photo_layout)
         self.add_widget(main_layout)
-        
+
         # Close button
         close_button = Button(
             text='Close',
@@ -347,6 +358,8 @@ class PropertyDetailPopup(Popup):
             property_code = 'Unknown'
         self.title = f"Property Details: {property_code}"
         self.size_hint = (0.9, 0.9)
+        self.separator_color = (0.7, 0.7, 0.7, 1)
+
 
         # Create and set the content widget
         content = PropertyDetailContent(property_data, self)
