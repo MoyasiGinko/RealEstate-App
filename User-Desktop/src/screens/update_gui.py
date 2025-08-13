@@ -84,12 +84,16 @@ class PropertyForm(BoxLayout):
         if photo_path in self.selected_photos:
             self.selected_photos.remove(photo_path)
 
-            # If this is an existing photo (starts with realstateimages/),
+            # If this is an existing photo (either starts with realstateimages/ or is in existing_photos list),
             # mark it for deletion from database
-            if photo_path.startswith("realstateimages") and hasattr(self, 'property_code') and self.property_code:
+            is_existing = (photo_path.startswith("realstateimages") or
+                          (hasattr(self, 'existing_photos') and photo_path in self.existing_photos))
+
+            if is_existing and hasattr(self, 'property_code') and self.property_code:
                 if not hasattr(self, 'photos_to_delete'):
                     self.photos_to_delete = []
                 self.photos_to_delete.append(photo_path)
+                print(f"Marked photo for deletion: {photo_path}")  # Debug print
 
             self.update_photo_gallery()
     def on_kv_post(self, base_widget):
@@ -231,7 +235,8 @@ class PropertyForm(BoxLayout):
             }
 
             # Call the save callback with the property data and photos
-            self.save_callback(property_data, self.selected_photos, self.property_code)
+            photos_to_delete = getattr(self, 'photos_to_delete', [])
+            self.save_callback(property_data, self.selected_photos, self.property_code, photos_to_delete)
         except Exception as e:
             self.show_error(f"Error saving property: {str(e)}")
 
@@ -463,18 +468,23 @@ class UpdateGUIScreen(Screen):
             content.ids.cancel_btn.bind(on_press=lambda x: self.popup.dismiss())
         self.popup.open()
 
-    def update_property(self, property_data, photos, property_code):
+    def update_property(self, property_data, photos, property_code, photos_to_delete=None):
         """Update an existing property in the database."""
         if self.api.update_property(property_code, property_data):
             # Handle photo deletions first
-            if hasattr(self, 'photos_to_delete') and self.photos_to_delete:
-                for photo_path in self.photos_to_delete:
+            if photos_to_delete:
+                print(f"Deleting {len(photos_to_delete)} photos: {photos_to_delete}")  # Debug print
+                for photo_path in photos_to_delete:
                     # Extract filename from path
                     import os
                     filename = os.path.basename(photo_path)
+                    print(f"Attempting to delete photo: {filename}")  # Debug print
                     success = self.api.delete_property_photo(property_code, filename)
+                    print(f"Deletion result: {success}")  # Debug print
                     if not success:
                         self.show_error(f"Failed to delete photo {filename}")
+            else:
+                print("No photos to delete")  # Debug print
 
             # Filter out existing photos - only upload truly new ones
             new_photos = []
