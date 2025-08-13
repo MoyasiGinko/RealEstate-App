@@ -12,13 +12,164 @@ from kivy.uix.image import Image
 from kivy.metrics import dp
 from kivy.graphics import Color, Rectangle
 from kivy.lang import Builder
+from kivy.clock import Clock
 from src.models.database_api import get_api
 import datetime
 import os
 import csv
+import datetime
+import os
+import csv
 
-# Load the KV file - DISABLED TO FIX POPUP CONFLICT
-# Builder.load_file('assets/kv/browse_gui.kv')
+# Load the KV file
+Builder.load_file('assets/kv/browse_gui.kv')
+
+class PropertyDetailContent(BoxLayout):
+    """Content widget for property details popup."""
+
+    def __init__(self, property_data, popup_instance, **kwargs):
+        super(PropertyDetailContent, self).__init__(**kwargs)
+        self.property_data = property_data
+        self.popup = popup_instance  # Reference to the popup for dismiss functionality
+
+        # Schedule the data loading after the KV file has been applied
+        Clock.schedule_once(lambda dt: self.populate_data(), 0.1)
+
+    def populate_data(self):
+        """Populate the content with data after KV file has been applied."""
+        try:
+            # Add property details to the details_grid from KV file
+            self.add_property_details(self.property_data)
+
+            # Load and display photos
+            property_code = self.property_data.get('realstatecode', 'Unknown')
+            self.load_property_photos(property_code)
+        except Exception as e:
+            print(f"Error populating popup data: {e}")
+
+    def add_property_details(self, property_data):
+        """Add property details to the details grid."""
+        try:
+            details_grid = self.ids.details_grid
+            details_grid.clear_widgets()
+
+            # Add property details
+            fields = [
+                ('Property Code', 'realstatecode'),
+                ('Property Type', 'property_type'),
+                ('Building Type', 'building_type'),
+                ('Year Built', 'Yearmake'),
+                ('Area (m²)', 'Property-area'),
+                ('Facade (m)', 'Property-facade'),
+                ('Depth (m)', 'Property-depth'),
+                ('Bedrooms', 'N-of-bedrooms'),
+                ('Bathrooms', 'N-of-bathrooms'),
+                ('Floors', 'Property-floors'),
+                ('Corner Property', 'Property-corner'),
+                ('Price', 'Property-price'),
+                ('Currency', 'Property-currency'),
+                ('Address', 'Property-address'),
+                ('Owner', 'ownername'),
+                ('Owner Code', 'Ownercode'),
+                ('Description', 'Descriptions'),
+            ]
+
+            for label, field in fields:
+                details_grid.add_widget(Label(
+                    text=label + ':',
+                    size_hint_y=None,
+                    height=dp(40),
+                    halign='right',
+                    valign='middle',
+                    bold=True,
+                    text_size=(dp(200), dp(40)),
+                    color=(0.2, 0.2, 0.2, 1)
+                ))
+
+                value = property_data.get(field, 'Not specified')
+                if value is None:
+                    value = 'Not specified'
+
+                # Format special fields
+                if field == 'Property-corner' and value == 1:
+                    value = 'Yes'
+                elif field == 'Property-corner' and value == 0:
+                    value = 'No'
+                elif field == 'Property-price' and value != 'Not specified':
+                    try:
+                        price_float = float(value)
+                        value = f"{price_float:,.2f}"
+                    except (ValueError, TypeError):
+                        pass
+
+                details_grid.add_widget(Label(
+                    text=str(value),
+                    size_hint_y=None,
+                    height=dp(40),
+                    halign='left',
+                    valign='middle',
+                    text_size=(dp(300), dp(40)),
+                    color=(0.4, 0.4, 0.4, 1)
+                ))
+
+        except Exception as e:
+            print(f"Error adding property details: {e}")
+
+    def load_property_photos(self, property_code):
+        """Load and display property photos."""
+        try:
+            photo_gallery = self.ids.photo_gallery
+            photo_gallery.clear_widgets()
+
+            # Get photos from database API
+            api = get_api()
+            photos = api.get_property_photos(property_code)
+
+            if photos:
+                for photo in photos:
+                    storage_path = photo.get('Storagepath', '')
+                    filename = photo.get('photofilename', '')
+
+                    if filename and storage_path:
+                        photo_path = os.path.join(storage_path, filename)
+
+                        if os.path.exists(photo_path):
+                            # Create image widget
+                            img = Image(
+                                source=photo_path,
+                                size_hint_y=None,
+                                height=dp(200),
+                                allow_stretch=True,
+                                keep_ratio=True
+                            )
+                            photo_gallery.add_widget(img)
+                        else:
+                            print(f"Photo not found: {photo_path}")
+
+            if not photos or not any(
+                photo.get('photofilename') and photo.get('Storagepath') and
+                os.path.exists(os.path.join(photo.get('Storagepath', ''), photo.get('photofilename', '')))
+                for photo in photos
+            ):
+                # No photos available
+                no_photo_label = Label(
+                    text='No photos available',
+                    size_hint_y=None,
+                    height=dp(100),
+                    color=(0.5, 0.5, 0.5, 1)
+                )
+                photo_gallery.add_widget(no_photo_label)
+
+        except Exception as e:
+            print(f"Error loading property photos: {e}")
+            # Add error message
+            error_label = Label(
+                text='Error loading photos',
+                size_hint_y=None,
+                height=dp(100),
+                color=(1, 0, 0, 1)
+            )
+            self.ids.photo_gallery.add_widget(error_label)
 
 class PropertyRow(BoxLayout):
     """Widget representing a property row in the search results."""
@@ -140,462 +291,17 @@ class PropertyDetailPopup(Popup):
         self.title = f"Property Details: {property_code}"
         self.size_hint = (0.9, 0.9)
 
-        # Create the main content manually instead of using KV
-        main_layout = BoxLayout(orientation='vertical', padding=dp(20), spacing=dp(15))
+        # Create and set the content widget
+        content = PropertyDetailContent(property_data, self)
+        self.content = content
 
-        # Main content area
-        content_area = BoxLayout(orientation='horizontal', spacing=dp(20))
 
-        # Property details on the left
-        left_panel = ScrollView(size_hint=(0.6, 1))
-
-        details_grid = GridLayout(
-            cols=2,
-            spacing=dp(10),
-            size_hint_y=None,
-            padding=dp(10)
-        )
-        details_grid.bind(minimum_height=details_grid.setter('height'))
-
-        # Add property details
-        self.add_property_details(details_grid, property_data)
-
-        left_panel.add_widget(details_grid)
-        content_area.add_widget(left_panel)
-
-        # Photo gallery on the right
-        right_panel = BoxLayout(orientation='vertical', size_hint=(0.4, 1))
-
-        photos_label = Label(
-            text='Property Photos',
-            size_hint_y=None,
-            height=dp(40),
-            font_size=dp(18),
-            color=(0.2, 0.2, 0.2, 1),
-            bold=True
-        )
-        right_panel.add_widget(photos_label)
-
-        photos_scroll = ScrollView()
-        self.photo_gallery = GridLayout(
-            cols=1,
-            spacing=dp(10),
-            size_hint_y=None,
-            padding=dp(10)
-        )
-        self.photo_gallery.bind(minimum_height=self.photo_gallery.setter('height'))
-
-        photos_scroll.add_widget(self.photo_gallery)
-        right_panel.add_widget(photos_scroll)
-
-        content_area.add_widget(right_panel)
-        main_layout.add_widget(content_area)
-
-        # Close button
-        close_button = Button(
-            text='Close',
-            size_hint_y=None,
-            height=dp(50),
-            background_color=(0.6, 0.6, 0.6, 1),
-            color=(1, 1, 1, 1)
-        )
-        close_button.bind(on_press=self.dismiss)
-        main_layout.add_widget(close_button)
-
-        # Set content
-        self.content = main_layout
-
-        # Load photos
-        self.load_property_photos(property_code)
-
-    def add_property_details(self, details_grid, property_data):
-        """Add property details to the details grid."""
-        # Add property details
-        fields = [
-            ('Property Code', 'realstatecode'),
-            ('Property Type', 'property_type'),
-            ('Building Type', 'building_type'),
-            ('Year Built', 'Yearmake'),
-            ('Area (m²)', 'Property-area'),
-            ('Facade (m)', 'Property-facade'),
-            ('Depth (m)', 'Property-depth'),
-            ('Bedrooms', 'N-of-bedrooms'),
-            ('Bathrooms', 'N-of-bathrooms'),
-            ('Floors', 'Property-floors'),
-            ('Corner Property', 'Property-corner'),
-            ('Price', 'Property-price'),
-            ('Currency', 'Property-currency'),
-            ('Address', 'Property-address'),
-            ('Owner', 'ownername'),
-            ('Owner Code', 'Ownercode'),
-            ('Description', 'Descriptions'),
-        ]
-
-        for label, field in fields:
-            details_grid.add_widget(Label(
-                text=label + ':',
-                size_hint_y=None,
-                height=dp(40),
-                halign='right',
-                valign='middle',
-                bold=True,
-                text_size=(dp(200), dp(40)),
-                color=(0.2, 0.2, 0.2, 1)
-            ))
-
-            value = property_data.get(field, 'Not specified')
-            if field == 'Property-corner':
-                value = 'Yes' if value else 'No'
-            elif field == 'Property-price' and value:
-                currency = property_data.get('Property-currency', '')
-                value = f"{value} {currency}".strip()
-            elif value is None:
-                value = 'Not specified'
-
-            details_grid.add_widget(Label(
-                text=str(value),
-                size_hint_y=None,
-                height=dp(40),
-                halign='left',
-                valign='middle',
-                text_size=(dp(300), dp(40)),
-                color=(0, 0, 0, 1)
-            ))
-
-    def load_property_photos(self, property_code):
-        """Load and display property photos."""
-        try:
-            self.photo_gallery.clear_widgets()
-
-            api = get_api()
-            photos = api.get_property_photos(property_code)
-
-            if not photos or len(photos) == 0:
-                self.photo_gallery.add_widget(Label(
-                    text='No photos available\nfor this property',
-                    size_hint_y=None,
-                    height=dp(100),
-                    color=(0.5, 0.5, 0.5, 1),
-                    halign='center',
-                    valign='middle'
-                ))
-                return
-
-            for photo in photos:
-                storage_path = photo.get('Storagepath', '')
-                filename = photo.get('photofilename', '')
-
-                if filename:
-                    photo_path = os.path.join(storage_path, filename)
-
-                    if os.path.exists(photo_path):
-                        # Create image container
-                        photo_container = BoxLayout(
-                            orientation='vertical',
-                            size_hint_y=None,
-                            height=dp(200),
-                            spacing=dp(5)
-                        )
-
-                        try:
-                            img = Image(
-                                source=photo_path,
-                                size_hint=(1, 1),
-                                fit_mode='contain'
-                            )
-                            photo_container.add_widget(img)
-
-                            # Add photo filename label
-                            photo_container.add_widget(Label(
-                                text=filename,
-                                size_hint_y=None,
-                                height=dp(30),
-                                font_size=dp(12),
-                                color=(0.4, 0.4, 0.4, 1),
-                                halign='center'
-                            ))
-
-                            self.photo_gallery.add_widget(photo_container)
-
-                        except Exception as e:
-                            # Error loading specific image
-                            self.photo_gallery.add_widget(Label(
-                                text=f'Error loading: {filename}\n{str(e)}',
-                                size_hint_y=None,
-                                height=dp(60),
-                                color=(0.8, 0.2, 0.2, 1),
-                                halign='center'
-                            ))
-                    else:
-                        # Photo file not found
-                        self.photo_gallery.add_widget(Label(
-                            text=f'Photo: {filename}\n(File not found)',
-                            size_hint_y=None,
-                            height=dp(60),
-                            color=(0.8, 0.2, 0.2, 1),
-                            halign='center'
-                        ))
-
-        except Exception as e:
-            self.photo_gallery.add_widget(Label(
-                text=f'Error loading photos:\n{str(e)}',
-                size_hint_y=None,
-                height=dp(60),
-                color=(0.8, 0.2, 0.2, 1),
-                halign='center'
-            ))
 class SearchReportScreen(Screen):
     """Screen for searching properties and generating reports."""
 
     def __init__(self, **kwargs):
         super(SearchReportScreen, self).__init__(**kwargs)
         self.api = get_api()
-
-        # Set white background for the screen
-        with self.canvas.before:
-            Color(1, 1, 1, 1)  # White background
-            self.bg_rect = Rectangle(pos=self.pos, size=self.size)
-        self.bind(pos=self.update_bg, size=self.update_bg)
-
-        # Main layout with better spacing
-        self.layout = BoxLayout(orientation='vertical', padding=dp(20), spacing=dp(15))
-
-        # Screen title with better styling
-        title = Label(
-            text='Property Search & Reports',
-            font_size=dp(28),
-            size_hint_y=None,
-            height=dp(50),
-            color=(0.1, 0.1, 0.1, 1),  # Dark gray text
-            bold=True
-        )
-        self.layout.add_widget(title)
-
-        # Search criteria section with better organization
-        search_section = BoxLayout(orientation='vertical', size_hint_y=None, height=dp(320), spacing=dp(10))
-
-        # Section title
-        search_title = Label(
-            text='Search Criteria',
-            font_size=dp(18),
-            size_hint_y=None,
-            height=dp(30),
-            color=(0.2, 0.2, 0.2, 1),
-            bold=True,
-            halign='left'
-        )
-        search_title.bind(size=search_title.setter('text_size'))
-        search_section.add_widget(search_title)
-
-        # Search form with better grid layout
-        search_form = GridLayout(cols=4, spacing=dp(15), size_hint_y=None, height=dp(280), row_default_height=dp(60))
-
-        # Property type
-        search_form.add_widget(Label(
-            text='Property Type:',
-            color=(0, 0, 0, 1),
-            size_hint_y=None,
-            height=dp(30),
-            halign='right',
-            valign='middle'
-        ))
-
-        self.property_type_spinner = Spinner(
-            text='All Types',
-            values=['All Types'],
-            size_hint_y=None,
-            height=dp(40)
-        )
-        search_form.add_widget(self.property_type_spinner)
-
-        # Building type
-        search_form.add_widget(Label(
-            text='Building Type:',
-            color=(0, 0, 0, 1),
-            size_hint_y=None,
-            height=dp(30),
-            halign='right',
-            valign='middle'
-        ))
-
-        self.building_type_spinner = Spinner(
-            text='All Types',
-            values=['All Types'],
-            size_hint_y=None,
-            height=dp(40)
-        )
-        search_form.add_widget(self.building_type_spinner)
-
-        # Minimum bedrooms
-        search_form.add_widget(Label(
-            text='Min Bedrooms:',
-            color=(0, 0, 0, 1),
-            size_hint_y=None,
-            height=dp(30),
-            halign='right',
-            valign='middle'
-        ))
-
-        self.min_bedrooms = TextInput(
-            multiline=False,
-            size_hint_y=None,
-            height=dp(40),
-            input_filter='int'
-        )
-        search_form.add_widget(self.min_bedrooms)
-
-        # Maximum bedrooms
-        search_form.add_widget(Label(
-            text='Max Bedrooms:',
-            color=(0, 0, 0, 1),
-            size_hint_y=None,
-            height=dp(30),
-            halign='right',
-            valign='middle'
-        ))
-
-        self.max_bedrooms = TextInput(
-            multiline=False,
-            size_hint_y=None,
-            height=dp(40),
-            input_filter='int'
-        )
-        search_form.add_widget(self.max_bedrooms)
-
-        # Minimum price
-        search_form.add_widget(Label(
-            text='Min Price:',
-            color=(0, 0, 0, 1),
-            size_hint_y=None,
-            height=dp(30),
-            halign='right',
-            valign='middle'
-        ))
-
-        self.min_price = TextInput(
-            multiline=False,
-            size_hint_y=None,
-            height=dp(40),
-            input_filter='float'
-        )
-        search_form.add_widget(self.min_price)
-
-        # Maximum price
-        search_form.add_widget(Label(
-            text='Max Price:',
-            color=(0, 0, 0, 1),
-            size_hint_y=None,
-            height=dp(30),
-            halign='right',
-            valign='middle'
-        ))
-
-        self.max_price = TextInput(
-            multiline=False,
-            size_hint_y=None,
-            height=dp(40),
-            input_filter='float'
-        )
-        search_form.add_widget(self.max_price)
-
-        # Corner property
-        search_form.add_widget(Label(
-            text='Corner Property:',
-            color=(0, 0, 0, 1),
-            size_hint_y=None,
-            height=dp(30),
-            halign='right',
-            valign='middle'
-        ))
-
-        self.corner_property = CheckBox(
-            size_hint_y=None,
-            height=dp(40),
-            active=False
-        )
-        search_form.add_widget(self.corner_property)
-
-        search_section.add_widget(search_form)
-
-        # Search buttons
-        buttons_layout = BoxLayout(orientation='horizontal', spacing=dp(15), size_hint_y=None, height=dp(50))
-
-        search_button = Button(
-            text='Search Properties',
-            size_hint=(0.2, 1),
-            background_color=(0.2, 0.6, 0.8, 1),
-            color=(1, 1, 1, 1),
-            font_size=dp(14)
-        )
-        search_button.bind(on_press=self.perform_search)
-        buttons_layout.add_widget(search_button)
-
-        clear_button = Button(
-            text='Clear Search',
-            size_hint=(0.2, 1),
-            background_color=(0.6, 0.6, 0.6, 1),
-            color=(1, 1, 1, 1),
-            font_size=dp(14)
-        )
-        clear_button.bind(on_press=self.clear_search)
-        buttons_layout.add_widget(clear_button)
-
-        export_button = Button(
-            text='Export Results',
-            size_hint=(0.2, 1),
-            background_color=(0.6, 0.8, 0.2, 1),
-            color=(1, 1, 1, 1),
-            font_size=dp(14)
-        )
-        export_button.bind(on_press=self.export_results)
-        buttons_layout.add_widget(export_button)
-
-        # Back button
-        back_button = Button(
-            text='Back to Main',
-            size_hint=(0.2, 1),
-            background_color=(0.8, 0.2, 0.2, 1),
-            color=(1, 1, 1, 1),
-            font_size=dp(14)
-        )
-        back_button.bind(on_press=self.go_to_main_gui)
-        buttons_layout.add_widget(back_button)
-
-        buttons_layout.add_widget(Label())  # Spacer
-        search_section.add_widget(buttons_layout)
-
-        self.layout.add_widget(search_section)
-
-        # Results section
-        results_section = BoxLayout(orientation='vertical', spacing=dp(10))
-
-        # Results title
-        results_title = Label(
-            text='Search Results',
-            font_size=dp(18),
-            size_hint_y=None,
-            height=dp(30),
-            color=(0.2, 0.2, 0.2, 1),
-            bold=True,
-            halign='left'
-        )
-        results_title.bind(size=results_title.setter('text_size'))
-        results_section.add_widget(results_title)
-
-        # Results scroll area
-        self.results_scroll = ScrollView()
-        self.results_layout = BoxLayout(orientation='vertical', spacing=dp(2), size_hint_y=None)
-        self.results_layout.bind(minimum_height=self.results_layout.setter('height'))
-
-        self.results_scroll.add_widget(self.results_layout)
-        results_section.add_widget(self.results_scroll)
-
-        self.layout.add_widget(results_section)
-        self.add_widget(self.layout)
-
-    def update_bg(self, instance, value):
-        self.bg_rect.pos = instance.pos
-        self.bg_rect.size = instance.size
 
     def on_enter(self):
         """Called when the screen is entered."""
@@ -619,12 +325,12 @@ class SearchReportScreen(Screen):
         try:
             if property_types:
                 values = ['All Types'] + [f"{pt.get('code', 'N/A')} - {pt.get('name', 'Unknown')}" for pt in property_types]
-                self.property_type_spinner.values = values
+                self.ids.property_type_spinner.values = values
             else:
-                self.property_type_spinner.values = ['All Types']
+                self.ids.property_type_spinner.values = ['All Types']
         except Exception as e:
             print(f"Error loading property types: {e}")
-            self.property_type_spinner.values = ['All Types']
+            self.ids.property_type_spinner.values = ['All Types']
 
     def load_building_types(self):
         """Load building types from the database."""
@@ -633,49 +339,49 @@ class SearchReportScreen(Screen):
         try:
             if building_types:
                 values = ['All Types'] + [f"{bt.get('code', 'N/A')} - {bt.get('name', 'Unknown')}" for bt in building_types]
-                self.building_type_spinner.values = values
+                self.ids.building_type_spinner.values = values
             else:
-                self.building_type_spinner.values = ['All Types']
+                self.ids.building_type_spinner.values = ['All Types']
         except Exception as e:
             print(f"Error loading building types: {e}")
-            self.building_type_spinner.values = ['All Types']
+            self.ids.building_type_spinner.values = ['All Types']
 
     def perform_search(self, instance):
         """Perform property search based on criteria."""
         search_criteria = {}
 
         # Property type
-        if self.property_type_spinner.text != 'All Types':
-            code = self.property_type_spinner.text.split(' - ')[0]
+        if self.ids.property_type_spinner.text != 'All Types':
+            code = self.ids.property_type_spinner.text.split(' - ')[0]
             search_criteria['Rstatetcode'] = code
 
         # Building type
-        if self.building_type_spinner.text != 'All Types':
-            code = self.building_type_spinner.text.split(' - ')[0]
+        if self.ids.building_type_spinner.text != 'All Types':
+            code = self.ids.building_type_spinner.text.split(' - ')[0]
             search_criteria['Buildtcode'] = code
 
         # Bedrooms
-        if self.min_bedrooms.text and self.max_bedrooms.text:
+        if self.ids.min_bedrooms.text and self.ids.max_bedrooms.text:
             # We'll handle min/max in the client side filtering
             pass
-        elif self.min_bedrooms.text:
-            search_criteria['N-of-bedrooms'] = int(self.min_bedrooms.text)
-        elif self.max_bedrooms.text:
+        elif self.ids.min_bedrooms.text:
+            search_criteria['N-of-bedrooms'] = int(self.ids.min_bedrooms.text)
+        elif self.ids.max_bedrooms.text:
             # Just use max as exact for now (refine later)
-            search_criteria['N-of-bedrooms'] = int(self.max_bedrooms.text)
+            search_criteria['N-of-bedrooms'] = int(self.ids.max_bedrooms.text)
 
         # Price range
-        if self.min_price.text and self.max_price.text:
+        if self.ids.min_price.text and self.ids.max_price.text:
             # We'll handle min/max in the client side filtering
             pass
-        elif self.min_price.text:
-            search_criteria['Property-price'] = float(self.min_price.text)
-        elif self.max_price.text:
+        elif self.ids.min_price.text:
+            search_criteria['Property-price'] = float(self.ids.min_price.text)
+        elif self.ids.max_price.text:
             # Just use max as exact for now
-            search_criteria['Property-price'] = float(self.max_price.text)
+            search_criteria['Property-price'] = float(self.ids.max_price.text)
 
         # Corner property
-        if self.corner_property.active:
+        if self.ids.corner_property.active:
             search_criteria['Property-corner'] = 1
 
         try:
@@ -686,15 +392,15 @@ class SearchReportScreen(Screen):
             filtered_results = []
             for result in results:
                 # Filter by bedroom range
-                if self.min_bedrooms.text and self.max_bedrooms.text:
+                if self.ids.min_bedrooms.text and self.ids.max_bedrooms.text:
                     bedrooms = result.get('N-of-bedrooms', 0)
-                    if not (int(self.min_bedrooms.text) <= bedrooms <= int(self.max_bedrooms.text)):
+                    if not (int(self.ids.min_bedrooms.text) <= bedrooms <= int(self.ids.max_bedrooms.text)):
                         continue
 
                 # Filter by price range
-                if self.min_price.text and self.max_price.text:
+                if self.ids.min_price.text and self.ids.max_price.text:
                     price = result.get('Property-price', 0)
-                    if not (float(self.min_price.text) <= price <= float(self.max_price.text)):
+                    if not (float(self.ids.min_price.text) <= price <= float(self.ids.max_price.text)):
                         continue
 
                 filtered_results.append(result)
@@ -707,7 +413,7 @@ class SearchReportScreen(Screen):
     def display_results(self, results):
         """Display search results."""
         # Clear existing results
-        self.results_layout.clear_widgets()
+        self.ids.results_layout.clear_widgets()
 
         if not results:
             no_results = Label(
@@ -717,7 +423,7 @@ class SearchReportScreen(Screen):
                 color=(0.5, 0.5, 0.5, 1),
                 font_size=dp(14)
             )
-            self.results_layout.add_widget(no_results)
+            self.ids.results_layout.add_widget(no_results)
             return
 
         # Add header row
@@ -749,7 +455,7 @@ class SearchReportScreen(Screen):
                 font_size=dp(14)
             ))
 
-        self.results_layout.add_widget(results_header)
+        self.ids.results_layout.add_widget(results_header)
 
         # Add property rows
         for i, property_data in enumerate(results):
@@ -762,7 +468,7 @@ class SearchReportScreen(Screen):
                     Color(0.95, 0.95, 0.95, 1)
                     property_row.rect = Rectangle(pos=property_row.pos, size=property_row.size)
 
-            self.results_layout.add_widget(property_row)
+            self.ids.results_layout.add_widget(property_row)
 
     def view_property_details(self, property_data):
         """Open property details popup."""
@@ -777,7 +483,7 @@ class SearchReportScreen(Screen):
         """Export all current search results."""
         # Get all displayed properties
         properties = []
-        for child in self.results_layout.children:
+        for child in self.ids.results_layout.children:
             if isinstance(child, PropertyRow):
                 properties.append(child.property_data)
 
@@ -832,13 +538,13 @@ class SearchReportScreen(Screen):
 
     def clear_search(self, instance):
         """Clear all search criteria."""
-        self.property_type_spinner.text = 'All Types'
-        self.building_type_spinner.text = 'All Types'
-        self.min_bedrooms.text = ''
-        self.max_bedrooms.text = ''
-        self.min_price.text = ''
-        self.max_price.text = ''
-        self.corner_property.active = False
+        self.ids.property_type_spinner.text = 'All Types'
+        self.ids.building_type_spinner.text = 'All Types'
+        self.ids.min_bedrooms.text = ''
+        self.ids.max_bedrooms.text = ''
+        self.ids.min_price.text = ''
+        self.ids.max_price.text = ''
+        self.ids.corner_property.active = False
 
         # Load all properties again
         self.load_all_properties()

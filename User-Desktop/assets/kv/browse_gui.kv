@@ -1,59 +1,289 @@
 <SearchReportScreen>:
     name: 'search_report'
 
-<PropertyDetailPopup>:
-    title: 'Property Details'
-    size_hint: 0.9, 0.9
+    # White background
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
     BoxLayout:
         orientation: 'vertical'
         padding: 20
         spacing: 15
 
-        # Main content area
+        # Screen title
+        Label:
+            text: 'Property Search & Reports'
+            font_size: 28
+            size_hint_y: None
+            height: 50
+            color: 0.1, 0.1, 0.1, 1
+            bold: True
+
+        # Search criteria section
         BoxLayout:
-            orientation: 'horizontal'
-            spacing: 20
+            orientation: 'vertical'
+            size_hint_y: None
+            height: 320
+            spacing: 10
 
-            # Property details on the left
+            # Section title
+            Label:
+                text: 'Search Criteria'
+                font_size: 18
+                size_hint_y: None
+                height: 30
+                color: 0.2, 0.2, 0.2, 1
+                bold: True
+                halign: 'left'
+                text_size: self.size
+
+            # Search form
+            GridLayout:
+                cols: 4
+                spacing: 15
+                size_hint_y: None
+                height: 280
+                row_default_height: 60
+
+                # Property type row
+                Label:
+                    text: 'Property Type:'
+                    color: 0, 0, 0, 1
+                    size_hint_y: None
+                    height: 30
+                    halign: 'right'
+                    valign: 'middle'
+                    text_size: self.size
+
+                Spinner:
+                    id: property_type_spinner
+                    text: 'All Types'
+                    values: ['All Types']
+                    size_hint_y: None
+                    height: 40
+
+                # Building type row
+                Label:
+                    text: 'Building Type:'
+                    color: 0, 0, 0, 1
+                    size_hint_y: None
+                    height: 30
+                    halign: 'right'
+                    valign: 'middle'
+                    text_size: self.size
+
+                Spinner:
+                    id: building_type_spinner
+                    text: 'All Types'
+                    values: ['All Types']
+                    size_hint_y: None
+                    height: 40
+
+                # Min bedrooms row
+                Label:
+                    text: 'Min Bedrooms:'
+                    color: 0, 0, 0, 1
+                    size_hint_y: None
+                    height: 30
+                    halign: 'right'
+                    valign: 'middle'
+                    text_size: self.size
+
+                TextInput:
+                    id: min_bedrooms
+                    multiline: False
+                    size_hint_y: None
+                    height: 40
+                    input_filter: 'int'
+
+                # Max bedrooms row
+                Label:
+                    text: 'Max Bedrooms:'
+                    color: 0, 0, 0, 1
+                    size_hint_y: None
+                    height: 30
+                    halign: 'right'
+                    valign: 'middle'
+                    text_size: self.size
+
+                TextInput:
+                    id: max_bedrooms
+                    multiline: False
+                    size_hint_y: None
+                    height: 40
+                    input_filter: 'int'
+
+                # Min price row
+                Label:
+                    text: 'Min Price:'
+                    color: 0, 0, 0, 1
+                    size_hint_y: None
+                    height: 30
+                    halign: 'right'
+                    valign: 'middle'
+                    text_size: self.size
+
+                TextInput:
+                    id: min_price
+                    multiline: False
+                    size_hint_y: None
+                    height: 40
+                    input_filter: 'float'
+
+                # Max price row
+                Label:
+                    text: 'Max Price:'
+                    color: 0, 0, 0, 1
+                    size_hint_y: None
+                    height: 30
+                    halign: 'right'
+                    valign: 'middle'
+                    text_size: self.size
+
+                TextInput:
+                    id: max_price
+                    multiline: False
+                    size_hint_y: None
+                    height: 40
+                    input_filter: 'float'
+
+                # Corner property row
+                Label:
+                    text: 'Corner Property:'
+                    color: 0, 0, 0, 1
+                    size_hint_y: None
+                    height: 30
+                    halign: 'right'
+                    valign: 'middle'
+                    text_size: self.size
+
+                CheckBox:
+                    id: corner_property
+                    size_hint_y: None
+                    height: 40
+                    active: False
+
+            # Search buttons
+            BoxLayout:
+                orientation: 'horizontal'
+                spacing: 15
+                size_hint_y: None
+                height: 50
+
+                Button:
+                    text: 'Search Properties'
+                    size_hint: 0.2, 1
+                    background_color: 0.2, 0.6, 0.8, 1
+                    color: 1, 1, 1, 1
+                    font_size: 14
+                    on_press: root.perform_search(self)
+
+                Button:
+                    text: 'Clear Search'
+                    size_hint: 0.2, 1
+                    background_color: 0.6, 0.6, 0.6, 1
+                    color: 1, 1, 1, 1
+                    font_size: 14
+                    on_press: root.clear_search(self)
+
+                Button:
+                    text: 'Export Results'
+                    size_hint: 0.2, 1
+                    background_color: 0.6, 0.8, 0.2, 1
+                    color: 1, 1, 1, 1
+                    font_size: 14
+                    on_press: root.export_results(self)
+
+                Button:
+                    text: 'Back to Main'
+                    size_hint: 0.2, 1
+                    background_color: 0.8, 0.2, 0.2, 1
+                    color: 1, 1, 1, 1
+                    font_size: 14
+                    on_press: root.go_to_main_gui(self)
+
+                Label:  # Spacer
+
+        # Results section
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: 10
+
+            # Results title
+            Label:
+                text: 'Search Results'
+                font_size: 18
+                size_hint_y: None
+                height: 30
+                color: 0.2, 0.2, 0.2, 1
+                bold: True
+                halign: 'left'
+                text_size: self.size
+
+            # Results scroll area
             ScrollView:
-                size_hint: 0.6, 1
+                id: results_scroll
 
+                BoxLayout:
+                    id: results_layout
+                    orientation: 'vertical'
+                    spacing: 2
+                    size_hint_y: None
+                    height: self.minimum_height
+
+<PropertyDetailContent>:
+    orientation: 'vertical'
+    padding: 20
+    spacing: 15
+
+    # Main content area
+    BoxLayout:
+        orientation: 'horizontal'
+        spacing: 20
+
+        # Property details on the left
+        ScrollView:
+            size_hint: 0.6, 1
+
+            GridLayout:
+                id: details_grid
+                cols: 2
+                spacing: 10
+                size_hint_y: None
+                height: self.minimum_height
+                padding: 10
+
+        # Photo gallery on the right
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: 0.4, 1
+
+            Label:
+                text: 'Property Photos'
+                size_hint_y: None
+                height: 40
+                font_size: 18
+                color: 0.2, 0.2, 0.2, 1
+                bold: True
+
+            ScrollView:
                 GridLayout:
-                    id: details_grid
-                    cols: 2
+                    id: photo_gallery
+                    cols: 1
                     spacing: 10
                     size_hint_y: None
                     height: self.minimum_height
                     padding: 10
 
-            # Photo gallery on the right
-            BoxLayout:
-                orientation: 'vertical'
-                size_hint: 0.4, 1
-
-                Label:
-                    text: 'Property Photos'
-                    size_hint_y: None
-                    height: 40
-                    font_size: 18
-                    color: 0.2, 0.2, 0.2, 1
-                    bold: True
-
-                ScrollView:
-                    GridLayout:
-                        id: photo_gallery
-                        cols: 1
-                        spacing: 10
-                        size_hint_y: None
-                        height: self.minimum_height
-                        padding: 10
-
-        # Close button
-        Button:
-            text: 'Close'
-            size_hint_y: None
-            height: 50
-            background_color: 0.6, 0.6, 0.6, 1
-            color: 1, 1, 1, 1
-            on_press: root.dismiss()
+    # Close button
+    Button:
+        text: 'Close'
+        size_hint_y: None
+        height: 50
+        background_color: 0.6, 0.6, 0.6, 1
+        color: 1, 1, 1, 1
+        on_press: root.popup.dismiss()
