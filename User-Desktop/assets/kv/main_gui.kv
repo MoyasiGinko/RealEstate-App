@@ -2,85 +2,189 @@
     name: 'main'
     canvas.before:
         Color:
-            rgba: 1, 1, 1, 1  # White background
+            rgba: 0.95, 0.95, 0.97, 1  # Light gray background
         Rectangle:
             pos: self.pos
             size: self.size
 
     BoxLayout:
         orientation: 'vertical'
-        padding: '15dp'
-        spacing: '10dp'
+        padding: '20dp'
+        spacing: '15dp'
 
+        # Top navigation bar
         BoxLayout:
             orientation: 'horizontal'
             size_hint_y: None
-            height: '40dp'
-            spacing: '10dp'
-
-            Button:
-                text: 'Exit'
-                size_hint_x: None
-                width: '100dp'
-                background_color: 0.8, 0.2, 0.2, 1  # Red button
-                color: 1, 1, 1, 1
-                on_release: app.stop()
-
-            Widget:
-
-            Button:
-                text: 'About'
-                size_hint_x: None
-                width: '100dp'
-                background_color: 0.2, 0.2, 0.8, 1  # Blue button
-                color: 1, 1, 1, 1
-                on_release: app.root.current = 'about_gui'
-
-        Label:
-            text: 'Welcome to the Main Screen'
-            font_size: '24sp'
-            size_hint_y: None
             height: '50dp'
-            color: 0.2, 0.2, 0.2, 1  # Dark gray text
-            bold: True
-
-        GridLayout:
-            cols: 2
-            padding: '15dp'
             spacing: '15dp'
 
+            # Exit button with icon
             Button:
-                text: 'New Property'
+                size_hint_x: None
+                width: '120dp'
+                background_normal: 'assets/app-images/exit.jpg'
+                background_down: 'assets/app-images/exit.jpg'
+                border: 0, 0, 0, 0
+                on_release: app.stop()
+                canvas.after:
+                    Color:
+                        rgba: 0, 0, 0, 0.1
+                    Line:
+                        rounded_rectangle: self.x, self.y, self.width, self.height, 8, 8, 8, 8
+                        width: 1
+
+            Widget:  # Spacer
+
+            # About button with icon
+            Button:
+                size_hint_x: None
+                width: '120dp'
+                background_normal: 'assets/app-images/about.jpg'
+                background_down: 'assets/app-images/about.jpg'
+                border: 0, 0, 0, 0
+                on_release: app.root.current = 'about_gui'
+                canvas.after:
+                    Color:
+                        rgba: 0, 0, 0, 0.1
+                    Line:
+                        rounded_rectangle: self.x, self.y, self.width, self.height, 8, 8, 8, 8
+                        width: 1
+
+        # Welcome title
+        Label:
+            text: 'Property Management System'
+            font_size: '28sp'
+            size_hint_y: None
+            height: '60dp'
+            color: 0.2, 0.3, 0.4, 1
+            bold: True
+            halign: 'center'
+            valign: 'middle'
+
+        # Subtitle
+        Label:
+            text: 'Select an option to get started'
+            font_size: '16sp'
+            size_hint_y: None
+            height: '30dp'
+            color: 0.4, 0.5, 0.6, 1
+            halign: 'center'
+            valign: 'middle'
+
+        # Main action buttons row
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: '30dp'
+            size_hint_y: None
+            height: '150dp'
+            padding: [0, 0, 0, 0]
+            # Center the row horizontally
+            Widget:
+                size_hint_x: 0.15
+            Button:
+                size_hint: None, None
+                size: '150dp', '140dp'
+                background_normal: ''
+                background_color: 1, 1, 1, 0
                 on_release: app.root.current = 'insert_gui'
-                background_color: 0.2, 0.6, 0.9, 1  # Blue button
-                color: 1, 1, 1, 1  # White text
-                font_size: '18sp'
-                size_hint_y: None
-                height: '60dp'
-
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 0.9
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [12, 12, 12, 12]
+                canvas.after:
+                    Color:
+                        rgba: 0.2, 0.6, 0.9, 0.3
+                    Line:
+                        rounded_rectangle: self.x, self.y, self.width, self.height, 12, 12, 12, 12
+                        width: 2
+                    Color:
+                        rgba: 1, 1, 1, 1
+                    Rectangle:
+                        pos: self.center_x - 40, self.center_y - 40
+                        size: 80, 80
+                        source: 'assets/app-images/insert.jpg'
             Button:
-                text: 'Update Property'
+                size_hint: None, None
+                size: '150dp', '140dp'
+                background_normal: ''
+                background_color: 1, 1, 1, 0
                 on_release: app.root.current = 'update_gui'
-                background_color: 0.2, 0.7, 0.5, 1  # Teal button
-                color: 1, 1, 1, 1  # White text
-                font_size: '18sp'
-                size_hint_y: None
-                height: '60dp'
-
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 0.9
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [12, 12, 12, 12]
+                canvas.after:
+                    Color:
+                        rgba: 0.2, 0.7, 0.5, 0.3
+                    Line:
+                        rounded_rectangle: self.x, self.y, self.width, self.height, 12, 12, 12, 12
+                        width: 2
+                    Color:
+                        rgba: 1, 1, 1, 1
+                    Rectangle:
+                        pos: self.center_x - 40, self.center_y - 40
+                        size: 80, 80
+                        source: 'assets/app-images/update.jpg'
             Button:
-                text: 'Browse Property'
+                size_hint: None, None
+                size: '150dp', '140dp'
+                background_normal: ''
+                background_color: 1, 1, 1, 0
                 on_release: app.root.current = 'browse_gui'
-                background_color: 0.9, 0.5, 0.2, 1  # Orange button
-                color: 1, 1, 1, 1  # White text
-                font_size: '18sp'
-                size_hint_y: None
-                height: '60dp'
-
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 0.9
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [12, 12, 12, 12]
+                canvas.after:
+                    Color:
+                        rgba: 0.9, 0.5, 0.2, 0.3
+                    Line:
+                        rounded_rectangle: self.x, self.y, self.width, self.height, 12, 12, 12, 12
+                        width: 2
+                    Color:
+                        rgba: 1, 1, 1, 1
+                    Rectangle:
+                        pos: self.center_x - 40, self.center_y - 40
+                        size: 80, 80
+                        source: 'assets/app-images/browse.jpg'
             Button:
-                text: 'Upload Property'
+                size_hint: None, None
+                size: '150dp', '140dp'
+                background_normal: ''
+                background_color: 1, 1, 1, 0
                 on_release: app.root.current = 'upload_gui'
-                background_color: 0.5, 0.5, 0.5, 1  # Gray button
-                color: 1, 1, 1, 1  # White text
-                font_size: '18sp'
-                size_hint_y: None
-                height: '60dp'
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 0.9
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [12, 12, 12, 12]
+                canvas.after:
+                    Color:
+                        rgba: 0.6, 0.4, 0.8, 0.3
+                    Line:
+                        rounded_rectangle: self.x, self.y, self.width, self.height, 12, 12, 12, 12
+                        width: 2
+                    Color:
+                        rgba: 1, 1, 1, 1
+                    Rectangle:
+                        pos: self.center_x - 40, self.center_y - 40
+                        size: 80, 80
+                        source: 'assets/app-images/upload.jpg'
+            Widget:
+                size_hint_x: 0.15
+
+        # Bottom spacer
+        Widget:
+            size_hint_y: 0.2
