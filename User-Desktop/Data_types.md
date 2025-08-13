@@ -36,27 +36,30 @@
 
 ### **3. `Realstatspecification` – Property Specification Table**
 
-| Field Name         | Data Type  | Length | Description                     | Sample Value       |
-| ------------------ | ---------- | ------ | ------------------------------- | ------------------ |
-| `Companyco`        | CHAR       | 4      | Company code                    | `E901`             |
-| `realstatecode`    | CHAR       | 8      | Auto-generated property code    | `E901A7F2`         |
-| `Rstatetcode`      | CHAR       | 1      | Real estate type                | `1`, `2`, `3`      |
-| `Yearmake`         | DATE(YEAR) | -      | Year built                      | `2010`             |
-| `Buildtcode`       | CHAR       | 1      | Building type                   | `1`, `2`, `3`      |
-| `Property-area`    | DOUBLE     | (5,2)  | Area in square meters           | `145.75`           |
-| `Unitm-code`       | CHAR       | 1      | Unit of measurement code        | `1`, `2`           |
-| `Property-facade`  | DOUBLE     | (3,2)  | Facade length                   | `12.50`            |
-| `Property-depth`   | DOUBLE     | (3,2)  | Depth of property               | `30.75`            |
-| `N-of-bedrooms`    | INT        | 2      | Number of bedrooms              | `3`                |
-| `N-of-bathrooms`   | INT        | 2      | Number of bathrooms             | `2`                |
-| `Property-corner`  | BOOLEAN    | -      | Is it a corner property?        | `true`             |
-| `Offer-Type-Code`  | CHAR       | 1      | Type of offer                   | `1` (rent/sale)    |
-| `Province-code`    | CHAR       | 2      | Province code                   | `01`               |
-| `Region-code`      | CHAR       | 9      | Region code                     | `0200101xx`        |
-| `Property-address` | TEXT       | 250    | Full address                    | `Area X, Street Y` |
-| `Photosituation`   | BOOLEAN    | -      | Are photos available?           | `true`             |
-| `Ownercode`        | CHAR       | 4      | Owner code (linked to `Owners`) | `A123`             |
-| `Descriptions`     | TEXT       | -      | Notes and description           | `Well maintained.` |
+| Field Name          | Data Type  | Length | Description                     | Sample Value       |
+| ------------------- | ---------- | ------ | ------------------------------- | ------------------ |
+| `Companyco`         | CHAR       | 4      | Company code                    | `E901`             |
+| `realstatecode`     | CHAR       | 8      | Auto-generated property code    | `E901A7F2`         |
+| `Rstatetcode`       | CHAR       | 1      | Real estate type                | `1`, `2`, `3`      |
+| `Yearmake`          | DATE(YEAR) | -      | Year built                      | `2010`             |
+| `Buildtcode`        | CHAR       | 1      | Building type                   | `1`, `2`, `3`      |
+| `Property-area`     | DOUBLE     | (5,2)  | Area in square meters           | `145.75`           |
+| `Unitm-code`        | CHAR       | 1      | Unit of measurement code        | `1`, `2`           |
+| `Property-facade`   | DOUBLE     | (3,2)  | Facade length                   | `12.50`            |
+| `Property-depth`    | DOUBLE     | (3,2)  | Depth of property               | `30.75`            |
+| `Property-floors`   | INT        | 2      | Number of floors                | `2`                |
+| `Property-price`    | DOUBLE     | (10,2) | Property price                  | `300000.00`        |
+| `Property-currency` | CHAR       | 10     | Currency code                   | `USD`              |
+| `N-of-bedrooms`     | INT        | 2      | Number of bedrooms              | `3`                |
+| `N-of-bathrooms`    | INT        | 2      | Number of bathrooms             | `2`                |
+| `Property-corner`   | BOOLEAN    | -      | Is it a corner property?        | `true`             |
+| `Offer-Type-Code`   | CHAR       | 1      | Type of offer                   | `1` (rent/sale)    |
+| `Province-code`     | CHAR       | 2      | Province code                   | `01`               |
+| `Region-code`       | CHAR       | 9      | Region code                     | `0200101xx`        |
+| `Property-address`  | TEXT       | 250    | Full address                    | `Area X, Street Y` |
+| `Photosituation`    | BOOLEAN    | -      | Are photos available?           | `true`             |
+| `Ownercode`         | CHAR       | 4      | Owner code (linked to `Owners`) | `A123`             |
+| `Descriptions`      | TEXT       | -      | Notes and description           | `Well maintained.` |
 
 📌 _Ensure foreign key constraints to `Owners.Ownercode` and `Maincode.Code` where applicable._
 
