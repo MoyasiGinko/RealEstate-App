@@ -93,7 +93,6 @@ class PropertyForm(BoxLayout):
                 if not hasattr(self, 'photos_to_delete'):
                     self.photos_to_delete = []
                 self.photos_to_delete.append(photo_path)
-                print(f"Marked photo for deletion: {photo_path}")  # Debug print
 
             self.update_photo_gallery()
     def on_kv_post(self, base_widget):
@@ -473,18 +472,13 @@ class UpdateGUIScreen(Screen):
         if self.api.update_property(property_code, property_data):
             # Handle photo deletions first
             if photos_to_delete:
-                print(f"Deleting {len(photos_to_delete)} photos: {photos_to_delete}")  # Debug print
                 for photo_path in photos_to_delete:
                     # Extract filename from path
                     import os
                     filename = os.path.basename(photo_path)
-                    print(f"Attempting to delete photo: {filename}")  # Debug print
                     success = self.api.delete_property_photo(property_code, filename)
-                    print(f"Deletion result: {success}")  # Debug print
                     if not success:
                         self.show_error(f"Failed to delete photo {filename}")
-            else:
-                print("No photos to delete")  # Debug print
 
             # Filter out existing photos - only upload truly new ones
             new_photos = []
