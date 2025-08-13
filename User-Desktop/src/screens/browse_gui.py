@@ -12,11 +12,7 @@ from kivy.uix.image import Image
 from kivy.metrics import dp
 from kivy.graphics import Color, Rectangle
 from kivy.lang import Builder
-from kivy.clock import Clock
 from src.models.database_api import get_api
-import datetime
-import os
-import csv
 import datetime
 import os
 import csv
@@ -31,14 +27,77 @@ class PropertyDetailContent(BoxLayout):
         super(PropertyDetailContent, self).__init__(**kwargs)
         self.property_data = property_data
         self.popup = popup_instance  # Reference to the popup for dismiss functionality
+        
+        # Set up the layout
+        self.orientation = 'vertical'
+        self.padding = dp(20)
+        self.spacing = dp(15)
+        
+        # Create the UI immediately
+        self.build_ui()
+        self.populate_data()
 
-        # Schedule the data loading after the KV file has been applied
-        Clock.schedule_once(lambda dt: self.populate_data(), 0.1)
+    def build_ui(self):
+        """Build the UI components programmatically."""
+        # Main content area
+        main_layout = BoxLayout(orientation='horizontal', spacing=dp(20))
+        
+        # Property details on the left (60% width)
+        details_scroll = ScrollView(size_hint=(0.6, 1))
+        self.details_grid = GridLayout(
+            cols=2,
+            spacing=dp(10),
+            size_hint_y=None,
+            padding=dp(10)
+        )
+        self.details_grid.bind(minimum_height=self.details_grid.setter('height'))
+        details_scroll.add_widget(self.details_grid)
+        main_layout.add_widget(details_scroll)
+        
+        # Photo gallery on the right (40% width)
+        photo_layout = BoxLayout(orientation='vertical', size_hint=(0.4, 1))
+        
+        # Photo section title
+        photo_title = Label(
+            text='Property Photos',
+            size_hint_y=None,
+            height=dp(40),
+            font_size=dp(18),
+            color=(0.2, 0.2, 0.2, 1),
+            bold=True
+        )
+        photo_layout.add_widget(photo_title)
+        
+        # Photo gallery scroll view
+        photo_scroll = ScrollView()
+        self.photo_gallery = GridLayout(
+            cols=1,
+            spacing=dp(10),
+            size_hint_y=None,
+            padding=dp(10)
+        )
+        self.photo_gallery.bind(minimum_height=self.photo_gallery.setter('height'))
+        photo_scroll.add_widget(self.photo_gallery)
+        photo_layout.add_widget(photo_scroll)
+        
+        main_layout.add_widget(photo_layout)
+        self.add_widget(main_layout)
+        
+        # Close button
+        close_button = Button(
+            text='Close',
+            size_hint_y=None,
+            height=dp(50),
+            background_color=(0.6, 0.6, 0.6, 1),
+            color=(1, 1, 1, 1)
+        )
+        close_button.bind(on_press=lambda x: self.popup.dismiss())
+        self.add_widget(close_button)
 
     def populate_data(self):
-        """Populate the content with data after KV file has been applied."""
+        """Populate the content with data."""
         try:
-            # Add property details to the details_grid from KV file
+            # Add property details
             self.add_property_details(self.property_data)
 
             # Load and display photos
@@ -50,8 +109,7 @@ class PropertyDetailContent(BoxLayout):
     def add_property_details(self, property_data):
         """Add property details to the details grid."""
         try:
-            details_grid = self.ids.details_grid
-            details_grid.clear_widgets()
+            self.details_grid.clear_widgets()
 
             # Add property details
             fields = [
@@ -75,7 +133,7 @@ class PropertyDetailContent(BoxLayout):
             ]
 
             for label, field in fields:
-                details_grid.add_widget(Label(
+                self.details_grid.add_widget(Label(
                     text=label + ':',
                     size_hint_y=None,
                     height=dp(40),
@@ -102,7 +160,7 @@ class PropertyDetailContent(BoxLayout):
                     except (ValueError, TypeError):
                         pass
 
-                details_grid.add_widget(Label(
+                self.details_grid.add_widget(Label(
                     text=str(value),
                     size_hint_y=None,
                     height=dp(40),
@@ -118,8 +176,7 @@ class PropertyDetailContent(BoxLayout):
     def load_property_photos(self, property_code):
         """Load and display property photos."""
         try:
-            photo_gallery = self.ids.photo_gallery
-            photo_gallery.clear_widgets()
+            self.photo_gallery.clear_widgets()
 
             # Get photos from database API
             api = get_api()
@@ -142,7 +199,7 @@ class PropertyDetailContent(BoxLayout):
                                 allow_stretch=True,
                                 keep_ratio=True
                             )
-                            photo_gallery.add_widget(img)
+                            self.photo_gallery.add_widget(img)
                         else:
                             print(f"Photo not found: {photo_path}")
 
@@ -158,7 +215,7 @@ class PropertyDetailContent(BoxLayout):
                     height=dp(100),
                     color=(0.5, 0.5, 0.5, 1)
                 )
-                photo_gallery.add_widget(no_photo_label)
+                self.photo_gallery.add_widget(no_photo_label)
 
         except Exception as e:
             print(f"Error loading property photos: {e}")
@@ -169,7 +226,7 @@ class PropertyDetailContent(BoxLayout):
                 height=dp(100),
                 color=(1, 0, 0, 1)
             )
-            self.ids.photo_gallery.add_widget(error_label)
+            self.photo_gallery.add_widget(error_label)
 
 class PropertyRow(BoxLayout):
     """Widget representing a property row in the search results."""
