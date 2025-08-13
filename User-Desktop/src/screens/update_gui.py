@@ -130,11 +130,16 @@ class PropertyForm(BoxLayout):
         # Always define selected_photos and property_code to avoid attribute errors
         self.selected_photos = []
         self.property_code = None
-        # Populate fields if editing
+        # Populate fields if editing - delay this to ensure UI is ready
         if self.property_data:
-            self.populate_fields()
-        # Always update photo gallery on form open
-        self.update_photo_gallery()
+            Clock.schedule_once(self._delayed_populate_fields, 0.1)
+        else:
+            # Always update photo gallery on form open
+            self.update_photo_gallery()
+
+    def _delayed_populate_fields(self, dt):
+        """Populate fields after a small delay to ensure UI is ready."""
+        self.populate_fields()
 
     from kivy.properties import ObjectProperty, ListProperty
     save_callback = ObjectProperty(None)
@@ -281,16 +286,18 @@ class PropertyForm(BoxLayout):
                 try:
                     photos = self.api.get_property_photos(self.property_code)
                     for photo in photos or []:
-                        # Construct the full path to the photo (adjust as needed for your storage)
-                        # Example assumes Storagepath is a relative or absolute path
-                        path = os.path.join(photo.get('Storagepath', ''), photo.get('photofilename', '') + (photo.get('Photoextension', '') or ''))
-                        if os.path.exists(path):
-                            self.selected_photos.append(path)
+                        # Construct the full path to the photo
+                        storage_path = photo.get('Storagepath', '')
+                        filename = photo.get('photofilename', '')
+
+                        # The filename should already include the extension
+                        if filename:
+                            path = os.path.join(storage_path, filename)
+                            if os.path.exists(path):
+                                self.selected_photos.append(path)
                 except Exception as e:
                     print(f"Error loading property photos: {e}")
             self.update_photo_gallery()
-
-
     def show_add_owner_form(self, instance):
         """Show the form for adding a new owner."""
         from src.screens.owner_management import OwnerForm
