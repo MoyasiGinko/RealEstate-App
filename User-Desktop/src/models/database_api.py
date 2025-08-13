@@ -269,7 +269,7 @@ class DatabaseAPI:
 
                 # Remove the entire property photo directory if it exists
                 try:
-                    property_dir = Path("realstateimages") / property_code
+                    property_dir = Path("data/realstateimages") / property_code
                     if property_dir.exists():
                         shutil.rmtree(property_dir)
                         print(f"Deleted property photo directory: {property_dir}")

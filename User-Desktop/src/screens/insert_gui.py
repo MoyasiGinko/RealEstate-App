@@ -365,7 +365,7 @@ class InsertScreen(Screen):
 		from pathlib import Path
 
 		# Create storage directory for this property
-		storage_dir = Path("realstateimages") / property_code
+		storage_dir = Path("data/realstateimages") / property_code
 		storage_dir.mkdir(parents=True, exist_ok=True)
 
 		for photo_path in photo_paths:

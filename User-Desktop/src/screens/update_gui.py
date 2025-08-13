@@ -84,9 +84,9 @@ class PropertyForm(BoxLayout):
         if photo_path in self.selected_photos:
             self.selected_photos.remove(photo_path)
 
-            # If this is an existing photo (either starts with realstateimages/ or is in existing_photos list),
+            # If this is an existing photo (either starts with data/realstateimages/ or is in existing_photos list),
             # mark it for deletion from database
-            is_existing = (photo_path.startswith("realstateimages") or
+            is_existing = (photo_path.startswith("data/realstateimages") or
                           (hasattr(self, 'existing_photos') and photo_path in self.existing_photos))
 
             if is_existing and hasattr(self, 'property_code') and self.property_code:
@@ -505,7 +505,7 @@ class UpdateGUIScreen(Screen):
         from pathlib import Path
 
         # Create storage directory for this property
-        storage_dir = Path("realstateimages") / property_code
+        storage_dir = Path("data/realstateimages") / property_code
         storage_dir.mkdir(parents=True, exist_ok=True)
 
         for photo_path in photo_paths:

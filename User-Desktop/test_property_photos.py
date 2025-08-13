@@ -74,7 +74,7 @@ def test_property_photo_relationship():
         # Add photos to the property
         print(f"Adding {len(test_images)} photos to property {property_code}...")
 
-        storage_dir = f"realstateimages/{property_code}"
+        storage_dir = f"data/realstateimages/{property_code}"
         os.makedirs(storage_dir, exist_ok=True)
 
         for i, img_path in enumerate(test_images, 1):
