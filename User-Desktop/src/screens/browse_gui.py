@@ -8,12 +8,17 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.spinner import Spinner
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.popup import Popup
+from kivy.uix.image import Image
 from kivy.metrics import dp
 from kivy.graphics import Color, Rectangle
+from kivy.lang import Builder
 from src.models.database_api import get_api
 import datetime
 import os
 import csv
+
+# Load the KV file - DISABLED TO FIX POPUP CONFLICT
+# Builder.load_file('assets/kv/browse_gui.kv')
 
 class PropertyRow(BoxLayout):
     """Widget representing a property row in the search results."""
@@ -23,94 +28,106 @@ class PropertyRow(BoxLayout):
         self.property_data = property_data
         self.orientation = 'horizontal'
         self.size_hint_y = None
-        self.height = dp(40)
+        self.height = dp(50)
         self.spacing = dp(5)
-        self.padding = dp(5)
 
-        # Add background - lighter gray for contrast
+        # Set alternating row colors with a subtle background
         with self.canvas.before:
-            Color(0.98, 0.98, 0.98, 1)  # Very light gray
+            Color(0.98, 0.98, 0.98, 1)  # Light gray background
             self.rect = Rectangle(pos=self.pos, size=self.size)
-
         self.bind(pos=self.update_rect, size=self.update_rect)
 
         # Property code
-        property_code = property_data.get('realstatecode', 'N/A')
-        if property_code is None:
-            property_code = 'N/A'
-        self.add_widget(Label(
-            text=str(property_code),
+        code_label = Label(
+            text=str(property_data.get('realstatecode', 'N/A')),
             size_hint_x=0.15,
-            color=(0, 0, 0, 1)  # Black text
-        ))
+            color=(0, 0, 0, 1),
+            halign='center',
+            font_size=dp(12)
+        )
+        code_label.bind(size=code_label.setter('text_size'))
+        self.add_widget(code_label)
 
         # Property type
-        property_type = property_data.get('property_type', 'Unknown')
-        if property_type is None:
-            property_type = 'Unknown'
-        self.add_widget(Label(
-            text=str(property_type),
+        property_type = str(property_data.get('property_type', 'N/A'))
+        type_label = Label(
+            text=property_type,
             size_hint_x=0.15,
-            color=(0, 0, 0, 1)  # Black text
-        ))
+            color=(0, 0, 0, 1),
+            halign='center',
+            font_size=dp(12)
+        )
+        type_label.bind(size=type_label.setter('text_size'))
+        self.add_widget(type_label)
 
         # Area
-        area = property_data.get('Property-area', '0')
-        if area is None:
-            area = '0'
-        self.add_widget(Label(
-            text=str(area),
+        area = str(property_data.get('Property-area', 'N/A'))
+        area_label = Label(
+            text=area,
             size_hint_x=0.1,
-            color=(0, 0, 0, 1)  # Black text
-        ))
+            color=(0, 0, 0, 1),
+            halign='center',
+            font_size=dp(12)
+        )
+        area_label.bind(size=area_label.setter('text_size'))
+        self.add_widget(area_label)
 
         # Bedrooms
-        bedrooms = property_data.get('N-of-bedrooms', '0')
-        if bedrooms is None:
-            bedrooms = '0'
-        self.add_widget(Label(
-            text=str(bedrooms),
+        bedrooms = str(property_data.get('N-of-bedrooms', 'N/A'))
+        bedrooms_label = Label(
+            text=bedrooms,
             size_hint_x=0.1,
-            color=(0, 0, 0, 1)  # Black text
-        ))
+            color=(0, 0, 0, 1),
+            halign='center',
+            font_size=dp(12)
+        )
+        bedrooms_label.bind(size=bedrooms_label.setter('text_size'))
+        self.add_widget(bedrooms_label)
 
         # Owner name
-        owner_name = property_data.get('ownername', 'Unknown')
-        if owner_name is None:
-            owner_name = 'Unknown'
-        self.add_widget(Label(
-            text=str(owner_name),
+        owner = str(property_data.get('ownername', 'N/A'))[:20] + '...' if len(str(property_data.get('ownername', 'N/A'))) > 20 else str(property_data.get('ownername', 'N/A'))
+        owner_label = Label(
+            text=owner,
             size_hint_x=0.2,
-            color=(0, 0, 0, 1)  # Black text
-        ))
+            color=(0, 0, 0, 1),
+            halign='center',
+            font_size=dp(12)
+        )
+        owner_label.bind(size=owner_label.setter('text_size'))
+        self.add_widget(owner_label)
 
-        # Address
-        address = property_data.get('Property-address', 'Not specified')
-        if address is None:
-            address = 'Not specified'
-        self.add_widget(Label(
-            text=str(address),
+        # Address (truncated)
+        address = str(property_data.get('Property-address', 'N/A'))[:25] + '...' if len(str(property_data.get('Property-address', 'N/A'))) > 25 else str(property_data.get('Property-address', 'N/A'))
+        address_label = Label(
+            text=address,
             size_hint_x=0.2,
-            color=(0, 0, 0, 1)  # Black text
-        ))
+            color=(0, 0, 0, 1),
+            halign='center',
+            font_size=dp(12)
+        )
+        address_label.bind(size=address_label.setter('text_size'))
+        self.add_widget(address_label)
 
         # Action buttons
-        actions = BoxLayout(size_hint_x=0.1, spacing=dp(5))
+        actions_layout = BoxLayout(size_hint_x=0.1, spacing=dp(5))
 
+        # View button
         view_button = Button(
             text='View',
-            background_color=(0.2, 0.6, 1, 1),  # Blue button
-            color=(1, 1, 1, 1)  # White text
+            size_hint=(1, 1),
+            background_color=(0.2, 0.7, 0.2, 1),
+            color=(1, 1, 1, 1),
+            font_size=dp(10)
         )
         view_button.bind(on_press=lambda x: on_view_callback(property_data))
-        actions.add_widget(view_button)
+        actions_layout.add_widget(view_button)
 
-        self.add_widget(actions)
+        self.add_widget(actions_layout)
 
     def update_rect(self, instance, value):
-        """Update the rectangle position and size."""
-        instance.rect.pos = instance.pos
-        instance.rect.size = instance.size
+        self.rect.pos = instance.pos
+        self.rect.size = instance.size
+
 
 class PropertyDetailPopup(Popup):
     """Popup to show property details."""
@@ -121,31 +138,93 @@ class PropertyDetailPopup(Popup):
         if property_code is None:
             property_code = 'Unknown'
         self.title = f"Property Details: {property_code}"
-        self.size_hint = (0.8, 0.8)
+        self.size_hint = (0.9, 0.9)
 
-        content = BoxLayout(orientation='vertical', spacing=dp(10), padding=dp(10))
+        # Create the main content manually instead of using KV
+        main_layout = BoxLayout(orientation='vertical', padding=dp(20), spacing=dp(15))
 
-        # Set white background for popup
-        with content.canvas.before:
-            Color(1, 1, 1, 1)  # White background
-            content.rect = Rectangle(pos=content.pos, size=content.size)
-        content.bind(pos=lambda instance, value: setattr(content.rect, 'pos', instance.pos))
-        content.bind(size=lambda instance, value: setattr(content.rect, 'size', instance.size))
+        # Main content area
+        content_area = BoxLayout(orientation='horizontal', spacing=dp(20))
 
-        # Create scrollable content
-        scroll_content = GridLayout(cols=2, spacing=dp(10), size_hint_y=None)
-        scroll_content.bind(minimum_height=scroll_content.setter('height'))
+        # Property details on the left
+        left_panel = ScrollView(size_hint=(0.6, 1))
 
+        details_grid = GridLayout(
+            cols=2,
+            spacing=dp(10),
+            size_hint_y=None,
+            padding=dp(10)
+        )
+        details_grid.bind(minimum_height=details_grid.setter('height'))
+
+        # Add property details
+        self.add_property_details(details_grid, property_data)
+
+        left_panel.add_widget(details_grid)
+        content_area.add_widget(left_panel)
+
+        # Photo gallery on the right
+        right_panel = BoxLayout(orientation='vertical', size_hint=(0.4, 1))
+
+        photos_label = Label(
+            text='Property Photos',
+            size_hint_y=None,
+            height=dp(40),
+            font_size=dp(18),
+            color=(0.2, 0.2, 0.2, 1),
+            bold=True
+        )
+        right_panel.add_widget(photos_label)
+
+        photos_scroll = ScrollView()
+        self.photo_gallery = GridLayout(
+            cols=1,
+            spacing=dp(10),
+            size_hint_y=None,
+            padding=dp(10)
+        )
+        self.photo_gallery.bind(minimum_height=self.photo_gallery.setter('height'))
+
+        photos_scroll.add_widget(self.photo_gallery)
+        right_panel.add_widget(photos_scroll)
+
+        content_area.add_widget(right_panel)
+        main_layout.add_widget(content_area)
+
+        # Close button
+        close_button = Button(
+            text='Close',
+            size_hint_y=None,
+            height=dp(50),
+            background_color=(0.6, 0.6, 0.6, 1),
+            color=(1, 1, 1, 1)
+        )
+        close_button.bind(on_press=self.dismiss)
+        main_layout.add_widget(close_button)
+
+        # Set content
+        self.content = main_layout
+
+        # Load photos
+        self.load_property_photos(property_code)
+
+    def add_property_details(self, details_grid, property_data):
+        """Add property details to the details grid."""
         # Add property details
         fields = [
             ('Property Code', 'realstatecode'),
             ('Property Type', 'property_type'),
             ('Building Type', 'building_type'),
             ('Year Built', 'Yearmake'),
-            ('Area', 'Property-area'),
+            ('Area (m²)', 'Property-area'),
+            ('Facade (m)', 'Property-facade'),
+            ('Depth (m)', 'Property-depth'),
             ('Bedrooms', 'N-of-bedrooms'),
             ('Bathrooms', 'N-of-bathrooms'),
+            ('Floors', 'Property-floors'),
             ('Corner Property', 'Property-corner'),
+            ('Price', 'Property-price'),
+            ('Currency', 'Property-currency'),
             ('Address', 'Property-address'),
             ('Owner', 'ownername'),
             ('Owner Code', 'Ownercode'),
@@ -153,47 +232,118 @@ class PropertyDetailPopup(Popup):
         ]
 
         for label, field in fields:
-            scroll_content.add_widget(Label(
+            details_grid.add_widget(Label(
                 text=label + ':',
                 size_hint_y=None,
-                height=dp(30),
+                height=dp(40),
                 halign='right',
+                valign='middle',
                 bold=True,
-                text_size=(dp(200), dp(30)),
-                color=(0, 0, 0, 1)  # Black text
+                text_size=(dp(200), dp(40)),
+                color=(0.2, 0.2, 0.2, 1)
             ))
 
             value = property_data.get(field, 'Not specified')
             if field == 'Property-corner':
                 value = 'Yes' if value else 'No'
+            elif field == 'Property-price' and value:
+                currency = property_data.get('Property-currency', '')
+                value = f"{value} {currency}".strip()
+            elif value is None:
+                value = 'Not specified'
 
-            scroll_content.add_widget(Label(
+            details_grid.add_widget(Label(
                 text=str(value),
                 size_hint_y=None,
-                height=dp(30),
+                height=dp(40),
                 halign='left',
-                text_size=(dp(400), dp(30)),
-                color=(0, 0, 0, 1)  # Black text
+                valign='middle',
+                text_size=(dp(300), dp(40)),
+                color=(0, 0, 0, 1)
             ))
 
-        # Create scrollview for the content
-        scroll_view = ScrollView(size_hint=(1, 1))
-        scroll_view.add_widget(scroll_content)
-        content.add_widget(scroll_view)
+    def load_property_photos(self, property_code):
+        """Load and display property photos."""
+        try:
+            self.photo_gallery.clear_widgets()
 
-        # Close button
-        close_button = Button(
-            text='Close',
-            size_hint_y=None,
-            height=dp(50),
-            background_color=(0.6, 0.6, 0.6, 1),  # Gray button
-            color=(1, 1, 1, 1)  # White text
-        )
-        close_button.bind(on_press=self.dismiss)
-        content.add_widget(close_button)
+            api = get_api()
+            photos = api.get_property_photos(property_code)
 
-        self.content = content
+            if not photos or len(photos) == 0:
+                self.photo_gallery.add_widget(Label(
+                    text='No photos available\nfor this property',
+                    size_hint_y=None,
+                    height=dp(100),
+                    color=(0.5, 0.5, 0.5, 1),
+                    halign='center',
+                    valign='middle'
+                ))
+                return
 
+            for photo in photos:
+                storage_path = photo.get('Storagepath', '')
+                filename = photo.get('photofilename', '')
+
+                if filename:
+                    photo_path = os.path.join(storage_path, filename)
+
+                    if os.path.exists(photo_path):
+                        # Create image container
+                        photo_container = BoxLayout(
+                            orientation='vertical',
+                            size_hint_y=None,
+                            height=dp(200),
+                            spacing=dp(5)
+                        )
+
+                        try:
+                            img = Image(
+                                source=photo_path,
+                                size_hint=(1, 1),
+                                fit_mode='contain'
+                            )
+                            photo_container.add_widget(img)
+
+                            # Add photo filename label
+                            photo_container.add_widget(Label(
+                                text=filename,
+                                size_hint_y=None,
+                                height=dp(30),
+                                font_size=dp(12),
+                                color=(0.4, 0.4, 0.4, 1),
+                                halign='center'
+                            ))
+
+                            self.photo_gallery.add_widget(photo_container)
+
+                        except Exception as e:
+                            # Error loading specific image
+                            self.photo_gallery.add_widget(Label(
+                                text=f'Error loading: {filename}\n{str(e)}',
+                                size_hint_y=None,
+                                height=dp(60),
+                                color=(0.8, 0.2, 0.2, 1),
+                                halign='center'
+                            ))
+                    else:
+                        # Photo file not found
+                        self.photo_gallery.add_widget(Label(
+                            text=f'Photo: {filename}\n(File not found)',
+                            size_hint_y=None,
+                            height=dp(60),
+                            color=(0.8, 0.2, 0.2, 1),
+                            halign='center'
+                        ))
+
+        except Exception as e:
+            self.photo_gallery.add_widget(Label(
+                text=f'Error loading photos:\n{str(e)}',
+                size_hint_y=None,
+                height=dp(60),
+                color=(0.8, 0.2, 0.2, 1),
+                halign='center'
+            ))
 class SearchReportScreen(Screen):
     """Screen for searching properties and generating reports."""
 
@@ -246,16 +396,15 @@ class SearchReportScreen(Screen):
             color=(0, 0, 0, 1),
             size_hint_y=None,
             height=dp(30),
-            halign='left',
+            halign='right',
             valign='middle'
         ))
+
         self.property_type_spinner = Spinner(
             text='All Types',
             values=['All Types'],
             size_hint_y=None,
-            height=dp(45),
-            background_color=(0.98, 0.98, 0.98, 1),
-            color=(0, 0, 0, 1)
+            height=dp(40)
         )
         search_form.add_widget(self.property_type_spinner)
 
@@ -265,130 +414,89 @@ class SearchReportScreen(Screen):
             color=(0, 0, 0, 1),
             size_hint_y=None,
             height=dp(30),
-            halign='left',
+            halign='right',
             valign='middle'
         ))
+
         self.building_type_spinner = Spinner(
             text='All Types',
             values=['All Types'],
             size_hint_y=None,
-            height=dp(45),
-            background_color=(0.98, 0.98, 0.98, 1),
-            color=(0, 0, 0, 1)
+            height=dp(40)
         )
         search_form.add_widget(self.building_type_spinner)
 
-        # Bedrooms range
+        # Minimum bedrooms
         search_form.add_widget(Label(
-            text='Bedrooms:',
+            text='Min Bedrooms:',
             color=(0, 0, 0, 1),
             size_hint_y=None,
             height=dp(30),
-            halign='left',
+            halign='right',
             valign='middle'
         ))
-        bedrooms_layout = BoxLayout(orientation='horizontal', spacing=dp(10), size_hint_y=None, height=dp(45))
+
         self.min_bedrooms = TextInput(
-            hint_text='Min',
             multiline=False,
-            input_filter='int',
-            size_hint_x=0.5,
             size_hint_y=None,
-            height=dp(45),
-            background_color=(0.98, 0.98, 0.98, 1),
-            foreground_color=(0, 0, 0, 1),
-            font_size=dp(14)
+            height=dp(40),
+            input_filter='int'
         )
-        bedrooms_layout.add_widget(self.min_bedrooms)
+        search_form.add_widget(self.min_bedrooms)
+
+        # Maximum bedrooms
+        search_form.add_widget(Label(
+            text='Max Bedrooms:',
+            color=(0, 0, 0, 1),
+            size_hint_y=None,
+            height=dp(30),
+            halign='right',
+            valign='middle'
+        ))
+
         self.max_bedrooms = TextInput(
-            hint_text='Max',
             multiline=False,
-            input_filter='int',
-            size_hint_x=0.5,
             size_hint_y=None,
-            height=dp(45),
-            background_color=(0.98, 0.98, 0.98, 1),
-            foreground_color=(0, 0, 0, 1),
-            font_size=dp(14)
+            height=dp(40),
+            input_filter='int'
         )
-        bedrooms_layout.add_widget(self.max_bedrooms)
-        search_form.add_widget(bedrooms_layout)
+        search_form.add_widget(self.max_bedrooms)
 
-        # Area range
+        # Minimum price
         search_form.add_widget(Label(
-            text='Area (m²):',
+            text='Min Price:',
             color=(0, 0, 0, 1),
             size_hint_y=None,
             height=dp(30),
-            halign='left',
+            halign='right',
             valign='middle'
         ))
-        area_layout = BoxLayout(orientation='horizontal', spacing=dp(10), size_hint_y=None, height=dp(45))
-        self.min_area = TextInput(
-            hint_text='Min',
-            multiline=False,
-            input_filter='float',
-            size_hint_x=0.5,
-            size_hint_y=None,
-            height=dp(45),
-            background_color=(0.98, 0.98, 0.98, 1),
-            foreground_color=(0, 0, 0, 1),
-            font_size=dp(14)
-        )
-        area_layout.add_widget(self.min_area)
-        self.max_area = TextInput(
-            hint_text='Max',
-            multiline=False,
-            input_filter='float',
-            size_hint_x=0.5,
-            size_hint_y=None,
-            height=dp(45),
-            background_color=(0.98, 0.98, 0.98, 1),
-            foreground_color=(0, 0, 0, 1),
-            font_size=dp(14)
-        )
-        area_layout.add_widget(self.max_area)
-        search_form.add_widget(area_layout)
 
-        # Address
+        self.min_price = TextInput(
+            multiline=False,
+            size_hint_y=None,
+            height=dp(40),
+            input_filter='float'
+        )
+        search_form.add_widget(self.min_price)
+
+        # Maximum price
         search_form.add_widget(Label(
-            text='Address:',
+            text='Max Price:',
             color=(0, 0, 0, 1),
             size_hint_y=None,
             height=dp(30),
-            halign='left',
+            halign='right',
             valign='middle'
         ))
-        self.address_input = TextInput(
-            hint_text='Enter address',
-            multiline=False,
-            size_hint_y=None,
-            height=dp(45),
-            background_color=(0.98, 0.98, 0.98, 1),
-            foreground_color=(0, 0, 0, 1),
-            font_size=dp(14)
-        )
-        search_form.add_widget(self.address_input)
 
-        # Owner name
-        search_form.add_widget(Label(
-            text='Owner Name:',
-            color=(0, 0, 0, 1),
-            size_hint_y=None,
-            height=dp(30),
-            halign='left',
-            valign='middle'
-        ))
-        self.owner_input = TextInput(
-            hint_text='Enter owner name',
+        self.max_price = TextInput(
             multiline=False,
             size_hint_y=None,
-            height=dp(45),
-            background_color=(0.98, 0.98, 0.98, 1),
-            foreground_color=(0, 0, 0, 1),
-            font_size=dp(14)
+            height=dp(40),
+            input_filter='float'
         )
-        search_form.add_widget(self.owner_input)
+        search_form.add_widget(self.max_price)
 
         # Corner property
         search_form.add_widget(Label(
@@ -396,152 +504,113 @@ class SearchReportScreen(Screen):
             color=(0, 0, 0, 1),
             size_hint_y=None,
             height=dp(30),
-            halign='left',
+            halign='right',
             valign='middle'
         ))
-        corner_layout = BoxLayout(orientation='horizontal', spacing=dp(10), size_hint_y=None, height=dp(45))
-        self.corner_checkbox = CheckBox(size_hint=(None, None), size=(dp(30), dp(30)))
-        corner_layout.add_widget(self.corner_checkbox)
-        corner_layout.add_widget(Label(text='Yes', color=(0, 0, 0, 1), size_hint_x=None, width=dp(50)))
-        corner_layout.add_widget(Label(text='', size_hint_x=1))  # Spacer
-        search_form.add_widget(corner_layout)
+
+        self.corner_property = CheckBox(
+            size_hint_y=None,
+            height=dp(40),
+            active=False
+        )
+        search_form.add_widget(self.corner_property)
 
         search_section.add_widget(search_form)
-        self.layout.add_widget(search_section)
 
-        # Search buttons with better styling
-        buttons_layout = BoxLayout(
-            orientation='horizontal',
-            size_hint_y=None,
-            height=dp(60),
-            spacing=dp(15),
-            padding=[dp(50), 0, dp(50), 0]
-        )
+        # Search buttons
+        buttons_layout = BoxLayout(orientation='horizontal', spacing=dp(15), size_hint_y=None, height=dp(50))
 
         search_button = Button(
             text='Search Properties',
-            size_hint_x=0.3,
-            background_color=(0.2, 0.6, 1, 1),
+            size_hint=(0.2, 1),
+            background_color=(0.2, 0.6, 0.8, 1),
             color=(1, 1, 1, 1),
-            font_size=dp(16)
+            font_size=dp(14)
         )
         search_button.bind(on_press=self.perform_search)
         buttons_layout.add_widget(search_button)
 
         clear_button = Button(
-            text='Clear All',
-            size_hint_x=0.2,
-            background_color=(0.7, 0.7, 0.7, 1),
+            text='Clear Search',
+            size_hint=(0.2, 1),
+            background_color=(0.6, 0.6, 0.6, 1),
             color=(1, 1, 1, 1),
-            font_size=dp(16)
+            font_size=dp(14)
         )
         clear_button.bind(on_press=self.clear_search)
         buttons_layout.add_widget(clear_button)
 
         export_button = Button(
             text='Export Results',
-            size_hint_x=0.3,
-            background_color=(0.2, 0.7, 0.3, 1),
+            size_hint=(0.2, 1),
+            background_color=(0.6, 0.8, 0.2, 1),
             color=(1, 1, 1, 1),
-            font_size=dp(16)
+            font_size=dp(14)
         )
         export_button.bind(on_press=self.export_results)
         buttons_layout.add_widget(export_button)
 
-        self.layout.add_widget(buttons_layout)
+        # Back button
+        back_button = Button(
+            text='Back to Main',
+            size_hint=(0.2, 1),
+            background_color=(0.8, 0.2, 0.2, 1),
+            color=(1, 1, 1, 1),
+            font_size=dp(14)
+        )
+        back_button.bind(on_press=self.go_to_main_gui)
+        buttons_layout.add_widget(back_button)
 
-        # Results section with better spacing
+        buttons_layout.add_widget(Label())  # Spacer
+        search_section.add_widget(buttons_layout)
+
+        self.layout.add_widget(search_section)
+
+        # Results section
         results_section = BoxLayout(orientation='vertical', spacing=dp(10))
 
-        # Results count with better styling
-        self.results_count = Label(
-            text='0 properties found',
+        # Results title
+        results_title = Label(
+            text='Search Results',
+            font_size=dp(18),
             size_hint_y=None,
-            height=dp(35),
+            height=dp(30),
             color=(0.2, 0.2, 0.2, 1),
-            font_size=dp(16),
             bold=True,
             halign='left'
         )
-        self.results_count.bind(size=self.results_count.setter('text_size'))
-        results_section.add_widget(self.results_count)
+        results_title.bind(size=results_title.setter('text_size'))
+        results_section.add_widget(results_title)
 
-        # Results header with better proportions
-        results_header = BoxLayout(
-            orientation='horizontal',
-            size_hint_y=None,
-            height=dp(50),
-            spacing=dp(5),
-            padding=dp(10)
-        )
+        # Results scroll area
+        self.results_scroll = ScrollView()
+        self.results_layout = BoxLayout(orientation='vertical', spacing=dp(2), size_hint_y=None)
+        self.results_layout.bind(minimum_height=self.results_layout.setter('height'))
 
-        # Set background for header
-        with results_header.canvas.before:
-            Color(0.9, 0.9, 0.9, 1)
-            results_header.rect = Rectangle(pos=results_header.pos, size=results_header.size)
-        results_header.bind(pos=lambda instance, value: setattr(results_header.rect, 'pos', instance.pos))
-        results_header.bind(size=lambda instance, value: setattr(results_header.rect, 'size', instance.size))
-
-        headers = [
-            ('Code', 0.15),
-            ('Type', 0.15),
-            ('Area', 0.1),
-            ('Bedrooms', 0.1),
-            ('Owner', 0.2),
-            ('Address', 0.2),
-            ('Actions', 0.1)
-        ]
-
-        for header, size in headers:
-            results_header.add_widget(Label(
-                text=header,
-                size_hint_x=size,
-                bold=True,
-                color=(0.1, 0.1, 0.1, 1),
-                font_size=dp(14)
-            ))
-
-        results_section.add_widget(results_header)
-
-        # Results container with scroll
-        self.results_container = GridLayout(cols=1, spacing=dp(2), size_hint_y=None)
-        self.results_container.bind(minimum_height=self.results_container.setter('height'))
-
-        results_scroll = ScrollView(size_hint=(1, 1), do_scroll_x=False)
-        results_scroll.add_widget(self.results_container)
-        results_section.add_widget(results_scroll)
+        self.results_scroll.add_widget(self.results_layout)
+        results_section.add_widget(self.results_scroll)
 
         self.layout.add_widget(results_section)
-
-        # Back button with better positioning
-        footer_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(60), padding=[0, dp(10), 0, 0])
-        back_button = Button(
-            text='← Back to Main',
-            size_hint=(None, None),
-            size=(dp(200), dp(50)),
-            background_color=(0.4, 0.4, 0.8, 1),
-            color=(1, 1, 1, 1),
-            font_size=dp(16)
-        )
-        back_button.bind(on_press=self.go_to_main_gui)
-        footer_layout.add_widget(back_button)
-        footer_layout.add_widget(Label())  # Spacer
-        self.layout.add_widget(footer_layout)
-
-        # Store search results
-        self.search_results = []
-
         self.add_widget(self.layout)
 
     def update_bg(self, instance, value):
-        """Update the background rectangle."""
         self.bg_rect.pos = instance.pos
         self.bg_rect.size = instance.size
 
     def on_enter(self):
-        """Load the property types and building types when entering the screen."""
+        """Called when the screen is entered."""
         self.load_property_types()
         self.load_building_types()
+        # Load all properties initially
+        self.load_all_properties()
+
+    def load_all_properties(self):
+        """Load and display all properties."""
+        try:
+            properties = self.api.search_properties({})
+            self.display_results(properties)
+        except Exception as e:
+            print(f"Error loading properties: {e}")
 
     def load_property_types(self):
         """Load property types from the database."""
@@ -551,6 +620,8 @@ class SearchReportScreen(Screen):
             if property_types:
                 values = ['All Types'] + [f"{pt.get('code', 'N/A')} - {pt.get('name', 'Unknown')}" for pt in property_types]
                 self.property_type_spinner.values = values
+            else:
+                self.property_type_spinner.values = ['All Types']
         except Exception as e:
             print(f"Error loading property types: {e}")
             self.property_type_spinner.values = ['All Types']
@@ -563,6 +634,8 @@ class SearchReportScreen(Screen):
             if building_types:
                 values = ['All Types'] + [f"{bt.get('code', 'N/A')} - {bt.get('name', 'Unknown')}" for bt in building_types]
                 self.building_type_spinner.values = values
+            else:
+                self.building_type_spinner.values = ['All Types']
         except Exception as e:
             print(f"Error loading building types: {e}")
             self.building_type_spinner.values = ['All Types']
@@ -591,157 +664,171 @@ class SearchReportScreen(Screen):
             # Just use max as exact for now (refine later)
             search_criteria['N-of-bedrooms'] = int(self.max_bedrooms.text)
 
-        # Area - handle in client side filtering
-
-        # Address
-        if self.address_input.text:
-            search_criteria['Property-address'] = '%' + self.address_input.text + '%'
-
-        # Owner name - search in joined table
-        # We'll handle this in client side filtering
+        # Price range
+        if self.min_price.text and self.max_price.text:
+            # We'll handle min/max in the client side filtering
+            pass
+        elif self.min_price.text:
+            search_criteria['Property-price'] = float(self.min_price.text)
+        elif self.max_price.text:
+            # Just use max as exact for now
+            search_criteria['Property-price'] = float(self.max_price.text)
 
         # Corner property
-        if self.corner_checkbox.active:
-            search_criteria['Property-corner'] = True
+        if self.corner_property.active:
+            search_criteria['Property-corner'] = 1
 
-        # Perform the search
-        results = self.api.search_properties(search_criteria)
+        try:
+            # Get results from database
+            results = self.api.search_properties(search_criteria)
 
-        # Apply client-side filtering for complex criteria
-        filtered_results = []
-        for prop in results:
-            # Filter by area range if specified
-            if self.min_area.text and self.max_area.text:
-                min_area = float(self.min_area.text)
-                max_area = float(self.max_area.text)
-                if 'Property-area' not in prop or prop['Property-area'] < min_area or prop['Property-area'] > max_area:
-                    continue
-            elif self.min_area.text:
-                min_area = float(self.min_area.text)
-                if 'Property-area' not in prop or prop['Property-area'] < min_area:
-                    continue
-            elif self.max_area.text:
-                max_area = float(self.max_area.text)
-                if 'Property-area' not in prop or prop['Property-area'] > max_area:
-                    continue
+            # Client-side filtering for range queries
+            filtered_results = []
+            for result in results:
+                # Filter by bedroom range
+                if self.min_bedrooms.text and self.max_bedrooms.text:
+                    bedrooms = result.get('N-of-bedrooms', 0)
+                    if not (int(self.min_bedrooms.text) <= bedrooms <= int(self.max_bedrooms.text)):
+                        continue
 
-            # Filter by bedroom range if both min and max specified
-            if self.min_bedrooms.text and self.max_bedrooms.text:
-                min_bedrooms = int(self.min_bedrooms.text)
-                max_bedrooms = int(self.max_bedrooms.text)
-                if 'N-of-bedrooms' not in prop or prop['N-of-bedrooms'] < min_bedrooms or prop['N-of-bedrooms'] > max_bedrooms:
-                    continue
+                # Filter by price range
+                if self.min_price.text and self.max_price.text:
+                    price = result.get('Property-price', 0)
+                    if not (float(self.min_price.text) <= price <= float(self.max_price.text)):
+                        continue
 
-            # Filter by owner name
-            if self.owner_input.text:
-                owner_name = self.owner_input.text.lower()
-                if 'ownername' not in prop or owner_name not in prop['ownername'].lower():
-                    continue
+                filtered_results.append(result)
 
-            filtered_results.append(prop)
+            self.display_results(filtered_results)
 
-        # Store and display results
-        self.search_results = filtered_results
-        self.display_results(filtered_results)
+        except Exception as e:
+            print(f"Error performing search: {e}")
 
     def display_results(self, results):
-        """Display the search results."""
-        self.results_container.clear_widgets()
-        self.results_count.text = f"{len(results)} properties found"
+        """Display search results."""
+        # Clear existing results
+        self.results_layout.clear_widgets()
 
         if not results:
-            self.results_container.add_widget(Label(
-                text="No properties found matching your criteria.",
+            no_results = Label(
+                text='No properties found matching your criteria.',
                 size_hint_y=None,
-                height=dp(60),
+                height=dp(50),
                 color=(0.5, 0.5, 0.5, 1),
-                font_size=dp(16)
-            ))
+                font_size=dp(14)
+            )
+            self.results_layout.add_widget(no_results)
             return
 
-        for prop in results:
-            self.results_container.add_widget(PropertyRow(
-                prop,
-                self.view_property_details,
-                self.export_property
+        # Add header row
+        results_header = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(40), spacing=dp(5))
+
+        # Set background for header
+        with results_header.canvas.before:
+            Color(0.9, 0.9, 0.9, 1)
+            results_header.rect = Rectangle(pos=results_header.pos, size=results_header.size)
+        results_header.bind(pos=lambda instance, value: setattr(results_header.rect, 'pos', instance.pos))
+        results_header.bind(size=lambda instance, value: setattr(results_header.rect, 'size', instance.size))
+
+        headers = [
+            ('Code', 0.15),
+            ('Type', 0.15),
+            ('Area', 0.1),
+            ('Bedrooms', 0.1),
+            ('Owner', 0.2),
+            ('Address', 0.2),
+            ('Actions', 0.1)
+        ]
+
+        for header, size in headers:
+            results_header.add_widget(Label(
+                text=header,
+                size_hint_x=size,
+                bold=True,
+                color=(0.1, 0.1, 0.1, 1),
+                font_size=dp(14)
             ))
 
+        self.results_layout.add_widget(results_header)
+
+        # Add property rows
+        for i, property_data in enumerate(results):
+            if i % 2 == 0:
+                property_row = PropertyRow(property_data, self.view_property_details, self.export_property)
+            else:
+                property_row = PropertyRow(property_data, self.view_property_details, self.export_property)
+                # Alternate row color
+                with property_row.canvas.before:
+                    Color(0.95, 0.95, 0.95, 1)
+                    property_row.rect = Rectangle(pos=property_row.pos, size=property_row.size)
+
+            self.results_layout.add_widget(property_row)
+
     def view_property_details(self, property_data):
-        """Show detailed view of a property."""
+        """Open property details popup."""
         popup = PropertyDetailPopup(property_data)
         popup.open()
 
     def export_property(self, property_data):
-        """Export a single property to CSV."""
+        """Export single property to CSV."""
         self.export_to_csv([property_data])
 
     def export_results(self, instance):
-        """Export all search results to CSV."""
-        if not self.search_results:
-            popup = Popup(
-                title='Export Error',
-                content=Label(text='No search results to export.', color=(0, 0, 0, 1)),
-                size_hint=(0.6, 0.3)
-            )
-            popup.open()
-            return
+        """Export all current search results."""
+        # Get all displayed properties
+        properties = []
+        for child in self.results_layout.children:
+            if isinstance(child, PropertyRow):
+                properties.append(child.property_data)
 
-        self.export_to_csv(self.search_results)
+        if properties:
+            self.export_to_csv(properties)
+        else:
+            # Show message that no results to export
+            print("No results to export")
 
     def export_to_csv(self, properties):
-        """Export properties to a CSV file."""
+        """Export properties to CSV file."""
         try:
-            # Create exports directory if it doesn't exist
-            export_dir = os.path.join(os.path.expanduser('~'), 'property_exports')
-            os.makedirs(export_dir, exist_ok=True)
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"property_report_{timestamp}.csv"
 
-            # Generate filename with timestamp
-            timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-            filename = os.path.join(export_dir, f'property_export_{timestamp}.csv')
-
-            # Define CSV headers
-            headers = [
-                'Property Code', 'Property Type', 'Building Type', 'Area',
-                'Bedrooms', 'Bathrooms', 'Corner Property', 'Address',
-                'Owner Name', 'Owner Code', 'Description'
-            ]
-
-            # Write to CSV
             with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(headers)
+                fieldnames = [
+                    'Property Code', 'Property Type', 'Building Type', 'Year Built',
+                    'Area (m²)', 'Facade (m)', 'Depth (m)', 'Bedrooms', 'Bathrooms',
+                    'Floors', 'Corner Property', 'Price', 'Currency', 'Address',
+                    'Owner Name', 'Owner Code', 'Description'
+                ]
+
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer.writeheader()
 
                 for prop in properties:
-                    writer.writerow([
-                        prop.get('realstatecode', ''),
-                        prop.get('property_type', ''),
-                        prop.get('building_type', ''),
-                        prop.get('Property-area', ''),
-                        prop.get('N-of-bedrooms', ''),
-                        prop.get('N-of-bathrooms', ''),
-                        'Yes' if prop.get('Property-corner', False) else 'No',
-                        prop.get('Property-address', ''),
-                        prop.get('ownername', ''),
-                        prop.get('Ownercode', ''),
-                        prop.get('Descriptions', '')
-                    ])
+                    writer.writerow({
+                        'Property Code': prop.get('realstatecode', ''),
+                        'Property Type': prop.get('property_type', ''),
+                        'Building Type': prop.get('building_type', ''),
+                        'Year Built': prop.get('Yearmake', ''),
+                        'Area (m²)': prop.get('Property-area', ''),
+                        'Facade (m)': prop.get('Property-facade', ''),
+                        'Depth (m)': prop.get('Property-depth', ''),
+                        'Bedrooms': prop.get('N-of-bedrooms', ''),
+                        'Bathrooms': prop.get('N-of-bathrooms', ''),
+                        'Floors': prop.get('Property-floors', ''),
+                        'Corner Property': 'Yes' if prop.get('Property-corner') else 'No',
+                        'Price': prop.get('Property-price', ''),
+                        'Currency': prop.get('Property-currency', ''),
+                        'Address': prop.get('Property-address', ''),
+                        'Owner Name': prop.get('ownername', ''),
+                        'Owner Code': prop.get('Ownercode', ''),
+                        'Description': prop.get('Descriptions', '')
+                    })
 
-            # Show success message
-            popup = Popup(
-                title='Export Successful',
-                content=Label(text=f'Properties exported to:\n{filename}', color=(0, 0, 0, 1)),
-                size_hint=(0.7, 0.3)
-            )
-            popup.open()
+            print(f"Report exported successfully: {filename}")
 
         except Exception as e:
-            # Show error message
-            popup = Popup(
-                title='Export Error',
-                content=Label(text=f'Failed to export properties: {str(e)}', color=(0, 0, 0, 1)),
-                size_hint=(0.7, 0.3)
-            )
-            popup.open()
+            print(f"Error exporting CSV: {e}")
 
     def clear_search(self, instance):
         """Clear all search criteria."""
@@ -749,17 +836,14 @@ class SearchReportScreen(Screen):
         self.building_type_spinner.text = 'All Types'
         self.min_bedrooms.text = ''
         self.max_bedrooms.text = ''
-        self.min_area.text = ''
-        self.max_area.text = ''
-        self.address_input.text = ''
-        self.owner_input.text = ''
-        self.corner_checkbox.active = False
+        self.min_price.text = ''
+        self.max_price.text = ''
+        self.corner_property.active = False
 
-        # Clear results
-        self.search_results = []
-        self.results_container.clear_widgets()
-        self.results_count.text = '0 properties found'
+        # Load all properties again
+        self.load_all_properties()
 
     def go_to_main_gui(self, instance=None):
-        """Navigate back to the main GUI."""
-        self.manager.current = 'main_gui'
+        """Navigate back to main GUI."""
+        if hasattr(self.manager, 'current'):
+            self.manager.current = 'main_gui'
