@@ -2,7 +2,7 @@
 	name: 'about_gui'
 	canvas.before:
 		Color:
-			rgba: 0.95, 0.95, 0.95, 1
+			rgba: 1, 1, 1, 1  # Pure white background
 		Rectangle:
 			pos: self.pos
 			size: self.size
@@ -15,7 +15,7 @@
 		Label:
 			text: 'About Us'
 			font_size: '28sp'
-			color: 0.2, 0.2, 0.4, 1
+			color: 0, 0, 0, 1
 			bold: True
 			size_hint_y: None
 			height: '60dp'
@@ -27,12 +27,22 @@
 			orientation: 'vertical'
 			spacing: '10dp'
 			size_hint_y: None
-			height: '220dp'
+			height: '260dp'
+
+			Image:
+				source: 'assets/app-images/alkawaz-logo.jpg'
+				size_hint: None, None
+				size: '80dp', '80dp'
+				allow_stretch: True
+				keep_ratio: True
+				mipmap: True
+				opacity: 1
+				pos_hint: {'center_x': 0.5}
 
 			Label:
 				text: 'Al-Kawaz Software and Information Technology'
 				font_size: '22sp'
-				color: 0.2, 0.3, 0.6, 1
+				color: 0, 0, 0, 1
 				bold: True
 				size_hint_y: None
 				height: '40dp'
@@ -43,7 +53,7 @@
 			Label:
 				text: 'Version: 1.0.0'
 				font_size: '16sp'
-				color: 0.4, 0.4, 0.4, 1
+				color: 0, 0, 0, 1
 				size_hint_y: None
 				height: '30dp'
 				halign: 'center'
@@ -53,7 +63,7 @@
 			Label:
 				text: 'Author: Luay Alkawaz'
 				font_size: '16sp'
-				color: 0.4, 0.4, 0.4, 1
+				color: 0, 0, 0, 1
 				size_hint_y: None
 				height: '30dp'
 				halign: 'center'
@@ -63,7 +73,7 @@
 			Label:
 				text: "This application helps users manage real estate properties efficiently and intuitively.\nProfessional • Reliable • Innovative\nThank you for using our system!"
 				font_size: '15sp'
-				color: 0.5, 0.5, 0.5, 1
+				color: 0, 0, 0, 1
 				size_hint_y: None
 				height: '80dp'
 				halign: 'center'
