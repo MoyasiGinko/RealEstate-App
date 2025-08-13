@@ -10,13 +10,13 @@
     BoxLayout:
         orientation: 'vertical'
         padding: '20dp'
-        spacing: '15dp'
+        spacing: '20dp'
 
         # Top navigation bar
         BoxLayout:
             orientation: 'horizontal'
             size_hint_y: None
-            height: '50dp'
+            height: '60dp'
             spacing: '15dp'
 
             # Exit button with icon
@@ -27,12 +27,19 @@
                 background_down: 'assets/app-images/exit.jpg'
                 border: 0, 0, 0, 0
                 on_release: app.stop()
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 0.9
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [8, 8, 8, 8]
                 canvas.after:
                     Color:
-                        rgba: 0, 0, 0, 0.1
+                        rgba: 0.8, 0.2, 0.2, 0.4
                     Line:
                         rounded_rectangle: self.x, self.y, self.width, self.height, 8, 8, 8, 8
-                        width: 1
+                        width: 2
 
             Widget:  # Spacer
 
@@ -44,166 +51,298 @@
                 background_down: 'assets/app-images/about.jpg'
                 border: 0, 0, 0, 0
                 on_release: app.root.current = 'about_gui'
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 0.9
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [8, 8, 8, 8]
                 canvas.after:
                     Color:
-                        rgba: 0, 0, 0, 0.1
+                        rgba: 0.2, 0.2, 0.8, 0.4
                     Line:
                         rounded_rectangle: self.x, self.y, self.width, self.height, 8, 8, 8, 8
-                        width: 1
+                        width: 2
 
-        # Main title row
-        Label:
-            text: 'Al-Kawaz Software and Information Technology'
-            font_size: '28sp'
+        # Company header section
+        BoxLayout:
+            orientation: 'vertical'
             size_hint_y: None
-            height: '80dp'
-            color: 0.2, 0.3, 0.4, 1
-            bold: True
-            halign: 'center'
-            valign: 'middle'
+            height: '100dp'
+            spacing: '10dp'
 
-        # Logo and subtitle centered row
+            Label:
+                text: 'Al-Kawaz Software and Information Technology'
+                font_size: '24sp'
+                size_hint_y: None
+                height: '40dp'
+                color: 0.2, 0.3, 0.4, 1
+                bold: True
+                halign: 'center'
+                valign: 'middle'
+
+            Label:
+                text: 'Property Management System'
+                font_size: '18sp'
+                size_hint_y: None
+                height: '30dp'
+                color: 0.3, 0.4, 0.5, 1
+                italic: True
+                halign: 'center'
+                valign: 'middle'
+
+        # Logo and tagline section
         BoxLayout:
             orientation: 'horizontal'
-            spacing: '30dp'
             size_hint_y: None
-            height: '120dp'
-            padding: [0, 0, 0, 0]
+            height: '140dp'
+            spacing: '30dp'
+            padding: [50, 20, 50, 20]
+
+            # Centering widget
             Widget:
-                size_hint_x: 0.18
+                size_hint_x: 0.3
+
+            # Logo
             Image:
-                source: 'assets/app-images/alkawaz-logo.jpg'
+                source: 'assets/app-images/tbci.jpg'
                 size_hint: None, None
                 size: '120dp', '120dp'
                 allow_stretch: True
                 keep_ratio: True
                 mipmap: True
                 opacity: 1
-            Label:
-                text: 'Real Estate in all Aspects'
-                font_size: '26sp'
-                size_hint_y: None
-                height: '40dp'
-                color: 0.4, 0.5, 0.6, 1
-                bold: True
-                halign: 'center'
-                valign: 'middle'
-            Widget:
-                size_hint_x: 0.18
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 0.8
+                    Ellipse:
+                        pos: self.x - 10, self.y - 10
+                        size: self.width + 20, self.height + 20
+                canvas.after:
+                    Color:
+                        rgba: 0.2, 0.3, 0.4, 0.3
+                    Line:
+                        ellipse: self.x - 10, self.y - 10, self.width + 20, self.height + 20
+                        width: 2
 
-        # Main action buttons row
+            # Tagline
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: '5dp'
+
+                Label:
+                    text: 'Real Estate in all Aspects'
+                    font_size: '22sp'
+                    size_hint_y: None
+                    height: '35dp'
+                    color: 0.4, 0.5, 0.6, 1
+                    bold: True
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+
+                Label:
+                    text: 'Professional • Reliable • Innovative'
+                    font_size: '14sp'
+                    size_hint_y: None
+                    height: '25dp'
+                    color: 0.5, 0.6, 0.7, 1
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+
+            # Centering widget
+            Widget:
+                size_hint_x: 0.3
+
+        # Main action buttons section
+        Label:
+            text: 'Choose Your Action'
+            font_size: '20sp'
+            size_hint_y: None
+            height: '40dp'
+            color: 0.2, 0.3, 0.4, 1
+            bold: True
+            halign: 'center'
+            valign: 'middle'
+
+        # Action buttons grid
         BoxLayout:
             orientation: 'horizontal'
-            spacing: '30dp'
+            spacing: '25dp'
             size_hint_y: None
-            height: '150dp'
-            padding: [0, 0, 0, 0]
-            # Center the row horizontally
-            Widget:
-                size_hint_x: 0.15
-            Button:
-                size_hint: None, None
-                size: '150dp', '140dp'
-                background_normal: ''
-                background_color: 1, 1, 1, 0
-                on_release: app.root.current = 'insert_gui'
-                canvas.before:
-                    Color:
-                        rgba: 1, 1, 1, 0.9
-                    RoundedRectangle:
-                        pos: self.pos
-                        size: self.size
-                        radius: [12, 12, 12, 12]
-                canvas.after:
-                    Color:
-                        rgba: 0.2, 0.6, 0.9, 0.3
-                    Line:
-                        rounded_rectangle: self.x, self.y, self.width, self.height, 12, 12, 12, 12
-                        width: 2
-                    Color:
-                        rgba: 1, 1, 1, 1
-                    Rectangle:
-                        pos: self.center_x - 40, self.center_y - 40
-                        size: 80, 80
-                        source: 'assets/app-images/insert.jpg'
-            Button:
-                size_hint: None, None
-                size: '150dp', '140dp'
-                background_normal: ''
-                background_color: 1, 1, 1, 0
-                on_release: app.root.current = 'update_gui'
-                canvas.before:
-                    Color:
-                        rgba: 1, 1, 1, 0.9
-                    RoundedRectangle:
-                        pos: self.pos
-                        size: self.size
-                        radius: [12, 12, 12, 12]
-                canvas.after:
-                    Color:
-                        rgba: 0.2, 0.7, 0.5, 0.3
-                    Line:
-                        rounded_rectangle: self.x, self.y, self.width, self.height, 12, 12, 12, 12
-                        width: 2
-                    Color:
-                        rgba: 1, 1, 1, 1
-                    Rectangle:
-                        pos: self.center_x - 40, self.center_y - 40
-                        size: 80, 80
-                        source: 'assets/app-images/update.jpg'
-            Button:
-                size_hint: None, None
-                size: '150dp', '140dp'
-                background_normal: ''
-                background_color: 1, 1, 1, 0
-                on_release: app.root.current = 'browse_gui'
-                canvas.before:
-                    Color:
-                        rgba: 1, 1, 1, 0.9
-                    RoundedRectangle:
-                        pos: self.pos
-                        size: self.size
-                        radius: [12, 12, 12, 12]
-                canvas.after:
-                    Color:
-                        rgba: 0.9, 0.5, 0.2, 0.3
-                    Line:
-                        rounded_rectangle: self.x, self.y, self.width, self.height, 12, 12, 12, 12
-                        width: 2
-                    Color:
-                        rgba: 1, 1, 1, 1
-                    Rectangle:
-                        pos: self.center_x - 40, self.center_y - 40
-                        size: 80, 80
-                        source: 'assets/app-images/browse.jpg'
-            Button:
-                size_hint: None, None
-                size: '150dp', '140dp'
-                background_normal: ''
-                background_color: 1, 1, 1, 0
-                on_release: app.root.current = 'upload_gui'
-                canvas.before:
-                    Color:
-                        rgba: 1, 1, 1, 0.9
-                    RoundedRectangle:
-                        pos: self.pos
-                        size: self.size
-                        radius: [12, 12, 12, 12]
-                canvas.after:
-                    Color:
-                        rgba: 0.6, 0.4, 0.8, 0.3
-                    Line:
-                        rounded_rectangle: self.x, self.y, self.width, self.height, 12, 12, 12, 12
-                        width: 2
-                    Color:
-                        rgba: 1, 1, 1, 1
-                    Rectangle:
-                        pos: self.center_x - 40, self.center_y - 40
-                        size: 80, 80
-                        source: 'assets/app-images/upload.jpg'
-            Widget:
-                size_hint_x: 0.15
+            height: '160dp'
+            padding: [30, 10, 30, 10]
+
+            # New Property Button
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: '8dp'
+
+                Button:
+                    size_hint: None, None
+                    size: '140dp', '120dp'
+                    background_normal: ''
+                    background_color: 1, 1, 1, 0
+                    on_release: app.root.current = 'insert_gui'
+                    canvas.before:
+                        Color:
+                            rgba: 1, 1, 1, 0.95
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [15, 15, 15, 15]
+                    canvas.after:
+                        Color:
+                            rgba: 0.2, 0.6, 0.9, 0.6
+                        Line:
+                            rounded_rectangle: self.x, self.y, self.width, self.height, 15, 15, 15, 15
+                            width: 3
+                        Color:
+                            rgba: 1, 1, 1, 1
+                        Rectangle:
+                            pos: self.center_x - 35, self.center_y - 25
+                            size: 70, 50
+                            source: 'assets/app-images/insert.jpg'
+
+                Label:
+                    text: 'New Property'
+                    font_size: '14sp'
+                    size_hint: None, None
+                    size: '140dp', '25dp'
+                    color: 0.2, 0.6, 0.9, 1
+                    bold: True
+                    halign: 'center'
+                    valign: 'middle'
+                    text_size: self.size
+
+            # Update Property Button
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: '8dp'
+
+                Button:
+                    size_hint: None, None
+                    size: '140dp', '120dp'
+                    background_normal: ''
+                    background_color: 1, 1, 1, 0
+                    on_release: app.root.current = 'update_gui'
+                    canvas.before:
+                        Color:
+                            rgba: 1, 1, 1, 0.95
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [15, 15, 15, 15]
+                    canvas.after:
+                        Color:
+                            rgba: 0.2, 0.7, 0.5, 0.6
+                        Line:
+                            rounded_rectangle: self.x, self.y, self.width, self.height, 15, 15, 15, 15
+                            width: 3
+                        Color:
+                            rgba: 1, 1, 1, 1
+                        Rectangle:
+                            pos: self.center_x - 35, self.center_y - 25
+                            size: 70, 50
+                            source: 'assets/app-images/update.jpg'
+
+                Label:
+                    text: 'Update Property'
+                    font_size: '14sp'
+                    size_hint: None, None
+                    size: '140dp', '25dp'
+                    color: 0.2, 0.7, 0.5, 1
+                    bold: True
+                    halign: 'center'
+                    valign: 'middle'
+                    text_size: self.size
+
+            # Browse Property Button
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: '8dp'
+
+                Button:
+                    size_hint: None, None
+                    size: '140dp', '120dp'
+                    background_normal: ''
+                    background_color: 1, 1, 1, 0
+                    on_release: app.root.current = 'browse_gui'
+                    canvas.before:
+                        Color:
+                            rgba: 1, 1, 1, 0.95
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [15, 15, 15, 15]
+                    canvas.after:
+                        Color:
+                            rgba: 0.9, 0.5, 0.2, 0.6
+                        Line:
+                            rounded_rectangle: self.x, self.y, self.width, self.height, 15, 15, 15, 15
+                            width: 3
+                        Color:
+                            rgba: 1, 1, 1, 1
+                        Rectangle:
+                            pos: self.center_x - 35, self.center_y - 25
+                            size: 70, 50
+                            source: 'assets/app-images/browse.jpg'
+
+                Label:
+                    text: 'Browse Property'
+                    font_size: '14sp'
+                    size_hint: None, None
+                    size: '140dp', '25dp'
+                    color: 0.9, 0.5, 0.2, 1
+                    bold: True
+                    halign: 'center'
+                    valign: 'middle'
+                    text_size: self.size
+
+            # Upload Property Button
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: '8dp'
+
+                Button:
+                    size_hint: None, None
+                    size: '140dp', '120dp'
+                    background_normal: ''
+                    background_color: 1, 1, 1, 0
+                    on_release: app.root.current = 'upload_gui'
+                    canvas.before:
+                        Color:
+                            rgba: 1, 1, 1, 0.95
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [15, 15, 15, 15]
+                    canvas.after:
+                        Color:
+                            rgba: 0.6, 0.4, 0.8, 0.6
+                        Line:
+                            rounded_rectangle: self.x, self.y, self.width, self.height, 15, 15, 15, 15
+                            width: 3
+                        Color:
+                            rgba: 1, 1, 1, 1
+                        Rectangle:
+                            pos: self.center_x - 35, self.center_y - 25
+                            size: 70, 50
+                            source: 'assets/app-images/upload.jpg'
+
+                Label:
+                    text: 'Upload Property'
+                    font_size: '14sp'
+                    size_hint: None, None
+                    size: '140dp', '25dp'
+                    color: 0.6, 0.4, 0.8, 1
+                    bold: True
+                    halign: 'center'
+                    valign: 'middle'
+                    text_size: self.size
 
         # Bottom spacer
         Widget:
-            size_hint_y: 0.2
+            size_hint_y: 0.1
