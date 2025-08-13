@@ -12,6 +12,8 @@ from kivy.uix.spinner import Spinner
 from kivy.metrics import dp
 from datetime import datetime
 import os
+import tkinter as tk
+from tkinter import filedialog
 from src.models.database_api import get_api
 
 Builder.load_file('assets/kv/insert_gui.kv')
@@ -252,44 +254,41 @@ class InsertScreen(Screen):
 		self.update_photo_gallery()  # Clear photo gallery
 
 	def show_file_chooser(self, instance):
-		"""Show file chooser for selecting property photos."""
-		content = BoxLayout(orientation='vertical')
+		"""Show Windows File Explorer for selecting property photos."""
+		try:
+			# Hide the Kivy window temporarily to show native dialog
+			root = tk.Tk()
+			root.withdraw()  # Hide the main tkinter window
+			root.wm_attributes('-topmost', 1)  # Bring dialog to front
 
-		file_chooser = FileChooserListView(
-			path='/',  # Start from root directory
-			filters=['*.jpg', '*.jpeg', '*.png']  # Only show image files
-		)
+			# Open Windows File Explorer dialog for multiple files
+			file_paths = filedialog.askopenfilenames(
+				title="Select Property Photos",
+				filetypes=[
+					("Image files", "*.jpg *.jpeg *.png *.bmp *.gif *.tiff"),
+					("JPEG files", "*.jpg *.jpeg"),
+					("PNG files", "*.png"),
+					("Bitmap files", "*.bmp"),
+					("All files", "*.*")
+				],
+				initialdir=os.path.expanduser("~\\Pictures")  # Start from Pictures folder
+			)
 
-		buttons = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(5))
+			root.destroy()  # Clean up tkinter
 
-		select_button = Button(text='Select')
-		cancel_button = Button(text='Cancel')
+			if file_paths:
+				# Add selected files to the selection
+				for file_path in file_paths:
+					if file_path not in self.selected_photos:
+						self.selected_photos.append(file_path)
 
-		select_button.bind(on_press=lambda x: self.select_photos(file_chooser.selection, popup))
-		cancel_button.bind(on_press=lambda x: popup.dismiss())
+				self.update_photo_count()
+				self.update_photo_gallery()
+				self.show_success(f"Selected {len(file_paths)} photo(s)")
 
-		buttons.add_widget(select_button)
-		buttons.add_widget(cancel_button)
-
-		content.add_widget(file_chooser)
-		content.add_widget(buttons)
-
-		popup = Popup(
-			title='Select Photos',
-			content=content,
-			size_hint=(0.9, 0.9)
-		)
-
-		popup.open()
-
-	def select_photos(self, selection, popup):
-		"""Handle photo selection."""
-		if selection:
-			self.selected_photos.extend(selection)
-			popup.dismiss()
-			self.update_photo_count()
-			self.update_photo_gallery()
-			self.show_success(f"Selected {len(selection)} photo(s)")
+		except Exception as e:
+			print(f"File chooser error: {str(e)}")  # Debug
+			self.show_error(f"Failed to open file chooser:\n{str(e)}")
 
 	def update_photo_count(self):
 		"""Update the photo count display."""

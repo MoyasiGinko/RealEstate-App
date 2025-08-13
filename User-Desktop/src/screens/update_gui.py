@@ -14,6 +14,10 @@ from kivy.clock import Clock
 from kivy.lang import Builder
 from datetime import datetime
 import os
+import shutil
+import uuid
+import tkinter as tk
+from tkinter import filedialog
 from screens.property_management import PropertyManagementScreen
 from src.models.database_api import get_api
 
@@ -22,34 +26,40 @@ Builder.load_file('assets/kv/update_gui.kv')
 
 class PropertyForm(BoxLayout):
     def open_photo_chooser(self):
-        """Open a file chooser to add new photos, with an Open button."""
-        from kivy.uix.boxlayout import BoxLayout
-        filechooser = FileChooserListView(filters=['*.png', '*.jpg', '*.jpeg', '*.bmp'], multiselect=True)
-        btn_open = Button(text='Open', size_hint=(1, None), height=40)
-        btn_cancel = Button(text='Cancel', size_hint=(1, None), height=40)
-        btn_box = BoxLayout(size_hint_y=None, height=40, spacing=10)
-        btn_box.add_widget(btn_open)
-        btn_box.add_widget(btn_cancel)
-        layout = BoxLayout(orientation='vertical')
-        layout.add_widget(filechooser)
-        layout.add_widget(btn_box)
-        popup = Popup(title='Select Photos', content=layout, size_hint=(0.9, 0.9))
+        """Open Windows File Explorer to add new photos."""
+        try:
+            # Hide the Kivy window temporarily to show native dialog
+            root = tk.Tk()
+            root.withdraw()  # Hide the main tkinter window
+            root.wm_attributes('-topmost', 1)  # Bring dialog to front
 
-        def on_open_press(instance):
-            selection = filechooser.selection
-            if selection:
-                for path in selection:
-                    if path not in self.selected_photos:
-                        self.selected_photos.append(path)
+            # Open Windows File Explorer dialog for multiple files
+            file_paths = filedialog.askopenfilenames(
+                title="Select Property Photos",
+                filetypes=[
+                    ("Image files", "*.jpg *.jpeg *.png *.bmp *.gif *.tiff"),
+                    ("JPEG files", "*.jpg *.jpeg"),
+                    ("PNG files", "*.png"),
+                    ("Bitmap files", "*.bmp"),
+                    ("All files", "*.*")
+                ],
+                initialdir=os.path.expanduser("~\\Pictures")  # Start from Pictures folder
+            )
+
+            root.destroy()  # Clean up tkinter
+
+            if file_paths:
+                # Add selected files to the selection, avoiding duplicates
+                for file_path in file_paths:
+                    if file_path not in self.selected_photos:
+                        self.selected_photos.append(file_path)
+
                 self.update_photo_gallery()
-            popup.dismiss()
 
-        def on_cancel_press(instance):
-            popup.dismiss()
-
-        btn_open.bind(on_press=on_open_press)
-        btn_cancel.bind(on_press=on_cancel_press)
-        popup.open()
+        except Exception as e:
+            print(f"File chooser error: {str(e)}")  # Debug
+            if hasattr(self, 'show_error'):
+                self.show_error(f"Failed to open file chooser:\n{str(e)}")
 
     def update_photo_gallery(self):
         """Update the photo gallery UI with current selected_photos."""
