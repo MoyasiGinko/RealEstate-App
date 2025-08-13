@@ -51,26 +51,45 @@
                         rounded_rectangle: self.x, self.y, self.width, self.height, 8, 8, 8, 8
                         width: 1
 
-        # Welcome title
+        # Main title row
         Label:
-            text: 'Property Management System'
+            text: 'Al-Kawaz Software and Information Technology'
             font_size: '28sp'
             size_hint_y: None
-            height: '60dp'
+            height: '80dp'
             color: 0.2, 0.3, 0.4, 1
             bold: True
             halign: 'center'
             valign: 'middle'
 
-        # Subtitle
-        Label:
-            text: 'Select an option to get started'
-            font_size: '16sp'
+        # Logo and subtitle centered row
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: '30dp'
             size_hint_y: None
-            height: '30dp'
-            color: 0.4, 0.5, 0.6, 1
-            halign: 'center'
-            valign: 'middle'
+            height: '120dp'
+            padding: [0, 0, 0, 0]
+            Widget:
+                size_hint_x: 0.18
+            Image:
+                source: 'assets/app-images/alkawaz-logo.jpg'
+                size_hint: None, None
+                size: '120dp', '120dp'
+                allow_stretch: True
+                keep_ratio: True
+                mipmap: True
+                opacity: 1
+            Label:
+                text: 'Real Estate in all Aspects'
+                font_size: '26sp'
+                size_hint_y: None
+                height: '40dp'
+                color: 0.4, 0.5, 0.6, 1
+                bold: True
+                halign: 'center'
+                valign: 'middle'
+            Widget:
+                size_hint_x: 0.18
 
         # Main action buttons row
         BoxLayout:
