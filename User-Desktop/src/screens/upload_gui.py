@@ -78,7 +78,7 @@ class UploadScreen(Screen):
         # Fix the path to use the correct User-Desktop directory
         project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
         self.db_path = os.path.join(project_root, 'data', 'local.db')
-        self.database_utils_path = os.path.join(project_root, 'database_utils')
+        self.database_utils_path = os.path.join(project_root, 'configs/database_utils')
         print(f"Database path: {self.db_path}")  # Debug output
 
     def import_database_utility(self, module_name):
