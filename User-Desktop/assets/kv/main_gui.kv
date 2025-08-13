@@ -182,7 +182,8 @@
 
                 Button:
                     size_hint: None, None
-                    size: '140dp', '120dp'
+                    width: max(140, self.parent.parent.width * 0.18)
+                    height: max(120, self.parent.parent.height * 0.7)
                     background_normal: ''
                     background_color: 1, 1, 1, 0
                     on_release: app.root.current = 'insert_gui'
@@ -202,8 +203,8 @@
                         Color:
                             rgba: 1, 1, 1, 1
                         Rectangle:
-                            pos: self.center_x - 35, self.center_y - 25
-                            size: 70, 50
+                            pos: self.center_x - self.width * 0.25, self.center_y - self.height * 0.21
+                            size: self.width * 0.5, self.height * 0.42
                             source: 'assets/app-images/insert.jpg'
 
                 Label:
@@ -224,7 +225,8 @@
 
                 Button:
                     size_hint: None, None
-                    size: '140dp', '120dp'
+                    width: max(140, self.parent.parent.width * 0.18)
+                    height: max(120, self.parent.parent.height * 0.7)
                     background_normal: ''
                     background_color: 1, 1, 1, 0
                     on_release: app.root.current = 'update_gui'
@@ -244,8 +246,8 @@
                         Color:
                             rgba: 1, 1, 1, 1
                         Rectangle:
-                            pos: self.center_x - 35, self.center_y - 25
-                            size: 70, 50
+                            pos: self.center_x - self.width * 0.25, self.center_y - self.height * 0.21
+                            size: self.width * 0.5, self.height * 0.42
                             source: 'assets/app-images/update.jpg'
 
                 Label:
@@ -266,7 +268,8 @@
 
                 Button:
                     size_hint: None, None
-                    size: '140dp', '120dp'
+                    width: max(140, self.parent.parent.width * 0.18)
+                    height: max(120, self.parent.parent.height * 0.7)
                     background_normal: ''
                     background_color: 1, 1, 1, 0
                     on_release: app.root.current = 'browse_gui'
@@ -286,8 +289,8 @@
                         Color:
                             rgba: 1, 1, 1, 1
                         Rectangle:
-                            pos: self.center_x - 35, self.center_y - 25
-                            size: 70, 50
+                            pos: self.center_x - self.width * 0.25, self.center_y - self.height * 0.21
+                            size: self.width * 0.5, self.height * 0.42
                             source: 'assets/app-images/browse.jpg'
 
                 Label:
@@ -308,7 +311,8 @@
 
                 Button:
                     size_hint: None, None
-                    size: '140dp', '120dp'
+                    width: max(140, self.parent.parent.width * 0.18)
+                    height: max(120, self.parent.parent.height * 0.7)
                     background_normal: ''
                     background_color: 1, 1, 1, 0
                     on_release: app.root.current = 'upload_gui'
@@ -328,8 +332,8 @@
                         Color:
                             rgba: 1, 1, 1, 1
                         Rectangle:
-                            pos: self.center_x - 35, self.center_y - 25
-                            size: 70, 50
+                            pos: self.center_x - self.width * 0.25, self.center_y - self.height * 0.21
+                            size: self.width * 0.5, self.height * 0.42
                             source: 'assets/app-images/upload.jpg'
 
                 Label:
