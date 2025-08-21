@@ -36,7 +36,7 @@ class ConfirmationPopup(Popup):
         super(ConfirmationPopup, self).__init__(**kwargs)
 
         # Get localized text
-        self.title = get_text(title_key, title_fallback)
+        title_text = get_text(title_key, title_fallback)
         self.size_hint = (0.8, 0.6)  # More responsive sizing
         self.auto_dismiss = False
         self.background = ''  # Remove default background
@@ -51,6 +51,26 @@ class ConfirmationPopup(Popup):
             padding=dp(30),
             spacing=dp(20)
         )
+
+        # Title as a Label inside content with black text
+        title_label = Label(
+            text=title_text,
+            size_hint_y=None,
+            height=dp(40),
+            font_size=20,
+            halign='center',
+            valign='middle',
+            color=(0, 0, 0, 1),  # Black title text
+            markup=True
+        )
+        apply_arabic_font(title_label, title_text)
+        # Ensure proper alignment/wrapping
+        from kivy.clock import Clock
+        def set_title_text_size(dt):
+            title_label.text_size = (self.width - dp(60), None)
+        Clock.schedule_once(set_title_text_size, 0.05)
+
+        main_layout.add_widget(title_label)
 
         # Message with better styling
         message_text = get_text(message_key, message_fallback)
@@ -69,7 +89,6 @@ class ConfirmationPopup(Popup):
         # Set text_size after the widget is added to get proper wrapping
         def set_text_size(dt):
             message_label.text_size = (self.width - dp(60), None)
-        from kivy.clock import Clock
         Clock.schedule_once(set_text_size, 0.1)
 
         main_layout.add_widget(message_label)
@@ -114,8 +133,10 @@ class ConfirmationPopup(Popup):
         main_layout.add_widget(button_layout)
         self.content = main_layout
 
-        # Apply Arabic font to title
-        apply_arabic_font(self, self.title)
+        # Keep the native title bar empty (we render title inside content)
+        self.title = ''
+        # Apply Arabic font to the popup widget (title handled above)
+        apply_arabic_font(self, title_text)
 
     def on_yes(self, instance):
         """Handle yes button press."""
