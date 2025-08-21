@@ -104,9 +104,53 @@ class UploadScreen(Screen):
 
     def update_texts(self):
         """Update all text widgets with current language"""
-        # Note: Most text updates will be handled in the KV file
-        # This method can be used for dynamic content updates
-        pass
+        try:
+            # Define the mapping of IDs to translation keys
+            text_mappings = {
+                'screen_title': 'database_management',
+                'description_label': 'db_description',
+                'reset_db_btn': 'reset_database',
+                'export_db_btn': 'export_database',
+                'seed_db_btn': 'seed_database',
+                'upload_db_btn': 'upload_database',
+                'back_btn': 'back_to_main'
+            }
+
+            # Update each widget using its ID
+            for widget_id, text_key in text_mappings.items():
+                try:
+                    widget = self.ids.get(widget_id)
+                    if widget:
+                        new_text = get_text(text_key)
+                        widget.text = new_text
+                        # Apply Arabic font if needed
+                        if self.language_manager.current_language == 'ar':
+                            apply_arabic_font(widget, new_text)
+                except Exception as e:
+                    print(f"Error updating widget {widget_id}: {e}")
+
+            # Update description labels with more specific content
+            description_mappings = {
+                'reset_db_description': ('reset_db_desc', 'Create a fresh empty database\n(Deletes all existing data)'),
+                'export_db_description': ('export_db_desc', 'Create a backup copy of\nyour current database'),
+                'seed_db_description': ('seed_db_desc', 'Add sample data to database\n(Preserves existing data)'),
+                'upload_db_description': ('upload_db_desc', 'Replace current database\nwith a new file')
+            }
+
+            for widget_id, (text_key, fallback_text) in description_mappings.items():
+                try:
+                    widget = self.ids.get(widget_id)
+                    if widget:
+                        new_text = get_text(text_key, fallback_text)
+                        widget.text = new_text
+                        # Apply Arabic font if needed
+                        if self.language_manager.current_language == 'ar':
+                            apply_arabic_font(widget, new_text)
+                except Exception as e:
+                    print(f"Error updating description widget {widget_id}: {e}")
+
+        except Exception as e:
+            print(f"Error updating texts: {e}")
 
     def apply_fonts(self):
         """Apply Arabic fonts to all text widgets if Arabic is selected"""
@@ -121,7 +165,8 @@ class UploadScreen(Screen):
     def on_language_changed(self):
         """Called when language is changed"""
         try:
-            self.setup_localization()
+            self.update_texts()
+            self.apply_fonts()
         except Exception as e:
             print(f"Error handling language change in upload screen: {e}")
 

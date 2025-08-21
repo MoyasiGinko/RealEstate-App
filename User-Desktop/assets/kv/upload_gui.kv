@@ -14,18 +14,39 @@
         padding: 30
         spacing: 20
 
-        # Screen title
-        Label:
-            text: 'Database Management - إدارة قاعدة البيانات'
-            font_size: 32
+        # Screen title with language switcher
+        BoxLayout:
+            orientation: 'horizontal'
             size_hint_y: None
             height: 60
-            color: 0.1, 0.1, 0.1, 1
-            bold: True
+            spacing: 20
+
+            Label:
+                id: screen_title
+                text: 'Database Management'
+                font_size: 32
+                color: 0.1, 0.1, 0.1, 1
+                bold: True
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+
+            # Language switcher button
+            Button:
+                id: language_btn
+                text: '🌐 Language'
+                size_hint: None, None
+                size: 120, 40
+                pos_hint: {'center_y': 0.5}
+                background_color: 0.2, 0.6, 0.9, 1
+                color: 1, 1, 1, 1
+                font_size: 14
+                on_press: root.show_language_switcher()
 
         # Description
         Label:
-            text: 'Manage your database: reset, backup, seed with sample data, or upload a new database file\nإدارة قاعدة البيانات: إعادة تعيين، نسخ احتياطي، إضافة بيانات تجريبية، أو رفع ملف قاعدة بيانات جديد'
+            id: description_label
+            text: 'Manage your database: reset, backup, seed with sample data, or upload a new database file'
             font_size: 16
             size_hint_y: None
             height: 40
@@ -51,7 +72,8 @@
                 spacing: 10
 
                 Button:
-                    text: 'Reset Database\nإعادة تعيين قاعدة البيانات'
+                    id: reset_db_btn
+                    text: 'Reset Database'
                     font_size: 18
                     background_color: 0.8, 0.2, 0.2, 1
                     color: 1, 1, 1, 1
@@ -60,7 +82,8 @@
                     on_press: root.create_fresh_database(self)
 
                 Label:
-                    text: 'Create a fresh empty database\n(Deletes all existing data)\nإنشاء قاعدة بيانات فارغة جديدة\n(حذف جميع البيانات الموجودة)'
+                    id: reset_db_description
+                    text: 'Create a fresh empty database\n(Deletes all existing data)'
                     font_size: 12
                     color: 0.5, 0.5, 0.5, 1
                     text_size: self.width, None
@@ -74,7 +97,8 @@
                 spacing: 10
 
                 Button:
-                    text: 'Export Database\nتصدير قاعدة البيانات'
+                    id: export_db_btn
+                    text: 'Export Database'
                     font_size: 18
                     background_color: 0.2, 0.6, 0.8, 1
                     color: 1, 1, 1, 1
@@ -83,6 +107,7 @@
                     on_press: root.export_database(self)
 
                 Label:
+                    id: export_db_description
                     text: 'Create a backup copy of\nyour current database'
                     font_size: 12
                     color: 0.5, 0.5, 0.5, 1
@@ -97,7 +122,8 @@
                 spacing: 10
 
                 Button:
-                    text: 'Seed Database\nإضافة بيانات تجريبية'
+                    id: seed_db_btn
+                    text: 'Seed Database'
                     font_size: 18
                     background_color: 0.6, 0.8, 0.2, 1
                     color: 1, 1, 1, 1
@@ -106,7 +132,8 @@
                     on_press: root.seed_database(self)
 
                 Label:
-                    text: 'Add sample data to database\n(Preserves existing data)\nإضافة بيانات تجريبية للقاعدة\n(الاحتفاظ بالبيانات الموجودة)'
+                    id: seed_db_description
+                    text: 'Add sample data to database\n(Preserves existing data)'
                     font_size: 12
                     color: 0.5, 0.5, 0.5, 1
                     text_size: self.width, None
@@ -120,7 +147,8 @@
                 spacing: 10
 
                 Button:
-                    text: 'Upload Database\nرفع قاعدة البيانات'
+                    id: upload_db_btn
+                    text: 'Upload Database'
                     font_size: 18
                     background_color: 0.8, 0.6, 0.2, 1
                     color: 1, 1, 1, 1
@@ -129,6 +157,7 @@
                     on_press: root.upload_database(self)
 
                 Label:
+                    id: upload_db_description
                     text: 'Replace current database\nwith a new file'
                     font_size: 12
                     color: 0.5, 0.5, 0.5, 1
@@ -143,7 +172,8 @@
 
         # Back button
         Button:
-            text: 'Back to Main - العودة للرئيسية'
+            id: back_btn
+            text: 'Back to Main'
             font_size: 16
             size_hint_y: None
             height: 50

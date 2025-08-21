@@ -97,6 +97,10 @@ class LanguageManager:
                 'export_database': 'Export Database',
                 'seed_database': 'Seed Database',
                 'upload_database': 'Upload Database',
+                'reset_db_desc': 'Create a fresh empty database\n(Deletes all existing data)',
+                'export_db_desc': 'Create a backup copy of\nyour current database',
+                'seed_db_desc': 'Add sample data to database\n(Preserves existing data)',
+                'upload_db_desc': 'Replace current database\nwith a new file',
 
                 # Update Screen
                 'property_management': 'Property Management',
@@ -195,6 +199,10 @@ class LanguageManager:
                 'export_database': 'تصدير قاعدة البيانات',
                 'seed_database': 'إضافة بيانات تجريبية',
                 'upload_database': 'رفع قاعدة البيانات',
+                'reset_db_desc': 'إنشاء قاعدة بيانات فارغة جديدة\n(حذف جميع البيانات الموجودة)',
+                'export_db_desc': 'إنشاء نسخة احتياطية من\nقاعدة البيانات الحالية',
+                'seed_db_desc': 'إضافة بيانات تجريبية للقاعدة\n(الاحتفاظ بالبيانات الموجودة)',
+                'upload_db_desc': 'استبدال قاعدة البيانات الحالية\nبملف جديد',
 
                 # Update Screen
                 'property_management': 'إدارة العقارات',
