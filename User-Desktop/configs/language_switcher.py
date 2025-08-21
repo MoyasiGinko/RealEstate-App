@@ -16,14 +16,30 @@ class LanguageSwitcherContent(BoxLayout):
     """Content widget for language switcher popup"""
 
     def __init__(self, popup_instance, **kwargs):
-        super().__init__(**kwargs)
-        self.popup = popup_instance
-        self.language_manager = get_language_manager()
-        self.orientation = 'vertical'
-        self.spacing = 20
-        self.padding = 30
+      super().__init__(**kwargs)
+      self.popup = popup_instance
+      self.language_manager = get_language_manager()
+      self.orientation = 'vertical'
+      self.spacing = 20
+      self.padding = 30
 
-        self.build_ui()
+      # Ensure modal (popup) title text color is black
+      # Prefer setting a dedicated API if available; otherwise try common fallbacks.
+      try:
+        self.popup.title_color = (0, 0, 0, 1)
+      except Exception:
+        try:
+          if hasattr(self.popup, 'title_label') and self.popup.title_label is not None:
+            self.popup.title_label.color = (0, 0, 0, 1)
+          else:
+            for child in getattr(self.popup, 'children', []):
+              if isinstance(child, Label) and child.text == getattr(self.popup, 'title', ''):
+                child.color = (0, 0, 0, 1)
+                break
+        except Exception:
+          pass
+
+      self.build_ui()
 
     def build_ui(self):
         """Build the language selection UI"""
