@@ -10,7 +10,8 @@
             size: self.size
 
     Label:
-        text: root.title if hasattr(root, 'title') else 'Property Form - نموذج العقار'
+        id: form_title_label
+        text: 'Property Form'
         font_size: 22
         color: 0.2, 0.2, 0.2, 1
         size_hint_y: None
@@ -40,7 +41,8 @@
 
                 # Property Type
                 Label:
-                    text: 'Property Type - نوع العقار:'
+                    id: property_type_label
+                    text: 'Property Type:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
                 Spinner:
@@ -54,6 +56,7 @@
 
                 # Building Type
                 Label:
+                    id: building_type_label
                     text: 'Building Type:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
@@ -68,6 +71,7 @@
 
                 # Year Built
                 Label:
+                    id: year_built_label
                     text: 'Year Built:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
@@ -82,7 +86,8 @@
 
                 # Area
                 Label:
-                    text: 'Area (m²):'
+                    id: area_label
+                    text: 'Area:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
                 TextInput:
@@ -97,7 +102,8 @@
 
                 # Facade
                 Label:
-                    text: 'Facade (m):'
+                    id: facade_label
+                    text: 'Facade:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
                 TextInput:
@@ -112,7 +118,8 @@
 
                 # Depth
                 Label:
-                    text: 'Depth (m):'
+                    id: depth_label
+                    text: 'Depth:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
                 TextInput:
@@ -127,6 +134,7 @@
 
                 # Bedrooms
                 Label:
+                    id: bedrooms_label
                     text: 'Bedrooms:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
@@ -142,6 +150,7 @@
 
                 # Bathrooms
                 Label:
+                    id: bathrooms_label
                     text: 'Bathrooms:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
@@ -157,6 +166,7 @@
 
                 # Is Corner Property
                 Label:
+                    id: corner_label
                     text: 'Is Corner Property:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
@@ -166,6 +176,7 @@
 
                 # Offer Type
                 Label:
+                    id: offer_type_label
                     text: 'Offer Type:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
@@ -180,6 +191,7 @@
 
                 # Province
                 Label:
+                    id: province_label
                     text: 'Province:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
@@ -194,6 +206,7 @@
 
                 # Region
                 Label:
+                    id: region_label
                     text: 'Region:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
@@ -208,6 +221,7 @@
 
                 # Address
                 Label:
+                    id: address_label
                     text: 'Address:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
@@ -222,6 +236,7 @@
 
                 # Owner
                 Label:
+                    id: owner_label
                     text: 'Owner:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
@@ -235,8 +250,8 @@
                     minimum_width: 120
 
                 # Description
-
                 Label:
+                    id: description_label
                     text: 'Description:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
@@ -251,6 +266,7 @@
 
                 # Floors
                 Label:
+                    id: floors_label
                     text: 'Floors:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
@@ -266,6 +282,7 @@
 
                 # Price
                 Label:
+                    id: price_label
                     text: 'Price:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
@@ -281,6 +298,7 @@
 
                 # Currency
                 Label:
+                    id: currency_label
                     text: 'Currency:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
@@ -295,6 +313,7 @@
 
                 # Unit
                 Label:
+                    id: unit_label
                     text: 'Unit:'
                     color: 0.2, 0.2, 0.2, 1
                     size_hint_x: 0.4
@@ -309,7 +328,8 @@
 
                 # Photos
                 Label:
-                    text: 'Photos'
+                    id: photos_label
+                    text: 'Photos:'
                     size_hint_y: None
                     height: 40
                     color: 0.2, 0.2, 0.2, 1
@@ -321,8 +341,8 @@
                     spacing: 10
                     size_hint_x: 0.6
                     Button:
-                        id: add_photo
-                        text: 'Add Photo'
+                        id: add_photo_btn
+                        text: 'Add Photos'
                         background_color: 0.3, 0.6, 0.9, 1
                         color: 1, 1, 1, 1
                         size_hint_x: 0.4
@@ -402,14 +422,14 @@
             height: 50
             Label:
                 id: header_label
-                text: 'Property Management - إدارة العقارات'
+                text: 'Property Management'
                 font_size: 24
                 color: 0.2, 0.2, 0.2, 1
 
             # Language switcher button
             Button:
                 id: language_btn
-                text: '🌐 Language'
+                text: 'Language'
                 size_hint: None, None
                 size: 120, 40
                 pos_hint: {'center_y': 0.5}
@@ -425,12 +445,12 @@
             height: 40
             Label:
                 id: code_header
-                text: 'Code - الرمز'
+                text: 'Code'
                 bold: True
                 color: 0.2, 0.2, 0.2, 1
             Label:
                 id: type_header
-                text: 'Type - النوع'
+                text: 'Type'
                 bold: True
                 color: 0.2, 0.2, 0.2, 1
             Label:
@@ -468,7 +488,7 @@
             padding: 0, 10, 0, 0
             Button:
                 id: back_btn
-                text: '← Back to Main - العودة للرئيسية'
+                text: 'Back to Main'
                 size_hint: None, None
                 size: 200, 50
                 background_color: 0.4, 0.4, 0.8, 1

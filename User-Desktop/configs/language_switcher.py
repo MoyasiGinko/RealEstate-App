@@ -117,18 +117,20 @@ class LanguageSwitcherPopup(Popup):
     """Popup for language selection"""
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.title = 'Language Settings - إعدادات اللغة'
-        self.size_hint = (0.6, 0.5)
-        self.auto_dismiss = True
-        self.separator_color = (0.2, 0.6, 0.8, 1)
+      super().__init__(**kwargs)
+      self.title = 'Language Settings'
+      self.size_hint = (0.6, 0.5)
+      self.auto_dismiss = True
+      self.separator_color = (0.2, 0.6, 0.8, 1)
+      self.background = ''  # Remove default image background
+      self.background_color = (1, 1, 1, 1)  # Set background color to white
 
-        # Apply Arabic font to title
-        apply_arabic_font(self, self.title)
+      # Apply Arabic font to title
+      apply_arabic_font(self, self.title)
 
-        # Create content
-        content = LanguageSwitcherContent(self)
-        self.content = content
+      # Create content
+      content = LanguageSwitcherContent(self)
+      self.content = content
 
 def show_language_switcher():
     """Show the language switcher popup"""

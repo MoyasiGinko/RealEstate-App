@@ -69,15 +69,8 @@ class PropertyForm(BoxLayout):
         gallery = self.ids.photo_gallery
         gallery.clear_widgets()
 
-        # Update photo count
-        if hasattr(self, 'photo_count') and self.photo_count:
-            count = len(self.selected_photos)
-            if count == 0:
-                self.photo_count.text = 'No photos selected'
-            elif count == 1:
-                self.photo_count.text = '1 photo selected'
-            else:
-                self.photo_count.text = f'{count} photos selected'
+        # Update photo count with localized text
+        self.update_photo_count()
 
         for photo_path in self.selected_photos:
             box = BoxLayout(orientation='vertical', size_hint=(None, None), size=(100, 100), spacing=2)
@@ -111,6 +104,10 @@ class PropertyForm(BoxLayout):
     def on_kv_post(self, base_widget):
         # Set API
         self.api = get_api()
+
+        # Initialize language manager
+        self.language_manager = get_language_manager()
+        self.language_manager.register_observer(self)
 
         # Populate dropdown values
         self.property_type_values = [f"{x['code']} - {x['name']}" for x in self.api.get_property_types() or []]
@@ -156,6 +153,10 @@ class PropertyForm(BoxLayout):
         self.existing_photos = []  # Track existing photos separately from new ones
         self.photos_to_delete = []  # Track photos marked for deletion
         self.property_code = None
+
+        # Update texts after initialization
+        Clock.schedule_once(lambda dt: self.update_texts(), 0.1)
+
         # Populate fields if editing - delay this to ensure UI is ready
         if self.property_data:
             Clock.schedule_once(self._delayed_populate_fields, 0.1)
@@ -166,6 +167,140 @@ class PropertyForm(BoxLayout):
     def _delayed_populate_fields(self, dt):
         """Populate fields after a small delay to ensure UI is ready."""
         self.populate_fields()
+
+    def update_texts(self):
+        """Update all text elements in the form with current language"""
+        try:
+            # Update form title
+            if hasattr(self.ids, 'form_title_label'):
+                self.ids.form_title_label.text = get_text('property_form', 'Property Form')
+
+            # Update all field labels
+            label_mappings = {
+                'property_type_label': ('property_type', 'Property Type:'),
+                'building_type_label': ('building_type', 'Building Type:'),
+                'year_built_label': ('year_construction', 'Year Built:'),
+                'area_label': ('area', 'Area:'),
+                'facade_label': ('facade', 'Facade:'),
+                'depth_label': ('depth', 'Depth:'),
+                'bedrooms_label': ('bedrooms', 'Bedrooms:'),
+                'bathrooms_label': ('bathrooms', 'Bathrooms:'),
+                'corner_label': ('is_corner_property', 'Is Corner Property:'),
+                'offer_type_label': ('offer_type', 'Offer Type:'),
+                'province_label': ('governorate', 'Province:'),
+                'region_label': ('neighborhood', 'Region:'),
+                'address_label': ('address', 'Address:'),
+                'owner_label': ('owner', 'Owner:'),
+                'description_label': ('notes', 'Description:'),
+                'floors_label': ('floors', 'Floors:'),
+                'price_label': ('price', 'Price:'),
+                'currency_label': ('offer_type', 'Currency:'),  # Using existing key
+                'unit_label': ('unit_measurement', 'Unit:'),
+                'photos_label': ('photos', 'Photos:')
+            }
+
+            for widget_id, (text_key, fallback) in label_mappings.items():
+                if hasattr(self.ids, widget_id):
+                    widget = getattr(self.ids, widget_id)
+                    widget.text = get_text(text_key, fallback)
+
+            # Update spinner texts
+            spinner_mappings = {
+                'property_type': ('select_property_type', 'Select Property Type'),
+                'building_type': ('select_building_type', 'Select Building Type'),
+                'year_spinner': ('select_year', 'Select Year'),
+                'offer_type': ('select_offer_type', 'Select Offer Type'),
+                'province': ('select_province', 'Select Province'),
+                'region': ('select_region', 'Select Region'),
+                'owner': ('select_owner', 'Select Owner'),
+                'currency': ('select_currency', 'Select Currency'),
+                'unit': ('select_unit', 'Select Unit')
+            }
+
+            for widget_id, (text_key, fallback) in spinner_mappings.items():
+                if hasattr(self.ids, widget_id):
+                    widget = getattr(self.ids, widget_id)
+                    widget.text = get_text(text_key, fallback)
+
+            # Update hint texts for TextInputs
+            hint_mappings = {
+                'area': ('property_area_hint', 'Property Area'),
+                'facade': ('facade_length_hint', 'Facade Length'),
+                'depth': ('property_depth_hint', 'Property Depth'),
+                'bedrooms': ('num_bedrooms_hint', 'Number of Bedrooms'),
+                'bathrooms': ('num_bathrooms_hint', 'Number of Bathrooms'),
+                'address': ('property_address_hint', 'Property Address'),
+                'description': ('property_description_hint', 'Property Description/Notes'),
+                'floors': ('num_floors_hint', 'Number of Floors'),
+                'price': ('property_price_hint', 'Property Price')
+            }
+
+            for widget_id, (text_key, fallback) in hint_mappings.items():
+                if hasattr(self.ids, widget_id):
+                    widget = getattr(self.ids, widget_id)
+                    widget.hint_text = get_text(text_key, fallback)
+
+            # Update buttons
+            if hasattr(self.ids, 'save_btn'):
+                self.ids.save_btn.text = get_text('save', 'Save')
+            if hasattr(self.ids, 'cancel_btn'):
+                self.ids.cancel_btn.text = get_text('cancel', 'Cancel')
+            if hasattr(self.ids, 'add_photo_btn'):
+                self.ids.add_photo_btn.text = get_text('add_photos', 'Add Photos')
+
+            # Update photo count
+            self.update_photo_count()
+
+            # Apply fonts after text updates
+            self.apply_fonts()
+
+        except Exception as e:
+            print(f"Error updating texts in PropertyForm: {e}")
+
+    def update_photo_count(self):
+        """Update photo count text with proper localization"""
+        try:
+            if hasattr(self.ids, 'photo_count'):
+                count = len(self.selected_photos) if hasattr(self, 'selected_photos') else 0
+                if count == 0:
+                    self.ids.photo_count.text = get_text('no_photos_selected', 'No photos selected')
+                elif count == 1:
+                    self.ids.photo_count.text = f"1 {get_text('photo_selected', 'photo selected')}"
+                else:
+                    self.ids.photo_count.text = f"{count} {get_text('photos_selected', 'photos selected')}"
+        except Exception as e:
+            print(f"Error updating photo count: {e}")
+
+    def apply_fonts(self):
+        """Apply Arabic fonts to all text widgets"""
+        try:
+            current_lang = self.language_manager.get_current_language() if hasattr(self, 'language_manager') else 'en'
+
+            if current_lang == 'ar':
+                for widget in self.walk():
+                    if hasattr(widget, 'text') and widget.text:
+                        apply_arabic_font(widget, widget.text)
+                    if hasattr(widget, 'hint_text') and widget.hint_text:
+                        apply_arabic_font(widget, widget.hint_text)
+
+                    # Special handling for Spinners
+                    from kivy.uix.spinner import Spinner
+                    if isinstance(widget, Spinner):
+                        apply_arabic_font(widget, widget.text)
+                        # Apply font to all values in the spinner
+                        for value in widget.values:
+                            if any('\u0600' <= char <= '\u06FF' for char in value):
+                                widget.font_name = 'ArabicFont'
+                                break
+        except Exception as e:
+            print(f"Error applying fonts in PropertyForm: {e}")
+
+    def on_language_changed(self):
+        """Called when language is changed"""
+        try:
+            self.update_texts()
+        except Exception as e:
+            print(f"Error handling language change in PropertyForm: {e}")
 
     from kivy.properties import ObjectProperty, ListProperty
     save_callback = ObjectProperty(None)
@@ -186,19 +321,19 @@ class PropertyForm(BoxLayout):
         """Save the property data."""
         # Validate required fields
         if not self.property_type_spinner.text or self.property_type_spinner.text == 'Select Property Type' or self.property_type_spinner.text == 'No property types available':
-            self.show_error("Property type is required.")
+            self.show_error(get_text('property_type_required', 'Property type is required.'))
             return
 
         if not self.building_type_spinner.text or self.building_type_spinner.text == 'Select Building Type' or self.building_type_spinner.text == 'No building types available':
-            self.show_error("Building type is required.")
+            self.show_error(get_text('building_type_required', 'Building type is required.'))
             return
 
         if not self.area_input.text:
-            self.show_error("Property area is required.")
+            self.show_error(get_text('area_required', 'Property area is required.'))
             return
 
         if not self.owner_spinner.text or self.owner_spinner.text == 'Select Owner' or self.owner_spinner.text == 'No owners available':
-            self.show_error("Owner is required.")
+            self.show_error(get_text('owner_required', 'Owner is required.'))
             return
 
         try:
@@ -350,19 +485,24 @@ class PropertyForm(BoxLayout):
 
     def show_success(self, message):
         """Show a success popup."""
+        content = Label(text=message, color=(0.2, 0.8, 0.3, 1), text_size=(None, None), halign='center')
+        apply_arabic_font(content, message)
         popup = Popup(
-            title='Success',
-            content=Label(text=message, color=(0.2, 0.2, 0.2, 1)),
+            title=get_text('success', 'Success'),
+            content=content,
             size_hint=(0.7, 0.3)
         )
         popup.open()
 
     def show_error(self, message):
         """Show an error popup."""
+        content = Label(text=message, color=(0.8, 0.2, 0.2, 1), text_size=(None, None), halign='center')
+        apply_arabic_font(content, message)
         popup = Popup(
-            title='Error',
-            content=Label(text=message, color=(0.8, 0.2, 0.2, 1)),
-            size_hint=(0.7, 0.3)        )
+            title=get_text('error', 'Error'),
+            content=content,
+            size_hint=(0.7, 0.3)
+        )
         popup.open()
 
     def on_province_selected(self, spinner, text):
@@ -427,9 +567,8 @@ class UpdateGUIScreen(Screen):
 
     def show_language_switcher(self):
         """Show language switcher popup"""
-        from configs.language_switcher import LanguageSwitcherPopup
-        popup = LanguageSwitcherPopup()
-        popup.open()
+        from configs.language_switcher import show_language_switcher
+        show_language_switcher()
 
     def update_texts(self):
         """Update all text widgets with current language"""
@@ -437,6 +576,7 @@ class UpdateGUIScreen(Screen):
             # Define the mapping of IDs to translation keys
             text_mappings = {
                 'header_label': 'property_management',
+                'language_btn': 'language',
                 'code_header': 'code',
                 'type_header': 'type',
                 'area_header': 'area',
@@ -532,15 +672,18 @@ class UpdateGUIScreen(Screen):
         full_property_data = self.api.get_property_by_code(property_data.get('realstatecode'))
 
         if not full_property_data:
-            self.show_error("Property not found in database.")
+            self.show_error(get_text('property_not_found', 'Property not found in database.'))
             return
 
         content = PropertyForm(save_callback=self.update_property, property_data=full_property_data)
+        popup_title = get_text('edit_property', 'Edit Property')
         self.popup = Popup(
-            title='Edit Property',
+            title=popup_title,
             content=content,
             size_hint=(0.9, 0.9)
         )
+        # Apply Arabic font to popup title if needed
+        apply_arabic_font(self.popup, popup_title)
         # Bind the cancel button to close the popup
         if hasattr(content.ids, 'cancel_btn'):
             content.ids.cancel_btn.bind(on_press=lambda x: self.popup.dismiss())
@@ -572,10 +715,10 @@ class UpdateGUIScreen(Screen):
                 self.upload_photos(property_code, new_photos)
 
             self.popup.dismiss()
-            self.show_success(f"Property '{property_code}' updated successfully!")
+            self.show_success(get_text('property_updated', 'Property updated successfully!').replace('{code}', property_code))
             self.load_properties()
         else:
-            self.show_error("Failed to update property. Please try again.")
+            self.show_error(get_text('update_failed', 'Failed to update property. Please try again.'))
 
     def upload_photos(self, property_code, photo_paths):
         """Upload photos for a property (only new photos, not existing ones)."""
@@ -654,25 +797,29 @@ class UpdateGUIScreen(Screen):
         """Delete a property and all its photos from database and filesystem."""
         if self.api.delete_property(property_code):
             self.delete_popup.dismiss()
-            self.show_success(f"Property '{property_code}' and all its photos deleted successfully!")
+            self.show_success(get_text('property_deleted', 'Property and all its photos deleted successfully!').replace('{code}', property_code))
             self.load_properties()
         else:
-            self.show_error("Failed to delete property. Please try again.")
+            self.show_error(get_text('delete_failed', 'Failed to delete property. Please try again.'))
 
     def show_success(self, message):
         """Show a success popup."""
+        content = Label(text=message, color=(0.2, 0.8, 0.3, 1), text_size=(None, None), halign='center')
+        apply_arabic_font(content, message)
         popup = Popup(
-            title='Success',
-            content=Label(text=message, color=(0.2, 0.8, 0.3, 1)),
+            title=get_text('success', 'Success'),
+            content=content,
             size_hint=(0.7, 0.3)
         )
         popup.open()
 
     def show_error(self, message):
         """Show an error popup."""
+        content = Label(text=message, color=(0.8, 0.2, 0.2, 1), text_size=(None, None), halign='center')
+        apply_arabic_font(content, message)
         popup = Popup(
-            title='Error',
-            content=Label(text=message, color=(0.8, 0.2, 0.2, 1)),
+            title=get_text('error', 'Error'),
+            content=content,
             size_hint=(0.7, 0.3)
         )
         popup.open()

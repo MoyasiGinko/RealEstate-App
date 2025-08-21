@@ -73,6 +73,20 @@ class ArabicFonts:
         if self.is_arabic_text(text_to_check):
             widget.font_name = self.FONT_NAME
 
+        # For Spinners, also apply font to their dropdown options
+        from kivy.uix.spinner import Spinner
+        if isinstance(widget, Spinner):
+            # Apply font to the spinner text itself
+            if hasattr(widget, 'font_name'):
+                widget.font_name = self.FONT_NAME
+
+            # Apply font to dropdown options if they contain Arabic
+            if hasattr(widget, 'values'):
+                for value in widget.values:
+                    if self.is_arabic_text(value):
+                        widget.font_name = self.FONT_NAME
+                        break
+
 # Global instance
 _arabic_fonts = None
 
