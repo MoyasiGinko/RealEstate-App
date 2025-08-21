@@ -9,6 +9,9 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.models.database_api import get_api
 
+# Initialize Arabic font support
+from configs.arabic_fonts import init_arabic_fonts
+
 # Import screens
 from screens.browse_gui import SearchReportScreen
 from screens.about_gui import AboutScreen
@@ -27,6 +30,14 @@ class MainApp(App):
 
     def build(self):
         """Build the application and set up the screen manager."""
+        # Initialize Arabic font support
+        arabic_fonts = init_arabic_fonts()
+
+        if arabic_fonts.fonts_registered:
+            print("✅ Arabic fonts initialized successfully!")
+        else:
+            print("⚠️  Arabic fonts not available, using system defaults")
+
         # Connect to the database
         self.api = get_api()
         if not self.api.connect():

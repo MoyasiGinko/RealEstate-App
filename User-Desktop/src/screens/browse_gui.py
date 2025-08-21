@@ -13,6 +13,7 @@ from kivy.metrics import dp
 from kivy.graphics import Color, Rectangle
 from kivy.lang import Builder
 from src.models.database_api import get_api
+from configs.arabic_fonts import apply_arabic_font
 import datetime
 import os
 import csv
@@ -372,6 +373,16 @@ class SearchReportScreen(Screen):
     def __init__(self, **kwargs):
         super(SearchReportScreen, self).__init__(**kwargs)
         self.api = get_api()
+        self.bind(on_enter=self.setup_arabic_fonts)
+
+    def setup_arabic_fonts(self, *args):
+        """Apply Arabic fonts to all text widgets"""
+        try:
+            for widget in self.walk(restrict=True):
+                if hasattr(widget, 'text') and widget.text:
+                    apply_arabic_font(widget, widget.text)
+        except Exception as e:
+            print(f"Error setting up Arabic fonts: {e}")
 
     def on_enter(self):
         """Called when the screen is entered."""
@@ -394,13 +405,13 @@ class SearchReportScreen(Screen):
 
         try:
             if property_types:
-                values = ['All Types'] + [f"{pt.get('code', 'N/A')} - {pt.get('name', 'Unknown')}" for pt in property_types]
+                values = ['All Types - جميع الأنواع'] + [f"{pt.get('code', 'N/A')} - {pt.get('name', 'Unknown')}" for pt in property_types]
                 self.ids.property_type_spinner.values = values
             else:
-                self.ids.property_type_spinner.values = ['All Types']
+                self.ids.property_type_spinner.values = ['All Types - جميع الأنواع']
         except Exception as e:
             print(f"Error loading property types: {e}")
-            self.ids.property_type_spinner.values = ['All Types']
+            self.ids.property_type_spinner.values = ['All Types - جميع الأنواع']
 
     def load_building_types(self):
         """Load building types from the database."""
@@ -408,13 +419,13 @@ class SearchReportScreen(Screen):
 
         try:
             if building_types:
-                values = ['All Types'] + [f"{bt.get('code', 'N/A')} - {bt.get('name', 'Unknown')}" for bt in building_types]
+                values = ['All Types - جميع الأنواع'] + [f"{bt.get('code', 'N/A')} - {bt.get('name', 'Unknown')}" for bt in building_types]
                 self.ids.building_type_spinner.values = values
             else:
-                self.ids.building_type_spinner.values = ['All Types']
+                self.ids.building_type_spinner.values = ['All Types - جميع الأنواع']
         except Exception as e:
             print(f"Error loading building types: {e}")
-            self.ids.building_type_spinner.values = ['All Types']
+            self.ids.building_type_spinner.values = ['All Types - جميع الأنواع']
 
     def perform_search(self, instance):
         """Perform property search based on criteria."""
