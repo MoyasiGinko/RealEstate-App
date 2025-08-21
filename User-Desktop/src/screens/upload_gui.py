@@ -30,45 +30,98 @@ Builder.load_file(_kv_path)
 
 
 class ConfirmationPopup(Popup):
-    """Popup for confirmation dialogs."""
+    """Popup for confirmation dialogs with improved design and localization."""
 
-    def __init__(self, title_text, message, on_yes_callback, **kwargs):
+    def __init__(self, title_key, message_key, on_yes_callback, title_fallback="Confirm", message_fallback="Are you sure?", **kwargs):
         super(ConfirmationPopup, self).__init__(**kwargs)
-        self.title = title_text
-        self.size_hint = (None, None)
-        self.size = (dp(400), dp(200))
+
+        # Get localized text
+        self.title = get_text(title_key, title_fallback)
+        self.size_hint = (0.8, 0.6)  # More responsive sizing
+        self.auto_dismiss = False
+        self.background = ''  # Remove default background
+        self.background_color = (1, 1, 1, 1)  # White background
+        self.separator_color = (0.2, 0.6, 0.8, 1)  # Blue separator
+
         self.on_yes_callback = on_yes_callback
 
-        # Create layout
-        layout = BoxLayout(orientation='vertical', padding=dp(20), spacing=dp(15))
-
-        # Message
-        message_label = Label(
-            text=message,
-            text_size=(dp(350), None),
-            halign='center',
-            valign='middle'
+        # Create main layout with better spacing
+        main_layout = BoxLayout(
+            orientation='vertical',
+            padding=dp(30),
+            spacing=dp(20)
         )
-        layout.add_widget(message_label)
 
-        # Buttons
-        button_layout = BoxLayout(size_hint_y=None, height=dp(50), spacing=dp(10))
+        # Message with better styling
+        message_text = get_text(message_key, message_fallback)
+        message_label = Label(
+            text=message_text,
+            text_size=(None, None),
+            halign='center',
+            valign='middle',
+            color=(0.1, 0.1, 0.1, 1),  # Dark text for better readability
+            font_size=16,
+            markup=True
+        )
+        # Apply Arabic font if needed
+        apply_arabic_font(message_label, message_text)
 
-        no_btn = Button(text='No', size_hint_x=0.5, background_color=(0.8, 0.2, 0.2, 1))
+        # Set text_size after the widget is added to get proper wrapping
+        def set_text_size(dt):
+            message_label.text_size = (self.width - dp(60), None)
+        from kivy.clock import Clock
+        Clock.schedule_once(set_text_size, 0.1)
+
+        main_layout.add_widget(message_label)
+
+        # Add some spacing
+        main_layout.add_widget(Label(size_hint_y=None, height=dp(20)))
+
+        # Buttons with improved design
+        button_layout = BoxLayout(
+            size_hint_y=None,
+            height=dp(60),
+            spacing=dp(20),
+            padding=[dp(40), 0, dp(40), 0]  # Add horizontal padding
+        )
+
+        # No button with localized text
+        no_text = get_text('no', 'No')
+        no_btn = Button(
+            text=no_text,
+            font_size=18,
+            background_color=(0.8, 0.3, 0.3, 1),  # Red color
+            color=(1, 1, 1, 1),
+            size_hint_x=0.5
+        )
+        apply_arabic_font(no_btn, no_text)
         no_btn.bind(on_press=self.dismiss)
         button_layout.add_widget(no_btn)
 
-        yes_btn = Button(text='Yes', size_hint_x=0.5, background_color=(0.2, 0.6, 0.2, 1))
+        # Yes button with localized text
+        yes_text = get_text('yes', 'Yes')
+        yes_btn = Button(
+            text=yes_text,
+            font_size=18,
+            background_color=(0.3, 0.7, 0.3, 1),  # Green color
+            color=(1, 1, 1, 1),
+            size_hint_x=0.5
+        )
+        apply_arabic_font(yes_btn, yes_text)
         yes_btn.bind(on_press=self.on_yes)
         button_layout.add_widget(yes_btn)
 
-        layout.add_widget(button_layout)
-        self.content = layout
+        main_layout.add_widget(button_layout)
+        self.content = main_layout
+
+        # Apply Arabic font to title
+        apply_arabic_font(self, self.title)
 
     def on_yes(self, instance):
         """Handle yes button press."""
         self.dismiss()
-        self.on_yes_callback()
+        if self.on_yes_callback:
+            self.on_yes_callback()
 
 
 class UploadScreen(Screen):
@@ -227,14 +280,14 @@ class UploadScreen(Screen):
                 if result:
                     # Reconnect API
                     self.api.connect()
-                    success_message = f"Database has been reset successfully!\n\nLocation: {result}"
+                    success_message = get_text('reset_success', f"Database has been reset successfully!\n\nLocation: {result}")
                     if backup_created:
-                        success_message += f"\n\nPrevious database backed up to:\n{backup_path}"
-                    self.show_message("Success", success_message)
+                        success_message += f"\n\n{get_text('backup_saved', 'Previous database backed up to:')} \n{backup_path}"
+                    self.show_message('success', success_message)
                 else:
                     # Reconnect API even if failed
                     self.api.connect()
-                    self.show_message("Error", "Failed to reset database. Please close the application completely and try again.\n\nThe database file might be locked by another process.")
+                    self.show_message('error', get_text('reset_failed', 'Failed to reset database. Please close the application completely and try again.\n\nThe database file might be locked by another process.'))
 
             except Exception as e:
                 print(f"Error in create_fresh_database: {str(e)}")  # Debug
@@ -243,13 +296,15 @@ class UploadScreen(Screen):
                     self.api.connect()
                 except:
                     pass
-                self.show_message("Error", f"Failed to reset database: {str(e)}")
+                self.show_message('error', get_text('reset_failed', f"Failed to reset database: {str(e)}"))
 
-        # Show confirmation dialog with backup information
+        # Show confirmation dialog with localized content
         popup = ConfirmationPopup(
-            "Reset Database",
-            "Are you sure you want to reset the database?\n\nThis will:\n• Delete ALL existing data\n• Create a backup first\n• Create a fresh empty database\n\nContinue?",
-            confirm_reset
+            title_key='reset_db_confirm_title',
+            message_key='reset_db_confirm_message',
+            title_fallback='Reset Database',
+            message_fallback='Are you sure you want to reset the database?\n\nThis will:\n• Delete ALL existing data\n• Create a backup first\n• Create a fresh empty database\n\nContinue?',
+            on_yes_callback=confirm_reset
         )
         popup.open()
 
@@ -277,7 +332,7 @@ class UploadScreen(Screen):
 
             # Check if database file exists
             if not os.path.exists(self.db_path):
-                self.show_message("Error", f"Database file not found at:\n{self.db_path}")
+                self.show_message('database_not_found', get_text('database_not_found', f"Database file not found at:\n{self.db_path}"))
                 return
 
             # Create backups directory if it doesn't exist
@@ -294,13 +349,13 @@ class UploadScreen(Screen):
             print(f"Database exported to: {backup_path}")  # Debug
 
             self.show_message(
-                "Export Successful",
-                f"Database exported successfully!\n\nFrom: {self.db_path}\n\nTo: {backup_path}\n\nBackup size: {os.path.getsize(backup_path)} bytes"
+                'export_success_title',
+                get_text('export_success_message', f"Database exported successfully!\n\nFrom: {self.db_path}\n\nTo: {backup_path}\n\nBackup size: {os.path.getsize(backup_path)} bytes")
             )
 
         except Exception as e:
             print(f"Export error: {str(e)}")  # Debug
-            self.show_message("Export Error", f"Failed to export database:\n{str(e)}")
+            self.show_message('export_error_title', get_text('export_failed', f"Failed to export database: {str(e)}"))
 
     def seed_database(self, instance=None):
         """Seed the database with sample data."""
@@ -317,19 +372,21 @@ class UploadScreen(Screen):
                 seed_data_module.smart_merge_seed_data(self.db_path)
 
                 self.show_message(
-                    "Seeding Successful",
-                    f"Database has been seeded with sample data!\n\nLocation: {self.db_path}\n\nExisting data has been preserved."
+                    'seed_success',
+                    get_text('seed_success_message', f"Database has been seeded with sample data!\n\nLocation: {self.db_path}\n\nExisting data has been preserved.")
                 )
 
             except Exception as e:
                 print(f"Seeding error: {str(e)}")  # Debug
-                self.show_message("Seeding Error", f"Failed to seed database:\n{str(e)}")
+                self.show_message('seed_error', get_text('seed_failed', f"Failed to seed database: {str(e)}"))
 
-        # Show confirmation dialog
+        # Show confirmation dialog with localized content
         popup = ConfirmationPopup(
-            "Seed Database",
-            "This will add sample data to your database.\nExisting data will be preserved.\n\nContinue?",
-            confirm_seed
+            title_key='seed_db_confirm_title',
+            message_key='seed_db_confirm_message',
+            title_fallback='Seed Database',
+            message_fallback='This will add sample data to your database.\nExisting data will be preserved.\n\nContinue?',
+            on_yes_callback=confirm_seed
         )
         popup.open()
 
@@ -359,15 +416,15 @@ class UploadScreen(Screen):
 
             # Validate the selected file
             if not os.path.exists(file_path):
-                self.show_message("File Error", "Selected file does not exist.")
+                self.show_message('file_not_found', get_text('file_not_found', 'Selected file does not exist.'))
                 return
 
             # Check file size (optional - warn if very large)
             file_size = os.path.getsize(file_path) / (1024 * 1024)  # MB
             if file_size > 100:  # Warn if larger than 100MB
                 self.show_message(
-                    "Large File Warning",
-                    f"Selected file is {file_size:.1f}MB.\nThis might take some time to upload."
+                    'large_file_warning',
+                    get_text('large_file_warning_message', f"Selected file is {file_size:.1f}MB.\nThis might take some time to upload.")
                 )
 
             def confirm_upload():
@@ -398,39 +455,91 @@ class UploadScreen(Screen):
                     self.api.connect()
 
                     self.show_message(
-                        "Upload Successful",
-                        f"Database has been replaced successfully!\n\nFile: {os.path.basename(file_path)}\nSize: {file_size:.1f}MB\n\nPrevious database backed up to:\n{backup_path}"
+                        'upload_success',
+                        get_text('upload_success_message', f"Database has been replaced successfully!\n\nFile: {os.path.basename(file_path)}\nSize: {file_size:.1f}MB\n\nPrevious database backed up to:\n{backup_path}")
                     )
 
                 except Exception as e:
                     print(f"Upload error: {str(e)}")  # Debug
-                    self.show_message("Upload Error", f"Failed to upload database:\n{str(e)}")
+                    self.show_message('upload_error', get_text('upload_failed', f"Failed to upload database: {str(e)}"))
 
-            # Show confirmation for upload
+            # Show confirmation for upload with localized content
             popup = ConfirmationPopup(
-                "Replace Database",
-                f"Replace current database with:\n\nFile: {os.path.basename(file_path)}\nSize: {file_size:.1f}MB\nLocation: {file_path}\n\nThe current database will be backed up first.\n\nContinue?",
-                confirm_upload
+                title_key='upload_db_confirm_title',
+                message_key='upload_db_confirm_message',
+                title_fallback='Replace Database',
+                message_fallback=f"Replace current database with:\n\nFile: {os.path.basename(file_path)}\nSize: {file_size:.1f}MB\nLocation: {file_path}\n\nThe current database will be backed up first.\n\nContinue?",
+                on_yes_callback=confirm_upload
             )
             popup.open()
 
         except Exception as e:
             print(f"File chooser error: {str(e)}")  # Debug
-            self.show_message("File Chooser Error", f"Failed to open file chooser:\n{str(e)}")
+            self.show_message('file_chooser_error_title', get_text('file_chooser_error', f"Failed to open file chooser: {str(e)}"))
 
-    def show_message(self, title, message):
-        """Show a message popup."""
-        popup = Popup(
-            title=title,
-            content=Label(
-                text=message,
-                text_size=(dp(400), None),
-                halign='center',
-                valign='middle'
-            ),
-            size_hint=(None, None),
-            size=(dp(450), dp(300))
+    def show_message(self, title_key, message, title_fallback=None):
+        """Show a message popup with improved design and localization."""
+        # Get localized title
+        if title_fallback is None:
+            title_fallback = title_key
+        title_text = get_text(title_key, title_fallback)
+
+        # Create content layout
+        content_layout = BoxLayout(
+            orientation='vertical',
+            padding=dp(30),
+            spacing=dp(20)
         )
+
+        # Message label with better styling
+        message_label = Label(
+            text=message,
+            text_size=(None, None),
+            halign='center',
+            valign='middle',
+            color=(0.1, 0.1, 0.1, 1),  # Dark text
+            font_size=16,
+            markup=True
+        )
+        apply_arabic_font(message_label, message)
+        content_layout.add_widget(message_label)
+
+        # Close button
+        close_text = get_text('close', 'Close')
+        close_btn = Button(
+            text=close_text,
+            font_size=16,
+            background_color=(0.2, 0.6, 0.8, 1),
+            color=(1, 1, 1, 1),
+            size_hint_y=None,
+            height=dp(50),
+            size_hint_x=0.4,
+            pos_hint={'center_x': 0.5}
+        )
+        apply_arabic_font(close_btn, close_text)
+
+        popup = Popup(
+            title=title_text,
+            content=content_layout,
+            size_hint=(0.7, 0.5),
+            auto_dismiss=True,
+            background='',  # Remove default background
+            background_color=(1, 1, 1, 1),  # White background
+            separator_color=(0.2, 0.6, 0.8, 1)  # Blue separator
+        )
+
+        # Apply Arabic font to title
+        apply_arabic_font(popup, title_text)
+
+        close_btn.bind(on_press=popup.dismiss)
+        content_layout.add_widget(close_btn)
+
+        # Set text_size after popup is created for proper text wrapping
+        def set_text_size(dt):
+            message_label.text_size = (popup.width - dp(60), None)
+        from kivy.clock import Clock
+        Clock.schedule_once(set_text_size, 0.1)
+
         popup.open()
 
     def go_to_main_gui(self, instance=None):

@@ -455,10 +455,10 @@ class SearchReportScreen(Screen):
             try:
                 all_types_text = get_text('all_types')
                 if hasattr(self.ids, 'property_type_spinner'):
-                    if self.ids.property_type_spinner.text in ['All Types - جميع الأنواع', 'All Types', 'جميع الأنواع']:
+                    if self.ids.property_type_spinner.text in ['All Types', 'All Types', 'All Types']:
                         self.ids.property_type_spinner.text = all_types_text
                 if hasattr(self.ids, 'building_type_spinner'):
-                    if self.ids.building_type_spinner.text in ['All Types - جميع الأنواع', 'All Types', 'جميع الأنواع']:
+                    if self.ids.building_type_spinner.text in ['All Types', 'All Types', 'All Types']:
                         self.ids.building_type_spinner.text = all_types_text
             except Exception as e:
                 print(f"Error updating spinners: {e}")
