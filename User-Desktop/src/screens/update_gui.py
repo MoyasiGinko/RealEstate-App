@@ -157,9 +157,6 @@ class PropertyForm(BoxLayout):
         # Update texts after initialization
         Clock.schedule_once(lambda dt: self.update_texts(), 0.1)
 
-        # Apply Arabic font to all widgets in this form if Arabic is current language
-        Clock.schedule_once(lambda dt: self._apply_font_to_form(), 0.2)
-
         # Populate fields if editing - delay this to ensure UI is ready
         if self.property_data:
             Clock.schedule_once(self._delayed_populate_fields, 0.1)
@@ -170,16 +167,6 @@ class PropertyForm(BoxLayout):
     def _delayed_populate_fields(self, dt):
         """Populate fields after a small delay to ensure UI is ready."""
         self.populate_fields()
-
-    def _apply_font_to_form(self):
-        """Apply Arabic font to all widgets in this form if Arabic language is active"""
-        try:
-            current_lang = self.language_manager.get_current_language() if hasattr(self, 'language_manager') else 'en'
-            if current_lang == 'ar':
-                apply_font_to_all_widgets(self)
-                print("🔤 Applied Arabic font to PropertyForm widgets")
-        except Exception as e:
-            print(f"⚠️ Error applying font to PropertyForm: {e}")
 
     def update_texts(self):
         """Update all text elements in the form with current language"""
@@ -628,6 +615,9 @@ class UpdateGUIScreen(Screen):
         """Called when language is changed"""
         try:
             self.setup_localization()
+            # Reload properties to update Edit/Delete button texts
+            if hasattr(self, 'properties_container') and self.properties_container is not None:
+                self.load_properties()
         except Exception as e:
             print(f"Error handling language change in update screen: {e}")
 
@@ -660,18 +650,22 @@ class UpdateGUIScreen(Screen):
             actions = BoxLayout(spacing=dp(5))
 
             edit_button = Button(
-                text='Edit',
+                text=get_text('edit', 'Edit'),
                 background_color=(0.3, 0.6, 0.9, 1),
                 color=(1, 1, 1, 1)
             )
+            # Ensure Arabic font is applied when language is Arabic
+            apply_arabic_font(edit_button, edit_button.text)
             edit_button.bind(on_press=lambda x, p=prop: self.show_edit_property_form(p))
             actions.add_widget(edit_button)
 
             delete_button = Button(
-                text='Delete',
+                text=get_text('delete', 'Delete'),
                 background_color=(0.8, 0.3, 0.3, 1),
                 color=(1, 1, 1, 1)
             )
+            # Ensure Arabic font is applied when language is Arabic
+            apply_arabic_font(delete_button, delete_button.text)
             delete_button.bind(on_press=lambda x, code=prop.get('realstatecode', ''): self.confirm_delete_property(code))
             actions.add_widget(delete_button)
 
@@ -689,82 +683,18 @@ class UpdateGUIScreen(Screen):
             return
 
         content = PropertyForm(save_callback=self.update_property, property_data=full_property_data)
-        popup_title = get_text('edit_property', 'Edit Property')
-
-        # Build a wrapper so we can render a header Label inside the popup content
-        header_wrapper = BoxLayout(orientation='vertical')
-        try:
-            # Create a header box with white background using canvas
-            from kivy.graphics import Color, Rectangle
-            header_box = BoxLayout(size_hint_y=None, size_hint_x=1, height=dp(48))
-            with header_box.canvas.before:
-                Color(1, 1, 1, 1)  # white background
-                header_bg = Rectangle(pos=header_box.pos, size=header_box.size)
-            # keep the rectangle in sync with the widget
-            header_box.bind(pos=lambda *a: setattr(header_bg, 'pos', header_box.pos),
-                            size=lambda *a: setattr(header_bg, 'size', header_box.size))
-
-            header_label = Label(
-                text=popup_title,
-                size_hint_y=None,
-                size_hint_x=1,
-                height=dp(48),
-                halign='center',
-                valign='middle',
-                color=(0.15, 0.15, 0.15, 1),
-            )
-            # Make the header text larger
-            header_label.font_size = '22sp'
-
-            # Ensure the label uses its size for text alignment
-            from kivy.clock import Clock
-            def _fix_text_size(dt):
-                try:
-                    header_label.text_size = (header_label.width - dp(12), header_label.height)
-                except Exception:
-                    pass
-            Clock.schedule_once(_fix_text_size, 0)
-            apply_arabic_font(header_label, popup_title)
-
-            header_box.add_widget(header_label)
-            header_wrapper.add_widget(header_box)
-        except Exception:
-            # Fallback header if something goes wrong
-            header_label = Label(text=popup_title, size_hint_y=None, height=dp(48))
-            header_label.font_size = '22sp'
-            header_wrapper.add_widget(header_label)
-
-        header_wrapper.add_widget(content)
-
-        # Use an empty Popup.title and remove the title area by setting title_size=0
-        # Also remove the separator by setting separator_color to fully transparent
+        popup_title = get_text( 'Edit Property')
         self.popup = Popup(
-            title='',
-            title_size=0,
-            separator_color=(0, 0, 0, 0),
-            content=header_wrapper,
+            title=popup_title,
+            content=content,
             size_hint=(0.9, 0.9)
         )
-
-        # Apply font to the entire popup content when Arabic is active
-        Clock.schedule_once(lambda dt: self._apply_popup_fonts(), 0.1)
-
+        # Apply Arabic font to popup title if needed
+        apply_arabic_font(self.popup, popup_title)
         # Bind the cancel button to close the popup
         if hasattr(content.ids, 'cancel_btn'):
             content.ids.cancel_btn.bind(on_press=lambda x: self.popup.dismiss())
-
         self.popup.open()
-
-
-    def _apply_popup_fonts(self):
-        """Apply Arabic font to popup content if Arabic is active"""
-        try:
-            current_lang = self.language_manager.get_current_language() if hasattr(self, 'language_manager') else 'en'
-            if current_lang == 'ar' and hasattr(self, 'popup') and self.popup:
-                apply_font_to_all_widgets(self.popup)
-                print("🔤 Applied Arabic font to popup widgets")
-        except Exception as e:
-            print(f"⚠️ Error applying font to popup: {e}")
 
     def update_property(self, property_data, photos, property_code, photos_to_delete=None):
         """Update an existing property in the database."""
@@ -841,33 +771,59 @@ class UpdateGUIScreen(Screen):
     def confirm_delete_property(self, property_code):
         """Show confirmation dialog for deleting a property."""
         content = BoxLayout(orientation='vertical', padding=dp(10), spacing=dp(10))
-        content.add_widget(Label(text='Are you sure you want to delete this property?\nThis will also delete all associated photos.', color=(0.2, 0.2, 0.2, 1)))
+
+        # Create localized confirmation message
+        message_text = get_text('confirm_delete_message', 'Are you sure you want to delete this property?\nThis will also delete all associated photos.')
+        message_label = Label(
+            text=message_text,
+            color=(0.2, 0.2, 0.2, 1),
+            text_size=(None, None),
+            halign='center',
+            valign='middle'
+        )
+        # Apply Arabic font to the message
+        apply_arabic_font(message_label, message_text)
+        content.add_widget(message_label)
 
         buttons = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(10))
 
+        # Localized Yes button
+        yes_text = get_text('yes', 'Yes')
         yes_button = Button(
-            text='Yes',
+            text=yes_text,
             background_color=(0.8, 0.3, 0.3, 1),
             color=(1, 1, 1, 1)
         )
+        apply_arabic_font(yes_button, yes_text)
         yes_button.bind(on_press=lambda x: self.delete_property(property_code))
         buttons.add_widget(yes_button)
 
+        # Localized No button
+        no_text = get_text('no', 'No')
         no_button = Button(
-            text='No',
-            background_color=(0.7, 0.7, 0.7, 1),
-            color=(0.2, 0.2, 0.2, 1)
+            text=no_text,
+            background_color=(0.0, 0.45, 0.85, 1),
+            color=(1, 1, 1, 1)
         )
+        apply_arabic_font(no_button, no_text)
         no_button.bind(on_press=lambda x: self.delete_popup.dismiss())
         buttons.add_widget(no_button)
 
         content.add_widget(buttons)
 
+        # Create popup with localized title and white background
+        popup_title = get_text('Confirm Delete?')
         self.delete_popup = Popup(
-            title='Confirm Delete',
+            title=popup_title,
             content=content,
-            size_hint=(0.6, 0.4)
+            size_hint=(0.6, 0.4),
+            background='',  # Remove default background
+            background_color=(1, 1, 1, 1),  # Set white background
+            separator_color=(0.2, 0.6, 0.8, 1),  # Optional: custom separator color
+            title_color=(0, 0, 0, 1)  # Set title color to black
         )
+        # Apply Arabic font to popup title
+        apply_arabic_font(self.delete_popup, popup_title)
         self.delete_popup.open()
 
     def delete_property(self, property_code):
