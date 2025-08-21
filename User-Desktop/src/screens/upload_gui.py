@@ -96,6 +96,12 @@ class UploadScreen(Screen):
         except Exception as e:
             print(f"Error setting up localization in upload screen: {e}")
 
+    def show_language_switcher(self):
+        """Show language switcher popup"""
+        from configs.language_switcher import LanguageSwitcherPopup
+        popup = LanguageSwitcherPopup()
+        popup.open()
+
     def update_texts(self):
         """Update all text widgets with current language"""
         # Note: Most text updates will be handled in the KV file

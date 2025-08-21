@@ -396,14 +396,27 @@
                 pos: self.pos
                 size: self.size
 
-        # Header with title
+        # Header with title and language switcher
         BoxLayout:
             size_hint_y: None
             height: 50
             Label:
+                id: header_label
                 text: 'Property Management - إدارة العقارات'
                 font_size: 24
                 color: 0.2, 0.2, 0.2, 1
+
+            # Language switcher button
+            Button:
+                id: language_btn
+                text: '🌐 Language'
+                size_hint: None, None
+                size: 120, 40
+                pos_hint: {'center_y': 0.5}
+                background_color: 0.2, 0.6, 0.9, 1
+                color: 1, 1, 1, 1
+                font_size: 14
+                on_press: root.show_language_switcher()
 
         # Properties list header
         GridLayout:
@@ -411,22 +424,27 @@
             size_hint_y: None
             height: 40
             Label:
+                id: code_header
                 text: 'Code - الرمز'
                 bold: True
                 color: 0.2, 0.2, 0.2, 1
             Label:
+                id: type_header
                 text: 'Type - النوع'
                 bold: True
                 color: 0.2, 0.2, 0.2, 1
             Label:
+                id: area_header
                 text: 'Area'
                 bold: True
                 color: 0.2, 0.2, 0.2, 1
             Label:
+                id: owner_header
                 text: 'Owner'
                 bold: True
                 color: 0.2, 0.2, 0.2, 1
             Label:
+                id: actions_header
                 text: 'Actions'
                 bold: True
                 color: 0.2, 0.2, 0.2, 1
@@ -449,6 +467,7 @@
             height: 60
             padding: 0, 10, 0, 0
             Button:
+                id: back_btn
                 text: '← Back to Main - العودة للرئيسية'
                 size_hint: None, None
                 size: 200, 50

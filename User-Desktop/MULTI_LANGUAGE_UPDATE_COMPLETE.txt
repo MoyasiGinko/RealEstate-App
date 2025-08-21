@@ -12,16 +12,16 @@ All GUI screens now support multi-language functionality similar to the main_gui
    ✅ Added setup_localization(), update_texts(), apply_fonts(), and on_language_changed() methods
    ✅ Updated insert_gui.kv with bilingual text (English/Arabic)
 
-2. UPDATE GUI (src/screens/update_gui.py) 
+2. UPDATE GUI (src/screens/update_gui.py)
    ✅ Added language manager imports
-   ✅ Added language_manager instance and observer registration  
+   ✅ Added language_manager instance and observer registration
    ✅ Added setup_localization(), update_texts(), apply_fonts(), and on_language_changed() methods
    ✅ Updated update_gui.kv with bilingual text (English/Arabic)
 
 3. UPLOAD GUI (src/screens/upload_gui.py)
    ✅ Added language manager imports
    ✅ Added language_manager instance and observer registration
-   ✅ Added setup_localization(), update_texts(), apply_fonts(), and on_language_changed() methods  
+   ✅ Added setup_localization(), update_texts(), apply_fonts(), and on_language_changed() methods
    ✅ Updated upload_gui.kv with bilingual text (English/Arabic)
 
 4. ABOUT GUI (about_gui.py - already had basic support)
@@ -54,7 +54,7 @@ All screens now follow the same pattern as main_gui:
 
 1. Import language manager and Arabic fonts
 2. Initialize language_manager in __init__
-3. Register as observer for language changes  
+3. Register as observer for language changes
 4. Implement setup_localization() method
 5. Implement update_texts() method (for dynamic content)
 6. Implement apply_fonts() method (for Arabic font application)

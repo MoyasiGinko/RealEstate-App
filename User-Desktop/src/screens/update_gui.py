@@ -21,6 +21,7 @@ from tkinter import filedialog
 from src.models.database_api import get_api
 from configs.language_manager import get_language_manager, get_text
 from configs.arabic_fonts import apply_arabic_font
+from configs.language_switcher import show_language_switcher
 from src.models.database_api import get_api
 
 # Load KV file
@@ -424,11 +425,41 @@ class UpdateGUIScreen(Screen):
         except Exception as e:
             print(f"Error setting up localization in update screen: {e}")
 
+    def show_language_switcher(self):
+        """Show language switcher popup"""
+        from configs.language_switcher import LanguageSwitcherPopup
+        popup = LanguageSwitcherPopup()
+        popup.open()
+
     def update_texts(self):
         """Update all text widgets with current language"""
-        # Note: Most text updates will be handled in the KV file
-        # This method can be used for dynamic content updates
-        pass
+        try:
+            # Define the mapping of IDs to translation keys
+            text_mappings = {
+                'header_label': 'property_management',
+                'code_header': 'code',
+                'type_header': 'type',
+                'area_header': 'area',
+                'owner_header': 'owner_name',
+                'actions_header': 'actions',
+                'back_btn': 'back_to_main'
+            }
+
+            # Update each widget using its ID
+            for widget_id, text_key in text_mappings.items():
+                try:
+                    widget = self.ids.get(widget_id)
+                    if widget:
+                        new_text = get_text(text_key)
+                        widget.text = new_text
+                        # Apply Arabic font if needed
+                        if self.language_manager.current_language == 'ar':
+                            apply_arabic_font(widget, new_text)
+                except Exception as e:
+                    print(f"Error updating widget {widget_id}: {e}")
+
+        except Exception as e:
+            print(f"Error updating texts: {e}")
 
     def apply_fonts(self):
         """Apply Arabic fonts to all text widgets if Arabic is selected"""
