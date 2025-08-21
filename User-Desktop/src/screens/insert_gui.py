@@ -485,25 +485,57 @@ class InsertScreen(Screen):
 
 		form = GridLayout(cols=2, spacing=dp(10), size_hint_y=None, height=dp(120))
 
-		form.add_widget(Label(text='Owner Name:'))
-		owner_name_input = TextInput(multiline=False)
+		# Owner Name field
+		owner_name_label = Label(text=get_text('owner_name', 'Owner Name:'), color=(0, 0, 0, 1))
+		apply_arabic_font(owner_name_label, owner_name_label.text)
+		form.add_widget(owner_name_label)
+
+		owner_name_input = TextInput(multiline=False, foreground_color=(0, 0, 0, 1))
 		form.add_widget(owner_name_input)
 
-		form.add_widget(Label(text='Phone Number:'))
-		owner_phone_input = TextInput(multiline=False)
+		# Phone Number field
+		phone_label = Label(text=get_text('phone', 'Phone Number:'), color=(0, 0, 0, 1))
+		apply_arabic_font(phone_label, phone_label.text)
+		form.add_widget(phone_label)
+
+		owner_phone_input = TextInput(multiline=False, foreground_color=(0, 0, 0, 1))
 		form.add_widget(owner_phone_input)
 
-		form.add_widget(Label(text='Notes:'))
-		owner_note_input = TextInput(multiline=True)
+		# Notes field
+		notes_label = Label(text=get_text('notes', 'Notes:'), color=(0, 0, 0, 1))
+		apply_arabic_font(notes_label, notes_label.text)
+		form.add_widget(notes_label)
+
+		owner_note_input = TextInput(multiline=True, foreground_color=(0, 0, 0, 1))
 		form.add_widget(owner_note_input)
 
 		content.add_widget(form)
 
 		buttons = BoxLayout(size_hint_y=None, height=dp(50), spacing=dp(10))
-		cancel_btn = Button(text='Cancel')
-		save_btn = Button(text='Save Owner', background_color=(0.2, 0.7, 0.3, 1))
 
-		popup = Popup(title='Add New Owner', content=content, size_hint=(0.8, 0.4))
+		# Cancel button
+		cancel_text = get_text('cancel', 'Cancel')
+		cancel_btn = Button(text=cancel_text, color=(0, 0, 0, 1))
+		apply_arabic_font(cancel_btn, cancel_text)
+
+		# Save button
+		save_text = get_text('save', 'Save Owner')
+		save_btn = Button(text=save_text, background_color=(0.2, 0.7, 0.3, 1), color=(0, 0, 0, 1))
+		apply_arabic_font(save_btn, save_text)
+
+		# Create popup with white background
+		popup_title = get_text('add_new_owner_title', 'Add New Owner')
+		popup = Popup(
+			title=popup_title,
+			content=content,
+			size_hint=(0.8, 0.4),
+			background='',  # Remove default background
+			background_color=(1, 1, 1, 1),  # Set white background
+			separator_color=(0.2, 0.6, 0.8, 1),  # Optional: custom separator color
+			title_color=(0, 0, 0, 1)  # Make popup title text black
+		)
+		# Apply Arabic font to popup title
+		apply_arabic_font(popup, popup_title)
 
 		cancel_btn.bind(on_press=popup.dismiss)
 		save_btn.bind(on_press=lambda x: self.add_owner(
@@ -545,18 +577,46 @@ class InsertScreen(Screen):
 
 	def show_success(self, message):
 		"""Show success message popup."""
-		popup = Popup(
-			title='Success',
-			content=Label(text=message),
-			size_hint=(0.7, 0.3)
+		content = Label(
+			text=message,
+			color=(0.2, 0.8, 0.3, 1),
+			text_size=(None, None),
+			halign='center',
+			valign='middle'
 		)
+		apply_arabic_font(content, message)
+
+		popup = Popup(
+			title=get_text('success', 'Success'),
+			content=content,
+			size_hint=(0.7, 0.3),
+			background='',  # Remove default background
+			background_color=(1, 1, 1, 1),  # Set white background
+			separator_color=(0.2, 0.6, 0.8, 1)
+		)
+		# Apply Arabic font to popup title
+		apply_arabic_font(popup, popup.title)
 		popup.open()
 
 	def show_error(self, message):
 		"""Show error message popup."""
-		popup = Popup(
-			title='Error',
-			content=Label(text=message),
-			size_hint=(0.7, 0.3)
+		content = Label(
+			text=message,
+			color=(0.8, 0.2, 0.2, 1),
+			text_size=(None, None),
+			halign='center',
+			valign='middle'
 		)
+		apply_arabic_font(content, message)
+
+		popup = Popup(
+			title=get_text('error', 'Error'),
+			content=content,
+			size_hint=(0.7, 0.3),
+			background='',  # Remove default background
+			background_color=(1, 1, 1, 1),  # Set white background
+			separator_color=(0.2, 0.6, 0.8, 1)
+		)
+		# Apply Arabic font to popup title
+		apply_arabic_font(popup, popup.title)
 		popup.open()
