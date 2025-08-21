@@ -170,6 +170,18 @@ class LanguageManager:
                 'photo_selected': 'photo selected',
                 'add_photos': 'Add Photos',
 
+                # Owner Form Fields
+                'owner_name_label': 'Owner Name:',
+                'enter_owner_name': 'Enter owner name',
+                'phone_label': 'Phone Number:',
+                'enter_phone': 'Enter phone number',
+                'notes_label': 'Notes:',
+                'enter_notes': 'Optional notes about the owner',
+                'owner_name_required': 'Owner name is required',
+                'owner_added_success': 'Owner {0} added successfully',
+                'failed_to_add_owner': 'Failed to add owner',
+                'error_adding_owner': 'Error adding owner: {0}',
+
                 # Validation Messages
                 'property_type_required': 'Property type is required.',
                 'building_type_required': 'Building type is required.',
@@ -348,6 +360,18 @@ class LanguageManager:
                 'photos_selected': 'صورة محددة',
                 'photo_selected': 'صورة واحدة محددة',
                 'add_photos': 'إضافة صور',
+
+                # Owner Form Fields
+                'owner_name_label': 'اسم المالك:',
+                'enter_owner_name': 'أدخل اسم المالك',
+                'phone_label': 'رقم الهاتف:',
+                'enter_phone': 'أدخل رقم الهاتف',
+                'notes_label': 'الملاحظات:',
+                'enter_notes': 'ملاحظات اختيارية عن المالك',
+                'owner_name_required': 'اسم المالك مطلوب',
+                'owner_added_success': 'تم إضافة المالك {0} بنجاح',
+                'failed_to_add_owner': 'فشل في إضافة المالك',
+                'error_adding_owner': 'خطأ في إضافة المالك: {0}',
 
                 # Validation Messages
                 'property_type_required': 'نوع العقار مطلوب.',

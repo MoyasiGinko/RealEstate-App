@@ -115,11 +115,14 @@ class DatabaseAPI:
     def get_all_properties(self):
         """Get all properties from the database."""
         return self.db.execute_query("""
-            SELECT r.*, o.ownername, m1.name as property_type, m2.name as building_type
+            SELECT r.*, o.ownername, m1.name as property_type, m2.name as building_type,
+                   m3.name as province_name, m4.name as region_name
             FROM Realstatspecification r
             LEFT JOIN Owners o ON r.Ownercode = o.Ownercode
             LEFT JOIN Maincode m1 ON r.Rstatetcode = m1.code AND m1.recty = '03'
             LEFT JOIN Maincode m2 ON r.Buildtcode = m2.code AND m2.recty = '04'
+            LEFT JOIN Maincode m3 ON r."Province-code" = m3.code AND m3.recty = '01'
+            LEFT JOIN Maincode m4 ON r."Region-code" = m4.code AND m4.recty = '02'
             ORDER BY r.realstatecode
         """)
 
@@ -426,6 +429,46 @@ class DatabaseAPI:
         """Get all offer types."""
         return self.get_main_codes_by_type('06')
 
+    def get_province_name_by_code(self, province_code):
+        """
+        Get province name by code.
+
+        Args:
+            province_code (str): Province code (e.g., '001')
+
+        Returns:
+            str: Province name or None if not found
+        """
+        try:
+            results = self.db.execute_query(
+                "SELECT Name FROM Maincode WHERE Code = ? AND Recty = '01'",
+                (province_code,)
+            )
+            return results[0]['Name'] if results else None
+        except Exception as e:
+            print(f"Error getting province name: {e}")
+            return None
+
+    def get_region_name_by_code(self, region_code):
+        """
+        Get region name by code.
+
+        Args:
+            region_code (str): Region code (e.g., '00101')
+
+        Returns:
+            str: Region name or None if not found
+        """
+        try:
+            results = self.db.execute_query(
+                "SELECT Name FROM Maincode WHERE Code = ? AND Recty = '02'",
+                (region_code,)
+            )
+            return results[0]['Name'] if results else None
+        except Exception as e:
+            print(f"Error getting region name: {e}")
+            return None
+
     def add_main_code(self, record_type, code, name, description=None):
         """
         Add a new main code.
@@ -541,11 +584,14 @@ class DatabaseAPI:
         where_clause = " AND ".join(where_clauses)
 
         query = f"""
-            SELECT r.*, o.ownername, m1.name as property_type, m2.name as building_type
+            SELECT r.*, o.ownername, m1.name as property_type, m2.name as building_type,
+                   m3.name as province_name, m4.name as region_name
             FROM Realstatspecification r
             LEFT JOIN Owners o ON r.Ownercode = o.Ownercode
             LEFT JOIN Maincode m1 ON r.Rstatetcode = m1.code AND m1.recty = '03'
             LEFT JOIN Maincode m2 ON r.Buildtcode = m2.code AND m2.recty = '04'
+            LEFT JOIN Maincode m3 ON r."Province-code" = m3.code AND m3.recty = '01'
+            LEFT JOIN Maincode m4 ON r."Region-code" = m4.code AND m4.recty = '02'
             WHERE {where_clause}
             ORDER BY r.realstatecode
         """

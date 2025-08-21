@@ -146,6 +146,8 @@ class PropertyDetailContent(BoxLayout):
                 ('Corner Property', 'Property-corner'),
                 ('Price', 'Property-price'),
                 ('Currency', 'Property-currency'),
+                ('Province', 'province_name'),
+                ('Region', 'region_name'),
                 ('Address', 'Property-address'),
                 ('Owner', 'ownername'),
                 ('Owner Code', 'Ownercode'),
@@ -269,7 +271,7 @@ class PropertyRow(BoxLayout):
         # Property code
         code_label = Label(
             text=str(property_data.get('realstatecode', 'N/A')),
-            size_hint_x=0.15,
+            size_hint_x=0.12,
             color=(0, 0, 0, 1),
             halign='center',
             font_size=dp(12)
@@ -281,7 +283,7 @@ class PropertyRow(BoxLayout):
         property_type = str(property_data.get('property_type', 'N/A'))
         type_label = Label(
             text=property_type,
-            size_hint_x=0.15,
+            size_hint_x=0.12,
             color=(0, 0, 0, 1),
             halign='center',
             font_size=dp(12)
@@ -293,7 +295,7 @@ class PropertyRow(BoxLayout):
         area = str(property_data.get('Property-area', 'N/A'))
         area_label = Label(
             text=area,
-            size_hint_x=0.1,
+            size_hint_x=0.08,
             color=(0, 0, 0, 1),
             halign='center',
             font_size=dp(12)
@@ -305,7 +307,7 @@ class PropertyRow(BoxLayout):
         bedrooms = str(property_data.get('N-of-bedrooms', 'N/A'))
         bedrooms_label = Label(
             text=bedrooms,
-            size_hint_x=0.1,
+            size_hint_x=0.08,
             color=(0, 0, 0, 1),
             halign='center',
             font_size=dp(12)
@@ -313,11 +315,23 @@ class PropertyRow(BoxLayout):
         bedrooms_label.bind(size=bedrooms_label.setter('text_size'))
         self.add_widget(bedrooms_label)
 
+        # Province
+        province = str(property_data.get('province_name', 'N/A'))
+        province_label = Label(
+            text=province,
+            size_hint_x=0.1,
+            color=(0, 0, 0, 1),
+            halign='center',
+            font_size=dp(12)
+        )
+        province_label.bind(size=province_label.setter('text_size'))
+        self.add_widget(province_label)
+
         # Owner name
-        owner = str(property_data.get('ownername', 'N/A'))[:20] + '...' if len(str(property_data.get('ownername', 'N/A'))) > 20 else str(property_data.get('ownername', 'N/A'))
+        owner = str(property_data.get('ownername', 'N/A'))[:15] + '...' if len(str(property_data.get('ownername', 'N/A'))) > 15 else str(property_data.get('ownername', 'N/A'))
         owner_label = Label(
             text=owner,
-            size_hint_x=0.2,
+            size_hint_x=0.15,
             color=(0, 0, 0, 1),
             halign='center',
             font_size=dp(12)
@@ -329,7 +343,7 @@ class PropertyRow(BoxLayout):
         address = str(property_data.get('Property-address', 'N/A'))[:25] + '...' if len(str(property_data.get('Property-address', 'N/A'))) > 25 else str(property_data.get('Property-address', 'N/A'))
         address_label = Label(
             text=address,
-            size_hint_x=0.2,
+            size_hint_x=0.25,
             color=(0, 0, 0, 1),
             halign='center',
             font_size=dp(12)
@@ -413,9 +427,38 @@ class SearchReportScreen(Screen):
             if hasattr(self, 'ids'):
                 self.load_property_types()
                 self.load_building_types()
+                # Reload the current search results to apply new language
+                self.refresh_results()
                 self.setup_arabic_fonts()
         except Exception as e:
             print(f"Error handling language change: {e}")
+
+    def refresh_results(self):
+        """Refresh the current search results with new language settings."""
+        try:
+            # Get current search criteria and re-run the search
+            if hasattr(self, 'ids') and hasattr(self.ids, 'results_layout'):
+                # Check if we have active search criteria
+                has_criteria = (
+                    (self.ids.property_type_spinner.text != 'All Types' and self.ids.property_type_spinner.text != get_text('all_types', 'All Types')) or
+                    (self.ids.building_type_spinner.text != 'All Types' and self.ids.building_type_spinner.text != get_text('all_types', 'All Types')) or
+                    self.ids.min_bedrooms.text or
+                    self.ids.max_bedrooms.text or
+                    self.ids.min_price.text or
+                    self.ids.max_price.text or
+                    self.ids.corner_property.active
+                )
+
+                if has_criteria:
+                    # Re-run the current search
+                    self.perform_search(None)
+                else:
+                    # Load all properties if no search criteria
+                    self.load_all_properties()
+        except Exception as e:
+            print(f"Error refreshing results: {e}")
+            # Fallback to loading all properties
+            self.load_all_properties()
 
     def update_texts(self):
         """Update all text widgets with current language"""
@@ -622,12 +665,13 @@ class SearchReportScreen(Screen):
         results_header.bind(size=lambda instance, value: setattr(results_header.rect, 'size', instance.size))
 
         headers = [
-            ('code', 0.15),
-            ('type', 0.15),
-            ('area', 0.1),
-            ('bedrooms', 0.1),
-            ('owner_name', 0.2),
-            ('address', 0.2),
+            ('code', 0.12),
+            ('type', 0.12),
+            ('area', 0.08),
+            ('bedrooms', 0.08),
+            ('province', 0.1),
+            ('owner_name', 0.15),
+            ('address', 0.25),
             ('actions', 0.1)
         ]
 
@@ -697,8 +741,8 @@ class SearchReportScreen(Screen):
                 fieldnames = [
                     'Property Code', 'Property Type', 'Building Type', 'Year Built',
                     'Area (m²)', 'Facade (m)', 'Depth (m)', 'Bedrooms', 'Bathrooms',
-                    'Floors', 'Corner Property', 'Price', 'Currency', 'Address',
-                    'Owner Name', 'Owner Code', 'Description'
+                    'Floors', 'Corner Property', 'Price', 'Currency', 'Province',
+                    'Region', 'Address', 'Owner Name', 'Owner Code', 'Description'
                 ]
 
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -719,6 +763,8 @@ class SearchReportScreen(Screen):
                         'Corner Property': 'Yes' if prop.get('Property-corner') else 'No',
                         'Price': prop.get('Property-price', ''),
                         'Currency': prop.get('Property-currency', ''),
+                        'Province': prop.get('province_name', ''),
+                        'Region': prop.get('region_name', ''),
                         'Address': prop.get('Property-address', ''),
                         'Owner Name': prop.get('ownername', ''),
                         'Owner Code': prop.get('Ownercode', ''),

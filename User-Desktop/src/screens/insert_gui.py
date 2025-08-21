@@ -9,6 +9,8 @@ from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.spinner import Spinner
+from kivy.uix.scrollview import ScrollView
+from kivy.clock import Clock
 from kivy.metrics import dp
 from datetime import datetime
 import os
@@ -553,63 +555,239 @@ class InsertScreen(Screen):
 				self.show_error(f"Failed to upload photo {Path(photo_path).name}: {str(e)}")
 
 	def show_owner_form(self, instance):
-		"""Show form for adding a new owner"""
-		content = BoxLayout(orientation='vertical', padding=dp(20), spacing=dp(10))
+		"""Show responsive form for adding a new owner with proper localization"""
+		from kivy.graphics import Color, RoundedRectangle
+		from kivy.uix.widget import Widget
 
-		form = GridLayout(cols=2, spacing=dp(10), size_hint_y=None, height=dp(120))
+		# Main container with proper padding
+		content = BoxLayout(
+			orientation='vertical',
+			padding=dp(25),
+			spacing=dp(20)
+		)
+
+		# Add subtle background to content
+		with content.canvas.before:
+			Color(0.98, 0.98, 0.98, 1)
+			content.bg_rect = RoundedRectangle(
+				pos=content.pos,
+				size=content.size,
+				radius=[dp(5)]
+			)
+		content.bind(pos=lambda instance, value: setattr(content.bg_rect, 'pos', value))
+		content.bind(size=lambda instance, value: setattr(content.bg_rect, 'size', value))
+
+		# Form title
+		title_label = Label(
+			text=get_text('Add New Owner'),
+			font_size=dp(18),
+			size_hint_y=None,
+			height=dp(35),
+			color=(0.2, 0.2, 0.2, 1),
+			bold=True,
+			halign='center',
+			valign='middle'
+		)
+		title_label.bind(size=title_label.setter('text_size'))
+		if self.language_manager.current_language == 'ar':
+			apply_arabic_font(title_label, title_label.text)
+		content.add_widget(title_label)
+
+		# Scrollable form area
+		scroll_view = ScrollView(
+			do_scroll_x=False,
+			do_scroll_y=True,
+			size_hint_y=0.7
+		)
+
+		form_container = BoxLayout(
+			orientation='vertical',
+			spacing=dp(15),
+			size_hint_y=None
+		)
+		form_container.bind(minimum_height=form_container.setter('height'))
 
 		# Owner Name field
-		owner_name_label = Label(text=get_text('owner_name', 'Owner Name:'), color=(0, 0, 0, 1))
-		apply_arabic_font(owner_name_label, owner_name_label.text)
-		form.add_widget(owner_name_label)
+		name_section = BoxLayout(orientation='vertical', spacing=dp(5), size_hint_y=None, height=dp(70))
 
-		owner_name_input = TextInput(multiline=False, foreground_color=(0, 0, 0, 1))
-		form.add_widget(owner_name_input)
+		owner_name_label = Label(
+			text=get_text('owner_name_label', 'Owner Name:'),
+			font_size=dp(14),
+			size_hint_y=None,
+			height=dp(25),
+			color=(0.3, 0.3, 0.3, 1),
+			halign='left',
+			valign='middle',
+			bold=True
+		)
+		owner_name_label.bind(size=owner_name_label.setter('text_size'))
+		if self.language_manager.current_language == 'ar':
+			apply_arabic_font(owner_name_label, owner_name_label.text)
+			owner_name_label.halign = 'right'
+
+		owner_name_placeholder = get_text('enter_owner_name', 'Enter owner name')
+		owner_name_input = TextInput(
+			multiline=False,
+			foreground_color=(0.2, 0.2, 0.2, 1),
+			background_color=(1, 1, 1, 1),
+			hint_text=owner_name_placeholder,
+			hint_text_color=(0.6, 0.6, 0.6, 1),
+			size_hint_y=None,
+			height=dp(40),
+			padding=[dp(10), dp(8)]
+		)
+		if self.language_manager.current_language == 'ar':
+			apply_arabic_font(owner_name_input, owner_name_placeholder)
+
+		name_section.add_widget(owner_name_label)
+		name_section.add_widget(owner_name_input)
+		form_container.add_widget(name_section)
 
 		# Phone Number field
-		phone_label = Label(text=get_text('phone', 'Phone Number:'), color=(0, 0, 0, 1))
-		apply_arabic_font(phone_label, phone_label.text)
-		form.add_widget(phone_label)
+		phone_section = BoxLayout(orientation='vertical', spacing=dp(5), size_hint_y=None, height=dp(70))
 
-		owner_phone_input = TextInput(multiline=False, foreground_color=(0, 0, 0, 1))
-		form.add_widget(owner_phone_input)
+		phone_label = Label(
+			text=get_text('phone_label', 'Phone Number:'),
+			font_size=dp(14),
+			size_hint_y=None,
+			height=dp(25),
+			color=(0.3, 0.3, 0.3, 1),
+			halign='left',
+			valign='middle',
+			bold=True
+		)
+		phone_label.bind(size=phone_label.setter('text_size'))
+		if self.language_manager.current_language == 'ar':
+			apply_arabic_font(phone_label, phone_label.text)
+			phone_label.halign = 'right'
+
+		owner_phone_placeholder = get_text('enter_phone', 'Enter phone number')
+		owner_phone_input = TextInput(
+			multiline=False,
+			foreground_color=(0.2, 0.2, 0.2, 1),
+			background_color=(1, 1, 1, 1),
+			hint_text=owner_phone_placeholder,
+			hint_text_color=(0.6, 0.6, 0.6, 1),
+			size_hint_y=None,
+			height=dp(40),
+			padding=[dp(10), dp(8)],
+			input_filter='int'
+		)
+		if self.language_manager.current_language == 'ar':
+			apply_arabic_font(owner_phone_input, owner_phone_placeholder)
+
+		phone_section.add_widget(phone_label)
+		phone_section.add_widget(owner_phone_input)
+		form_container.add_widget(phone_section)
 
 		# Notes field
-		notes_label = Label(text=get_text('notes', 'Notes:'), color=(0, 0, 0, 1))
-		apply_arabic_font(notes_label, notes_label.text)
-		form.add_widget(notes_label)
+		notes_section = BoxLayout(orientation='vertical', spacing=dp(5), size_hint_y=None, height=dp(110))
 
-		owner_note_input = TextInput(multiline=True, foreground_color=(0, 0, 0, 1))
-		form.add_widget(owner_note_input)
+		notes_label = Label(
+			text=get_text('notes_label', 'Notes:'),
+			font_size=dp(14),
+			size_hint_y=None,
+			height=dp(25),
+			color=(0.3, 0.3, 0.3, 1),
+			halign='left',
+			valign='middle',
+			bold=True
+		)
+		notes_label.bind(size=notes_label.setter('text_size'))
+		if self.language_manager.current_language == 'ar':
+			apply_arabic_font(notes_label, notes_label.text)
+			notes_label.halign = 'right'
 
-		content.add_widget(form)
+		owner_note_placeholder = get_text('enter_notes', 'Optional notes about the owner')
+		owner_note_input = TextInput(
+			multiline=True,
+			foreground_color=(0.2, 0.2, 0.2, 1),
+			background_color=(1, 1, 1, 1),
+			hint_text=owner_note_placeholder,
+			hint_text_color=(0.6, 0.6, 0.6, 1),
+			size_hint_y=None,
+			height=dp(80),
+			padding=[dp(10), dp(8)]
+		)
+		if self.language_manager.current_language == 'ar':
+			apply_arabic_font(owner_note_input, owner_note_placeholder)
 
-		buttons = BoxLayout(size_hint_y=None, height=dp(50), spacing=dp(10))
+		notes_section.add_widget(notes_label)
+		notes_section.add_widget(owner_note_input)
+		form_container.add_widget(notes_section)
+
+		scroll_view.add_widget(form_container)
+		content.add_widget(scroll_view)
+
+		# Separator line
+		separator = Widget(size_hint_y=None, height=dp(1))
+		with separator.canvas:
+			Color(0.8, 0.8, 0.8, 1)
+			separator.line_rect = RoundedRectangle(
+				pos=(separator.x, separator.center_y),
+				size=(separator.width, dp(1)),
+				radius=[dp(0.5)]
+			)
+		separator.bind(pos=lambda instance, value: setattr(separator.line_rect, 'pos', (instance.x, instance.center_y)))
+		separator.bind(size=lambda instance, value: setattr(separator.line_rect, 'size', (instance.width, dp(1))))
+		content.add_widget(separator)
+
+		# Button container
+		buttons_container = BoxLayout(
+			size_hint_y=None,
+			height=dp(55),
+			spacing=dp(15),
+			padding=[dp(5), dp(10)]
+		)
 
 		# Cancel button
 		cancel_text = get_text('cancel', 'Cancel')
-		cancel_btn = Button(text=cancel_text, color=(0, 0, 0, 1))
-		apply_arabic_font(cancel_btn, cancel_text)
+		cancel_btn = Button(
+			text=cancel_text,
+			font_size=dp(14),
+			size_hint_x=0.4,
+			background_color=(0.7, 0.7, 0.7, 1),
+			color=(1, 1, 1, 1),
+			size_hint_y=1
+		)
+		if self.language_manager.current_language == 'ar':
+			apply_arabic_font(cancel_btn, cancel_text)
 
 		# Save button
 		save_text = get_text('save', 'Save Owner')
-		save_btn = Button(text=save_text, background_color=(0.2, 0.7, 0.3, 1), color=(0, 0, 0, 1))
-		apply_arabic_font(save_btn, save_text)
+		save_btn = Button(
+			text=save_text,
+			font_size=dp(14),
+			size_hint_x=0.6,
+			background_color=(0.2, 0.7, 0.3, 1),
+			color=(1, 1, 1, 1),
+			size_hint_y=1
+		)
+		if self.language_manager.current_language == 'ar':
+			apply_arabic_font(save_btn, save_text)
 
-		# Create popup with white background
-		popup_title = get_text('Add New Owner')
+		buttons_container.add_widget(cancel_btn)
+		buttons_container.add_widget(save_btn)
+		content.add_widget(buttons_container)
+
+		# Create responsive popup
+		popup_title = get_text('add_new_owner_title', 'Add New Owner')
 		popup = Popup(
 			title=popup_title,
 			content=content,
-			size_hint=(0.8, 0.4),
-			background='',  # Remove default background
-			background_color=(1, 1, 1, 1),  # Set white background
-			separator_color=(0.2, 0.6, 0.8, 1),  # Optional: custom separator color
-			title_color=(0, 0, 0, 1)  # Make popup title text black
+			size_hint=(0.9, 0.7),  # More responsive sizing
+			background='',
+			background_color=(1, 1, 1, 1),
+			separator_color=(0.2, 0.6, 0.8, 1),
+			title_color=(0.2, 0.2, 0.2, 1),
+			title_size=dp(16)
 		)
-		# Apply Arabic font to popup title
-		apply_arabic_font(popup, popup_title)
 
+		# Apply Arabic font to popup title
+		if self.language_manager.current_language == 'ar':
+			apply_arabic_font(popup, popup_title)
+
+		# Bind button events
 		cancel_btn.bind(on_press=popup.dismiss)
 		save_btn.bind(on_press=lambda x: self.add_owner(
 			owner_name_input.text,
@@ -618,22 +796,24 @@ class InsertScreen(Screen):
 			popup
 		))
 
-		buttons.add_widget(cancel_btn)
-		buttons.add_widget(save_btn)
-		content.add_widget(buttons)
+		# Focus on name input when popup opens
+		def focus_name_input(dt):
+			owner_name_input.focus = True
 
+		popup.bind(on_open=lambda x: Clock.schedule_once(focus_name_input, 0.1))
 		popup.open()
 
 	def add_owner(self, name, phone, note, popup):
 		"""Add a new owner to the database"""
 		if not name.strip():
-			self.show_error("Owner name is required")
+			self.show_error(get_text('owner_name_required', 'Owner name is required'))
 			return
 
 		try:
 			owner_code = self.api.add_owner(name, phone, note)
 			if owner_code:
-				self.show_success(f"Owner {name} added successfully")
+				success_msg = get_text('owner_added_success', 'Owner {0} added successfully').format(name)
+				self.show_success(success_msg)
 				# Reload owners data and select the new owner
 				self.load_owners()
 				# Set spinner to new owner
@@ -644,9 +824,10 @@ class InsertScreen(Screen):
 						break
 				popup.dismiss()
 			else:
-				self.show_error("Failed to add owner")
+				self.show_error(get_text('failed_to_add_owner', 'Failed to add owner'))
 		except Exception as e:
-			self.show_error(f"Error adding owner: {str(e)}")
+			error_msg = get_text('error_adding_owner', 'Error adding owner: {0}').format(str(e))
+			self.show_error(error_msg)
 
 	def show_success(self, message):
 		"""Show success message popup."""
