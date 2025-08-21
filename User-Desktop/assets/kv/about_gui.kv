@@ -12,8 +12,29 @@
 		padding: '30dp'
 		spacing: '20dp'
 
+		# Top navigation bar with language switcher
+		BoxLayout:
+			orientation: 'horizontal'
+			size_hint_y: None
+			height: '50dp'
+			spacing: '15dp'
+
+			# Language button
+			Button:
+				id: language_btn
+				size_hint_x: None
+				width: '120dp'
+				text: 'Language\nاللغة'
+				font_size: '14sp'
+				background_color: 0.2, 0.8, 0.6, 1
+				color: 1, 1, 1, 1
+				on_release: root.show_language_switcher()
+
+			Widget:
+				size_hint_x: 1
+
 		Label:
-			text: 'About Us - معلومات عنا'
+			text: 'About Us'
 			id: about_title
 			font_size: '28sp'
 			color: 0, 0, 0, 1
@@ -41,7 +62,8 @@
 				pos_hint: {'center_x': 0.5}
 
 			Label:
-				text: 'Al-Kawaz Software and Information Technology\nالكواز للبرمجيات وتقنية المعلومات'
+				text: 'Al-Kawaz Software and Information Technology'
+				id: company_name_label
 				font_size: '22sp'
 				color: 0, 0, 0, 1
 				bold: True
@@ -53,6 +75,7 @@
 
 			Label:
 				text: 'Version: 1.0.0'
+				id: version_label
 				font_size: '16sp'
 				color: 0, 0, 0, 1
 				size_hint_y: None
@@ -63,6 +86,7 @@
 
 			Label:
 				text: 'Author: Luay Alkawaz'
+				id: author_label
 				font_size: '16sp'
 				color: 0, 0, 0, 1
 				size_hint_y: None
@@ -73,6 +97,7 @@
 
 			Label:
 				text: "This application helps users manage real estate properties efficiently and intuitively.\nProfessional • Reliable • Innovative\nThank you for using our system!"
+				id: description_label
 				font_size: '15sp'
 				color: 0, 0, 0, 1
 				size_hint_y: None
@@ -92,7 +117,8 @@
 			padding: [0, 10, 0, 0]
 
 			Button:
-				text: '← Back to Main - العودة للرئيسية'
+				text: '← Back to Main'
+				id: back_btn
 				size_hint: None, None
 				size: '200dp', '50dp'
 				background_color: 0.4, 0.4, 0.8, 1

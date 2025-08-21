@@ -85,6 +85,7 @@ class LanguageManager:
 
                 # About Screen
                 'about_us': 'About Us',
+                'company_name_full': 'Al-Kawaz Software and Information Technology',
                 'version': 'Version: 1.0.0',
                 'author': 'Author: Luay Alkawaz',
                 'description': 'This application helps users manage real estate properties efficiently and intuitively.\nProfessional • Reliable • Innovative\nThank you for using our system!',
@@ -187,6 +188,7 @@ class LanguageManager:
 
                 # About Screen
                 'about_us': 'معلومات عنا',
+                'company_name_full': 'الكواز للبرمجيات وتقنية المعلومات',
                 'version': 'الإصدار: 1.0.0',
                 'author': 'المؤلف: لؤي الكواز',
                 'description': 'هذا التطبيق يساعد المستخدمين على إدارة العقارات بكفاءة وسهولة.\nمهني • موثوق • مبتكر\nشكراً لاستخدام نظامنا!',
