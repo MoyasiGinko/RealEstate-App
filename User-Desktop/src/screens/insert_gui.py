@@ -37,7 +37,7 @@ class InsertScreen(Screen):
 	corner_no = ObjectProperty(None)
 	offer_type = ObjectProperty(None)
 	governorate = ObjectProperty(None)
-	neighborhood = ObjectProperty(None)
+	region = ObjectProperty(None)
 	price = ObjectProperty(None)
 	price_dinar = ObjectProperty(None)
 	price_dollar = ObjectProperty(None)
@@ -55,6 +55,8 @@ class InsertScreen(Screen):
 		self.api = get_api()
 		self.selected_photos = []
 		self.owners_data = []
+		self.provinces_data = []
+		self.regions_data = []
 		self.language_manager = get_language_manager()
 		# Register for language change notifications
 		self.language_manager.register_observer(self)
@@ -68,6 +70,7 @@ class InsertScreen(Screen):
 		self.load_building_types()
 		self.load_offer_types()
 		self.load_unit_measurements()
+		self.load_provinces()
 		self.load_owners()
 
 		# Set current year as default
@@ -104,8 +107,8 @@ class InsertScreen(Screen):
 				'yes_label': 'yes',
 				'no_label': 'no',
 				'offer_type_label': 'offer_type',
-				'governorate_label': 'governorate',
-				'neighborhood_label': 'neighborhood',
+				'governorate_label': 'province',
+				'region_label': 'region',
 				'address_label': 'address',
 				'price_label': 'price',
 				'owner_label': 'owner',
@@ -190,6 +193,46 @@ class InsertScreen(Screen):
 				values = ['Sale', 'Rent', 'Lease']
 			self.offer_type.values = values
 
+	def load_provinces(self):
+		"""Load provinces from database into spinner"""
+		if hasattr(self, 'governorate') and self.governorate:
+			provinces = self.api.get_provinces() or []
+			values = [f"{p['name']} ({p['code']})" for p in provinces if 'name' in p and 'code' in p] if provinces else []
+			if not values:
+				values = ['No provinces available']
+			self.governorate.values = values
+			# Store provinces data for later use
+			self.provinces_data = provinces
+
+	def on_province_selected(self, selected_text):
+		"""Load regions when a province is selected"""
+		if not selected_text or selected_text in ['Select Province', 'No provinces available']:
+			# Clear regions
+			if hasattr(self, 'region') and self.region:
+				self.region.values = []
+				self.region.text = 'Select Region'
+			return
+
+		# Extract province code from selected text
+		province_code = None
+		if hasattr(self, 'provinces_data'):
+			for province in self.provinces_data:
+				if f"{province['name']} ({province['code']})" == selected_text:
+					province_code = province['code']
+					break
+
+		if province_code:
+			# Load regions for this province
+			regions = self.api.get_regions_by_province(province_code) or []
+			if hasattr(self, 'region') and self.region:
+				values = [f"{r['name']} ({r['code']})" for r in regions if 'name' in r and 'code' in r] if regions else []
+				if not values:
+					values = ['No regions available']
+				self.region.values = values
+				self.region.text = 'Select Region' if values != ['No regions available'] else 'No regions available'
+				# Store regions data for later use
+				self.regions_data = regions
+
 	def load_owners(self):
 		"""Load owners from database and populate the spinner"""
 		self.owners_data = self.api.get_all_owners() or []
@@ -230,6 +273,14 @@ class InsertScreen(Screen):
 			self.show_error("Please select a Building Type")
 			return
 
+		if not self.governorate.text or self.governorate.text == 'Select Province':
+			self.show_error("Please select a Province")
+			return
+
+		if not self.region.text or self.region.text == 'Select Region':
+			self.show_error("Please select a Region")
+			return
+
 		if not self.property_owner.text or self.property_owner.text == 'Select Owner' or not self.filtered_owners:
 			self.show_error("Please select a Property Owner or add a new one.")
 			return
@@ -244,6 +295,18 @@ class InsertScreen(Screen):
 				break
 		if not owner_code:
 			self.show_error("Selected owner not found. Please try again.")
+			return
+
+		# Extract province and region codes
+		province_code = self.get_code_from_selection(self.governorate.text, self.provinces_data)
+		region_code = self.get_code_from_selection(self.region.text, self.regions_data)
+
+		if not province_code:
+			self.show_error("Invalid province selection. Please try again.")
+			return
+
+		if not region_code:
+			self.show_error("Invalid region selection. Please try again.")
 			return
 
 		# Collect data from form
@@ -268,8 +331,8 @@ class InsertScreen(Screen):
 				'N-of-bathrooms': self.bathrooms.text,
 				'Property-corner': 'Y' if self.corner_yes.active else 'N',
 				'Offer-Type-Code': offer_type_code,
-				'Province-code': self.governorate.text,
-				'Region-code': self.neighborhood.text,
+				'Province-code': province_code,
+				'Region-code': region_code,
 				'Property-address': self.address.text,
 				'Property-price': self.price.text,
 				'Property-currency': 'Dinar' if self.price_dinar.state == 'down' else 'Dollar',
@@ -312,6 +375,16 @@ class InsertScreen(Screen):
 
 		return display_name  # Return the display name if code not found
 
+	def get_code_from_selection(self, selected_text, data_list):
+		"""Extract code from selected text in format 'Name (Code)'"""
+		if not selected_text or not data_list:
+			return None
+
+		for item in data_list:
+			if f"{item['name']} ({item['code']})" == selected_text:
+				return item['code']
+		return None
+
 	def on_new(self, instance=None):
 		# Clear all fields
 		self.property_code.text = ''
@@ -328,8 +401,8 @@ class InsertScreen(Screen):
 		self.corner_yes.active = False
 		self.corner_no.active = False
 		self.offer_type.text = 'Select Offer Type'
-		self.governorate.text = ''
-		self.neighborhood.text = ''
+		self.governorate.text = 'Select Province'
+		self.region.text = 'Select Region'
 		self.price.text = ''
 		self.price_dinar.state = 'normal'
 		self.price_dollar.state = 'normal'

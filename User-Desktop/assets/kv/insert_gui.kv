@@ -14,7 +14,7 @@
 	corner_no: corner_no
 	offer_type: offer_type
 	governorate: governorate
-	neighborhood: neighborhood
+	region: region
 	price: price
 	price_dinar: price_dinar
 	price_dollar: price_dollar
@@ -290,34 +290,37 @@
 						height: 40
 						background_color: 0.9, 0.9, 0.9, 1
 
-					# 13. Governorate/Province
+					# 13. Province/Governorate
 					Label:
 						id: governorate_label
-						text: 'Governorate/Province'
+						text: 'Province/Governorate*'
 						size_hint_y: None
 						height: 40
 						color: 0.2, 0.2, 0.2, 1
-					TextInput:
+					Spinner:
 						id: governorate
-						multiline: False
-						hint_text: 'Enter governorate/province'
+						text: 'Select Province'
+						values: []
 						size_hint_y: None
 						height: 40
+						background_color: 0.9, 0.9, 0.9, 1
+						on_text: root.on_province_selected(self.text)
 
 
-					# 14. Area/Neighborhood
+					# 14. Region/Area
 					Label:
-						id: neighborhood_label
-						text: 'Area/Neighborhood'
+						id: region_label
+						text: 'Region/Area*'
 						size_hint_y: None
 						height: 40
 						color: 0.2, 0.2, 0.2, 1
-					TextInput:
-						id: neighborhood
-						multiline: False
-						hint_text: 'Enter area/neighborhood'
+					Spinner:
+						id: region
+						text: 'Select Region'
+						values: []
 						size_hint_y: None
 						height: 40
+						background_color: 0.9, 0.9, 0.9, 1
 
 					# 14b. Property Address
 					Label:

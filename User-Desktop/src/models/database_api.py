@@ -389,26 +389,25 @@ class DatabaseAPI:
         return self.get_main_codes_by_type('01')
 
     def get_cities(self):
-        """Get all cities."""
+        """Get all regions (cities/areas)."""
         return self.get_main_codes_by_type('02')
 
-    def get_cities_by_province(self, province_code):
+    def get_regions_by_province(self, province_code):
         """
-        Get cities filtered by province code.
+        Get regions filtered by province code.
 
         Args:
             province_code (str): Province code (e.g., '001' for Iraq)
 
         Returns:
-            list: List of dictionaries containing code and name for cities matching the province
+            list: List of dictionaries containing code and name for regions matching the province
         """
-        # Cities have codes that start with the province code (e.g., '00101' for Baghdad in Iraq '001')
-        # The pattern should be the province code directly, not '00' + province_code
+        # Regions have codes that start with the province code (e.g., '00101' for region in province '001')
         prefix_pattern = f"{province_code}%"
 
         return self.db.execute_query(
-            "SELECT DISTINCT Code as code, Name as name FROM Maincode WHERE Recty = ? AND Code LIKE ? ORDER BY Name",
-            ('02', prefix_pattern)
+            "SELECT DISTINCT Code as code, Name as name FROM Maincode WHERE Recty = ? AND Code LIKE ? AND LENGTH(Code) > ? ORDER BY Name",
+            ('02', prefix_pattern, len(province_code))
         )
 
     def get_property_types(self):
