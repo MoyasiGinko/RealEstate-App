@@ -17,6 +17,12 @@ class AboutScreen(Screen):
         # Add Arabic font support demo after the screen is built
         self.bind(on_enter=self.setup_arabic_fonts)
 
+    def show_language_switcher(self):
+        """Show language switcher popup"""
+        from configs.language_switcher import LanguageSwitcherPopup
+        popup = LanguageSwitcherPopup()
+        popup.open()
+
     def setup_arabic_fonts(self, *args):
         """Setup Arabic fonts for the about screen."""
         try:

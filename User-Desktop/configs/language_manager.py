@@ -52,6 +52,8 @@ class LanguageManager:
                 'go_back': 'Go Back',
                 'search_results': 'Search Results',
                 'all_types': 'All Types',
+                'no_results_found': 'No properties found matching your criteria.',
+                'no_results_to_export': 'No results to export',
 
                 # Insert Screen
                 'add_new_property': 'Add New Property',
@@ -147,6 +149,9 @@ class LanguageManager:
                 'go_back': 'العودة',
                 'search_results': 'نتائج البحث',
                 'all_types': 'جميع الأنواع',
+                'no_results_found': 'لم يتم العثور على عقارات تطابق معاييرك.',
+                'no_results_to_export': 'لا توجد نتائج للتصدير',
+                'no_results_to_export': 'لا توجد نتائج للتصدير',
 
                 # Insert Screen
                 'add_new_property': 'إضافة عقار جديد',

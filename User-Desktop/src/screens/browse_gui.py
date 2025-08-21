@@ -29,6 +29,7 @@ class PropertyDetailContent(BoxLayout):
         super(PropertyDetailContent, self).__init__(**kwargs)
         self.property_data = property_data
         self.popup = popup_instance  # Reference to the popup for dismiss functionality
+        self.language_manager = get_language_manager()
 
         # Set up the layout
         self.orientation = 'vertical'
@@ -71,14 +72,17 @@ class PropertyDetailContent(BoxLayout):
         photo_layout = BoxLayout(orientation='vertical', size_hint=(0.4, 1))
 
         # Photo section title
+        photo_title_text = get_text('photos', 'Property Photos')
         photo_title = Label(
-            text='Property Photos',
+            text=photo_title_text,
             size_hint_y=None,
             height=dp(40),
             font_size=dp(18),
             color=(0.2, 0.2, 0.2, 1),
             bold=True
         )
+        if self.language_manager.current_language == 'ar':
+            apply_arabic_font(photo_title, photo_title_text)
         photo_layout.add_widget(photo_title)
 
         # Photo gallery scroll view
@@ -97,13 +101,16 @@ class PropertyDetailContent(BoxLayout):
         self.add_widget(main_layout)
 
         # Close button
+        close_button_text = get_text('close', 'Close')
         close_button = Button(
-            text='Close',
+            text=close_button_text,
             size_hint_y=None,
             height=dp(50),
             background_color=(0.6, 0.6, 0.6, 1),
             color=(1, 1, 1, 1)
         )
+        if self.language_manager.current_language == 'ar':
+            apply_arabic_font(close_button, close_button_text)
         close_button.bind(on_press=lambda x: self.popup.dismiss())
         self.add_widget(close_button)
 
@@ -247,6 +254,7 @@ class PropertyRow(BoxLayout):
     def __init__(self, property_data, on_view_callback, on_export_callback, **kwargs):
         super(PropertyRow, self).__init__(**kwargs)
         self.property_data = property_data
+        self.language_manager = get_language_manager()
         self.orientation = 'horizontal'
         self.size_hint_y = None
         self.height = dp(50)
@@ -333,13 +341,16 @@ class PropertyRow(BoxLayout):
         actions_layout = BoxLayout(size_hint_x=0.1, spacing=dp(5))
 
         # View button
+        view_button_text = get_text('view', 'View')
         view_button = Button(
-            text='View',
+            text=view_button_text,
             size_hint=(1, 1),
             background_color=(0.2, 0.7, 0.2, 1),
             color=(1, 1, 1, 1),
             font_size=dp(10)
         )
+        if self.language_manager.current_language == 'ar':
+            apply_arabic_font(view_button, view_button_text)
         view_button.bind(on_press=lambda x: on_view_callback(property_data))
         actions_layout.add_widget(view_button)
 
@@ -378,6 +389,12 @@ class SearchReportScreen(Screen):
         self.language_manager.register_observer(self)
         self.bind(on_enter=self.setup_arabic_fonts)
 
+    def show_language_switcher(self):
+        """Show language switcher popup"""
+        from configs.language_switcher import LanguageSwitcherPopup
+        popup = LanguageSwitcherPopup()
+        popup.open()
+
     def setup_arabic_fonts(self, *args):
         """Apply Arabic fonts to all text widgets"""
         try:
@@ -391,7 +408,7 @@ class SearchReportScreen(Screen):
         """Called when language is changed"""
         try:
             # Update static text elements
-            self.update_localized_texts()
+            self.update_texts()
             # Reload dynamic content with new language
             if hasattr(self, 'ids'):
                 self.load_property_types()
@@ -400,11 +417,61 @@ class SearchReportScreen(Screen):
         except Exception as e:
             print(f"Error handling language change: {e}")
 
+    def update_texts(self):
+        """Update all text widgets with current language"""
+        try:
+            # Define the mapping of IDs to translation keys
+            text_mappings = {
+                'screen_title': 'property_search_reports',
+                'search_criteria_label': 'search_criteria',
+                'results_title': 'search_results',
+                'search_btn': 'search',
+                'clear_search_btn': 'clear_search',
+                'export_results_btn': 'export_results',
+                'go_back_btn': 'go_back',
+                'property_type_label': 'property_type',
+                'building_type_label': 'building_type',
+                'min_bedrooms_label': 'min_bedrooms',
+                'max_bedrooms_label': 'max_bedrooms',
+                'min_price_label': 'min_price',
+                'max_price_label': 'max_price',
+                'corner_property_label': 'corner_property'
+            }
+
+            # Update each widget using its ID
+            for widget_id, text_key in text_mappings.items():
+                try:
+                    widget = self.ids.get(widget_id)
+                    if widget:
+                        new_text = get_text(text_key)
+                        widget.text = new_text
+                        # Apply Arabic font if needed
+                        if self.language_manager.current_language == 'ar':
+                            apply_arabic_font(widget, new_text)
+                except Exception as e:
+                    print(f"Error updating widget {widget_id}: {e}")
+
+            # Update spinner default values
+            try:
+                all_types_text = get_text('all_types')
+                if hasattr(self.ids, 'property_type_spinner'):
+                    if self.ids.property_type_spinner.text in ['All Types - جميع الأنواع', 'All Types', 'جميع الأنواع']:
+                        self.ids.property_type_spinner.text = all_types_text
+                if hasattr(self.ids, 'building_type_spinner'):
+                    if self.ids.building_type_spinner.text in ['All Types - جميع الأنواع', 'All Types', 'جميع الأنواع']:
+                        self.ids.building_type_spinner.text = all_types_text
+            except Exception as e:
+                print(f"Error updating spinners: {e}")
+
+        except Exception as e:
+            print(f"Error updating texts: {e}")
+
     def update_localized_texts(self):
-        """Update the KV file text elements would be handled by reloading or manual updates"""
-        # This is a placeholder - in a full implementation, you'd want to
-        # either reload the KV file or manually update each text element
-        pass
+        """Update the KV file text elements"""
+        try:
+            self.update_texts()
+        except Exception as e:
+            print(f"Error updating localized texts: {e}")
 
     def on_enter(self):
         """Called when the screen is entered."""
@@ -412,6 +479,8 @@ class SearchReportScreen(Screen):
         self.load_building_types()
         # Load all properties initially
         self.load_all_properties()
+        # Update texts with current language
+        self.update_texts()
 
     def load_all_properties(self):
         """Load and display all properties."""
@@ -529,13 +598,16 @@ class SearchReportScreen(Screen):
         self.ids.results_layout.clear_widgets()
 
         if not results:
+            no_results_text = get_text('no_results_found', 'No properties found matching your criteria.')
             no_results = Label(
-                text='No properties found matching your criteria.',
+                text=no_results_text,
                 size_hint_y=None,
                 height=dp(50),
                 color=(0.5, 0.5, 0.5, 1),
                 font_size=dp(14)
             )
+            if self.language_manager.current_language == 'ar':
+                apply_arabic_font(no_results, no_results_text)
             self.ids.results_layout.add_widget(no_results)
             return
 
@@ -550,23 +622,27 @@ class SearchReportScreen(Screen):
         results_header.bind(size=lambda instance, value: setattr(results_header.rect, 'size', instance.size))
 
         headers = [
-            ('Code', 0.15),
-            ('Type', 0.15),
-            ('Area', 0.1),
-            ('Bedrooms', 0.1),
-            ('Owner', 0.2),
-            ('Address', 0.2),
-            ('Actions', 0.1)
+            ('code', 0.15),
+            ('type', 0.15),
+            ('area', 0.1),
+            ('bedrooms', 0.1),
+            ('owner_name', 0.2),
+            ('address', 0.2),
+            ('actions', 0.1)
         ]
 
-        for header, size in headers:
-            results_header.add_widget(Label(
-                text=header,
+        for header_key, size in headers:
+            header_text = get_text(header_key, header_key.title())
+            header_label = Label(
+                text=header_text,
                 size_hint_x=size,
                 bold=True,
                 color=(0.1, 0.1, 0.1, 1),
                 font_size=dp(14)
-            ))
+            )
+            if self.language_manager.current_language == 'ar':
+                apply_arabic_font(header_label, header_text)
+            results_header.add_widget(header_label)
 
         self.ids.results_layout.add_widget(results_header)
 
@@ -604,7 +680,8 @@ class SearchReportScreen(Screen):
             self.export_to_csv(properties)
         else:
             # Show message that no results to export
-            print("No results to export")
+            no_export_message = get_text('no_results_to_export', 'No results to export')
+            print(no_export_message)
 
     def export_to_csv(self, properties):
         """Export properties to CSV file."""

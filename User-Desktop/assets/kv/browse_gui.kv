@@ -14,14 +14,34 @@
         padding: 20
         spacing: 15
 
-        # Screen title
-        Label:
-            text: 'Property Search & Reports - البحث عن العقارات والتقارير'
-            font_size: 28
+        # Screen title with language switcher
+        BoxLayout:
+            orientation: 'horizontal'
             size_hint_y: None
             height: 50
-            color: 0.1, 0.1, 0.1, 1
-            bold: True
+            spacing: 20
+
+            Label:
+                id: screen_title
+                text: 'Property Search & Reports'
+                font_size: 28
+                color: 0.1, 0.1, 0.1, 1
+                bold: True
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+
+            # Language switcher button
+            Button:
+                id: language_btn
+                text: '🌐 Language'
+                size_hint: None, None
+                size: 120, 40
+                pos_hint: {'center_y': 0.5}
+                background_color: 0.2, 0.6, 0.9, 1
+                color: 1, 1, 1, 1
+                font_size: 14
+                on_press: root.show_language_switcher()
 
         # Search criteria section
         BoxLayout:
@@ -32,7 +52,8 @@
 
             # Section title
             Label:
-                text: 'Search Criteria - معايير البحث'
+                id: search_criteria_label
+                text: 'Search Criteria'
                 font_size: 18
                 size_hint_y: None
                 height: 30
@@ -51,7 +72,8 @@
 
                 # Property type row
                 Label:
-                    text: 'Property Type - نوع العقار:'
+                    id: property_type_label
+                    text: 'Property Type'
                     color: 0, 0, 0, 1
                     size_hint_y: None
                     height: 30
@@ -61,14 +83,15 @@
 
                 Spinner:
                     id: property_type_spinner
-                    text: 'All Types - جميع الأنواع'
-                    values: ['All Types - جميع الأنواع']
+                    text: 'All Types'
+                    values: ['All Types']
                     size_hint_y: None
                     height: 40
 
                 # Building type row
                 Label:
-                    text: 'Building Type - نوع البناء:'
+                    id: building_type_label
+                    text: 'Building Type'
                     color: 0, 0, 0, 1
                     size_hint_y: None
                     height: 30
@@ -78,14 +101,15 @@
 
                 Spinner:
                     id: building_type_spinner
-                    text: 'All Types - جميع الأنواع'
-                    values: ['All Types - جميع الأنواع']
+                    text: 'All Types'
+                    values: ['All Types']
                     size_hint_y: None
                     height: 40
 
                 # Min bedrooms row
                 Label:
-                    text: 'Min Bedrooms - أقل عدد غرف النوم:'
+                    id: min_bedrooms_label
+                    text: 'Min Bedrooms'
                     color: 0, 0, 0, 1
                     size_hint_y: None
                     height: 30
@@ -102,7 +126,8 @@
 
                 # Max bedrooms row
                 Label:
-                    text: 'Max Bedrooms - أكثر عدد غرف النوم:'
+                    id: max_bedrooms_label
+                    text: 'Max Bedrooms'
                     color: 0, 0, 0, 1
                     size_hint_y: None
                     height: 30
@@ -119,7 +144,8 @@
 
                 # Min price row
                 Label:
-                    text: 'Min Price - أقل سعر:'
+                    id: min_price_label
+                    text: 'Min Price'
                     color: 0, 0, 0, 1
                     size_hint_y: None
                     height: 30
@@ -136,7 +162,8 @@
 
                 # Max price row
                 Label:
-                    text: 'Max Price - أعلى سعر:'
+                    id: max_price_label
+                    text: 'Max Price'
                     color: 0, 0, 0, 1
                     size_hint_y: None
                     height: 30
@@ -153,7 +180,8 @@
 
                 # Corner property row
                 Label:
-                    text: 'Corner Property - عقار زاوية:'
+                    id: corner_property_label
+                    text: 'Corner Property'
                     color: 0, 0, 0, 1
                     size_hint_y: None
                     height: 30
@@ -175,7 +203,8 @@
                 height: 50
 
                 Button:
-                    text: 'Search - بحث'
+                    id: search_btn
+                    text: 'Search'
                     size_hint: 0.2, 1
                     background_color: 0.2, 0.6, 0.8, 1
                     color: 1, 1, 1, 1
@@ -183,7 +212,8 @@
                     on_press: root.perform_search(self)
 
                 Button:
-                    text: 'Clear Search - مسح البحث'
+                    id: clear_search_btn
+                    text: 'Clear Search'
                     size_hint: 0.2, 1
                     background_color: 0.6, 0.6, 0.6, 1
                     color: 1, 1, 1, 1
@@ -191,7 +221,8 @@
                     on_press: root.clear_search(self)
 
                 Button:
-                    text: 'Export Results - تصدير النتائج'
+                    id: export_results_btn
+                    text: 'Export Results'
                     size_hint: 0.2, 1
                     background_color: 0.6, 0.8, 0.2, 1
                     color: 1, 1, 1, 1
@@ -199,7 +230,8 @@
                     on_press: root.export_results(self)
 
                 Button:
-                    text: 'Go Back - العودة'
+                    id: go_back_btn
+                    text: 'Go Back'
                     size_hint: 0.2, 1
                     background_color: 0.8, 0.2, 0.2, 1
                     color: 1, 1, 1, 1
@@ -215,7 +247,8 @@
 
             # Results title
             Label:
-                text: 'Search Results - نتائج البحث'
+                id: results_title
+                text: 'Search Results'
                 font_size: 18
                 size_hint_y: None
                 height: 30
