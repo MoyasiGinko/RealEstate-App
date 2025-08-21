@@ -15,6 +15,9 @@ import os
 import tkinter as tk
 from tkinter import filedialog
 from src.models.database_api import get_api
+from configs.language_manager import get_language_manager, get_text
+from configs.arabic_fonts import apply_arabic_font
+from configs.language_switcher import show_language_switcher
 
 Builder.load_file('assets/kv/insert_gui.kv')
 
@@ -52,6 +55,11 @@ class InsertScreen(Screen):
 		self.api = get_api()
 		self.selected_photos = []
 		self.owners_data = []
+		self.language_manager = get_language_manager()
+		# Register for language change notifications
+		self.language_manager.register_observer(self)
+		# Bind to on_enter to setup localization
+		self.bind(on_enter=self.setup_localization)
 
 	def on_enter(self):
 		"""Called when the screen is entered"""
@@ -66,6 +74,85 @@ class InsertScreen(Screen):
 		if hasattr(self, 'year_construction') and self.year_construction:
 			current_year = str(datetime.now().year)
 			self.year_construction.text = current_year
+
+	def setup_localization(self, *args):
+		"""Setup localization and Arabic fonts"""
+		try:
+			self.update_texts()
+			self.apply_fonts()
+		except Exception as e:
+			print(f"Error setting up localization in insert screen: {e}")
+
+	def update_texts(self):
+		"""Update all text widgets with current language"""
+		try:
+			# Define the mapping of IDs to translation keys
+			text_mappings = {
+				'header_label': 'add_new_property',
+				'property_code_label': 'property_code',
+				'property_type_label': 'property_type',
+				'year_construction_label': 'year_construction',
+				'building_type_label': 'building_type',
+				'unit_measurement_label': 'unit_measurement',
+				'facade_label': 'facade',
+				'depth_label': 'depth',
+				'floors_label': 'floors',
+				'area_label': 'area',
+				'bedrooms_label': 'bedrooms',
+				'bathrooms_label': 'bathrooms',
+				'corner_label': 'corner',
+				'yes_label': 'yes',
+				'no_label': 'no',
+				'offer_type_label': 'offer_type',
+				'governorate_label': 'governorate',
+				'neighborhood_label': 'neighborhood',
+				'address_label': 'address',
+				'price_label': 'price',
+				'owner_label': 'owner',
+				'photos_label': 'photos',
+				'notes_label': 'notes',
+				'required_fields_label': 'required_fields',
+				'back_btn': 'back',
+				'new_btn': 'clear_form',
+				'save_btn': 'save_property'
+			}
+
+			# Update each widget using its ID
+			for widget_id, text_key in text_mappings.items():
+				try:
+					widget = self.ids.get(widget_id)
+					if widget:
+						new_text = get_text(text_key)
+						widget.text = new_text
+						# Apply Arabic font if needed
+						if self.language_manager.current_language == 'ar':
+							apply_arabic_font(widget, new_text)
+				except Exception as e:
+					print(f"Error updating widget {widget_id}: {e}")
+
+		except Exception as e:
+			print(f"Error updating texts: {e}")
+
+	def apply_fonts(self):
+		"""Apply Arabic fonts to all text widgets if Arabic is selected"""
+		if self.language_manager.current_language == 'ar':
+			try:
+				for widget in self.walk():
+					if hasattr(widget, 'text') and widget.text:
+						apply_arabic_font(widget, widget.text)
+			except Exception as e:
+				print(f"Error applying fonts in insert screen: {e}")
+
+	def on_language_changed(self):
+		"""Called when language is changed"""
+		try:
+			self.setup_localization()
+		except Exception as e:
+			print(f"Error handling language change in insert screen: {e}")
+
+	def show_language_switcher(self):
+		"""Show the language switcher popup"""
+		show_language_switcher()
 
 	def load_property_types(self):
 		"""Load property types from database into spinner"""

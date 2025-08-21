@@ -38,12 +38,33 @@
 				pos: self.pos
 				size: self.size
 
+		# Top navigation bar with language button
+		BoxLayout:
+			orientation: 'horizontal'
+			size_hint_y: None
+			height: '50dp'
+			spacing: '15dp'
+			padding: [0, 0, 0, 10]
+
+			# Language button
+			Button:
+				size_hint_x: None
+				width: '120dp'
+				text: 'Language\nاللغة'
+				font_size: '14sp'
+				background_color: 0.2, 0.8, 0.6, 1
+				color: 1, 1, 1, 1
+				on_release: root.show_language_switcher()
+
+			Widget:  # Spacer
+
 		# Header
 		BoxLayout:
 			size_hint_y: None
 			height: 50
 			padding: [0, 0, 0, 10]
 			Label:
+				id: header_label
 				text: 'Add New Property'
 				font_size: 24
 				color: 0.2, 0.2, 0.2, 1
@@ -68,6 +89,7 @@
 
 					# 1. Property Code
 					Label:
+						id: property_code_label
 						text: 'Property Code'
 						size_hint_y: None
 						height: 40
@@ -80,6 +102,7 @@
 						height: 40
 					# 2. Property Type
 					Label:
+						id: property_type_label
 						text: 'Property Type*'
 						size_hint_y: None
 						height: 40
@@ -94,6 +117,7 @@
 
 					# 3. Year of Construction
 					Label:
+						id: year_construction_label
 						text: 'Year of Construction'
 						size_hint_y: None
 						height: 40
@@ -108,6 +132,7 @@
 
 					# 4. Building Type
 					Label:
+						id: building_type_label
 						text: 'Building Type*'
 						size_hint_y: None
 						height: 40
@@ -122,6 +147,7 @@
 
 					# 5. Unit of Measurement
 					Label:
+						id: unit_measurement_label
 						text: 'Unit of Measurement'
 						size_hint_y: None
 						height: 40
@@ -137,6 +163,7 @@
 
 					# 6. Facade
 					Label:
+						id: facade_label
 						text: 'Facade'
 						size_hint_y: None
 						height: 40
@@ -151,6 +178,7 @@
 
 					# 6b. Depth
 					Label:
+						id: depth_label
 						text: 'Depth'
 						size_hint_y: None
 						height: 40
@@ -165,6 +193,7 @@
 
 					# 7. Floors/Levels
 					Label:
+						id: floors_label
 						text: 'Floors/Levels'
 						size_hint_y: None
 						height: 40
@@ -179,6 +208,7 @@
 
 					# 8. Area
 					Label:
+						id: area_label
 						text: 'Area'
 						size_hint_y: None
 						height: 40
@@ -193,6 +223,7 @@
 
 					# 9. Number of Bedrooms
 					Label:
+						id: bedrooms_label
 						text: 'Bedrooms'
 						size_hint_y: None
 						height: 40
@@ -207,6 +238,7 @@
 
 					# 10. Number of Bathrooms
 					Label:
+						id: bathrooms_label
 						text: 'Bathrooms'
 						size_hint_y: None
 						height: 40
@@ -220,6 +252,7 @@
 						height: 40
 					# 11. Corner or Not?
 					Label:
+						id: corner_label
 						text: 'Corner?'
 						size_hint_y: None
 						height: 40
@@ -231,17 +264,20 @@
 							id: corner_yes
 							group: 'corner'
 						Label:
+							id: yes_label
 							text: 'Yes'
 							size_hint_x: 0.3
 						CheckBox:
 							id: corner_no
 							group: 'corner'
 						Label:
+							id: no_label
 							text: 'No'
 							size_hint_x: 0.3
 
 					# 12. Offer Type
 					Label:
+						id: offer_type_label
 						text: 'Offer Type'
 						size_hint_y: None
 						height: 40
@@ -256,6 +292,7 @@
 
 					# 13. Governorate/Province
 					Label:
+						id: governorate_label
 						text: 'Governorate/Province'
 						size_hint_y: None
 						height: 40
@@ -270,6 +307,7 @@
 
 					# 14. Area/Neighborhood
 					Label:
+						id: neighborhood_label
 						text: 'Area/Neighborhood'
 						size_hint_y: None
 						height: 40
@@ -283,6 +321,7 @@
 
 					# 14b. Property Address
 					Label:
+						id: address_label
 						text: 'Property Address'
 						size_hint_y: None
 						height: 40
@@ -296,6 +335,7 @@
 
 					# 15. Price
 					Label:
+						id: price_label
 						text: 'Price'
 						size_hint_y: None
 						height: 40
@@ -322,6 +362,7 @@
 
 					# 16. Property Owner
 					Label:
+						id: owner_label
 						text: 'Property Owner*'
 						size_hint_y: None
 						height: 40
@@ -351,6 +392,7 @@
 
 					# 17. Photos
 					Label:
+						id: photos_label
 						text: 'Photos'
 						size_hint_y: None
 						height: 40
@@ -414,6 +456,7 @@
 					spacing: 5
 
 					Label:
+						id: notes_label
 						text: 'Notes'
 						size_hint_y: None
 						height: 30
@@ -430,6 +473,7 @@
 						height: 80
 		# Required fields notice
 		Label:
+			id: required_fields_label
 			text: '* Required fields'
 			size_hint_y: None
 			height: 20
@@ -445,6 +489,7 @@
 			padding: [0, 10]
 
 			Button:
+				id: back_btn
 				text: '← Back'
 				size_hint_x: None
 				width: 100

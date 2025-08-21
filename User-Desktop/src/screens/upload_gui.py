@@ -19,6 +19,8 @@ import tkinter.messagebox
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from src.models.database_api import get_api
+from configs.language_manager import get_language_manager, get_text
+from configs.arabic_fonts import apply_arabic_font
 
 # Load the KV file for the upload_gui interface - use absolute path
 _current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -80,6 +82,42 @@ class UploadScreen(Screen):
         self.db_path = os.path.join(project_root, 'data', 'local.db')
         self.database_utils_path = os.path.join(project_root, 'configs/database_utils')
         print(f"Database path: {self.db_path}")  # Debug output
+        self.language_manager = get_language_manager()
+        # Register for language change notifications
+        self.language_manager.register_observer(self)
+        # Bind to on_enter to setup localization
+        self.bind(on_enter=self.setup_localization)
+
+    def setup_localization(self, *args):
+        """Setup localization and Arabic fonts"""
+        try:
+            self.update_texts()
+            self.apply_fonts()
+        except Exception as e:
+            print(f"Error setting up localization in upload screen: {e}")
+
+    def update_texts(self):
+        """Update all text widgets with current language"""
+        # Note: Most text updates will be handled in the KV file
+        # This method can be used for dynamic content updates
+        pass
+
+    def apply_fonts(self):
+        """Apply Arabic fonts to all text widgets if Arabic is selected"""
+        if self.language_manager.current_language == 'ar':
+            try:
+                for widget in self.walk():
+                    if hasattr(widget, 'text') and widget.text:
+                        apply_arabic_font(widget, widget.text)
+            except Exception as e:
+                print(f"Error applying fonts in upload screen: {e}")
+
+    def on_language_changed(self):
+        """Called when language is changed"""
+        try:
+            self.setup_localization()
+        except Exception as e:
+            print(f"Error handling language change in upload screen: {e}")
 
     def import_database_utility(self, module_name):
         """Safely import database utility modules."""
