@@ -2,6 +2,7 @@ from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
 from kivy.lang import Builder
 from kivy.core.window import Window
+from kivy.core.text import LabelBase
 import sys
 import os
 
@@ -10,7 +11,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.models.database_api import get_api
 
 # Initialize Arabic font support
-from configs.arabic_fonts import init_arabic_fonts
+from configs.arabic_fonts import init_arabic_fonts, set_global_arabic_font, restore_default_font, apply_font_to_all_widgets
+from configs.language_manager import get_language_manager
 
 # Import screens
 from screens.browse_gui import SearchReportScreen
@@ -31,12 +33,19 @@ class MainApp(App):
     def build(self):
         """Build the application and set up the screen manager."""
         # Initialize Arabic font support
-        arabic_fonts = init_arabic_fonts()
+        self.arabic_fonts = init_arabic_fonts()
 
-        if arabic_fonts.fonts_registered:
+        if self.arabic_fonts.fonts_registered:
             print("✅ Arabic fonts initialized successfully!")
         else:
             print("⚠️  Arabic fonts not available, using system defaults")
+
+        # Initialize language manager and set up global font observer
+        self.language_manager = get_language_manager()
+        self.language_manager.register_observer(self)
+
+        # Set global default font based on current language
+        self._update_global_font()
 
         # Connect to the database
         self.api = get_api()
@@ -73,6 +82,27 @@ class MainApp(App):
         # Close the database connection
         self.api.close()
         print("Application stopped, database connection closed.")
+
+    def on_language_changed(self):
+        """Called when language is changed - update global font"""
+        self._update_global_font()
+
+    def _update_global_font(self):
+        """Set global default font based on current language"""
+        if not hasattr(self, 'arabic_fonts') or not self.arabic_fonts.fonts_registered:
+            return
+
+        current_lang = self.language_manager.get_current_language()
+
+        if current_lang == 'ar':
+            # Set Arabic font as the global default
+            set_global_arabic_font()
+            # Also apply Arabic font to all existing widgets
+            if hasattr(self, 'sm') and self.sm:
+                apply_font_to_all_widgets(self.sm)
+        else:
+            # Restore system default font
+            restore_default_font()
 
 if __name__ == '__main__':
     MainApp().run()

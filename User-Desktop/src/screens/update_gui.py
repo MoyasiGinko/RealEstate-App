@@ -20,7 +20,7 @@ import tkinter as tk
 from tkinter import filedialog
 from src.models.database_api import get_api
 from configs.language_manager import get_language_manager, get_text
-from configs.arabic_fonts import apply_arabic_font
+from configs.arabic_fonts import apply_arabic_font, apply_font_to_all_widgets
 from configs.language_switcher import show_language_switcher
 from src.models.database_api import get_api
 
@@ -157,6 +157,9 @@ class PropertyForm(BoxLayout):
         # Update texts after initialization
         Clock.schedule_once(lambda dt: self.update_texts(), 0.1)
 
+        # Apply Arabic font to all widgets in this form if Arabic is current language
+        Clock.schedule_once(lambda dt: self._apply_font_to_form(), 0.2)
+
         # Populate fields if editing - delay this to ensure UI is ready
         if self.property_data:
             Clock.schedule_once(self._delayed_populate_fields, 0.1)
@@ -167,6 +170,16 @@ class PropertyForm(BoxLayout):
     def _delayed_populate_fields(self, dt):
         """Populate fields after a small delay to ensure UI is ready."""
         self.populate_fields()
+
+    def _apply_font_to_form(self):
+        """Apply Arabic font to all widgets in this form if Arabic language is active"""
+        try:
+            current_lang = self.language_manager.get_current_language() if hasattr(self, 'language_manager') else 'en'
+            if current_lang == 'ar':
+                apply_font_to_all_widgets(self)
+                print("🔤 Applied Arabic font to PropertyForm widgets")
+        except Exception as e:
+            print(f"⚠️ Error applying font to PropertyForm: {e}")
 
     def update_texts(self):
         """Update all text elements in the form with current language"""
@@ -677,17 +690,81 @@ class UpdateGUIScreen(Screen):
 
         content = PropertyForm(save_callback=self.update_property, property_data=full_property_data)
         popup_title = get_text('edit_property', 'Edit Property')
+
+        # Build a wrapper so we can render a header Label inside the popup content
+        header_wrapper = BoxLayout(orientation='vertical')
+        try:
+            # Create a header box with white background using canvas
+            from kivy.graphics import Color, Rectangle
+            header_box = BoxLayout(size_hint_y=None, size_hint_x=1, height=dp(48))
+            with header_box.canvas.before:
+                Color(1, 1, 1, 1)  # white background
+                header_bg = Rectangle(pos=header_box.pos, size=header_box.size)
+            # keep the rectangle in sync with the widget
+            header_box.bind(pos=lambda *a: setattr(header_bg, 'pos', header_box.pos),
+                            size=lambda *a: setattr(header_bg, 'size', header_box.size))
+
+            header_label = Label(
+                text=popup_title,
+                size_hint_y=None,
+                size_hint_x=1,
+                height=dp(48),
+                halign='center',
+                valign='middle',
+                color=(0.15, 0.15, 0.15, 1),
+            )
+            # Make the header text larger
+            header_label.font_size = '22sp'
+
+            # Ensure the label uses its size for text alignment
+            from kivy.clock import Clock
+            def _fix_text_size(dt):
+                try:
+                    header_label.text_size = (header_label.width - dp(12), header_label.height)
+                except Exception:
+                    pass
+            Clock.schedule_once(_fix_text_size, 0)
+            apply_arabic_font(header_label, popup_title)
+
+            header_box.add_widget(header_label)
+            header_wrapper.add_widget(header_box)
+        except Exception:
+            # Fallback header if something goes wrong
+            header_label = Label(text=popup_title, size_hint_y=None, height=dp(48))
+            header_label.font_size = '22sp'
+            header_wrapper.add_widget(header_label)
+
+        header_wrapper.add_widget(content)
+
+        # Use an empty Popup.title and remove the title area by setting title_size=0
+        # Also remove the separator by setting separator_color to fully transparent
         self.popup = Popup(
-            title=popup_title,
-            content=content,
+            title='',
+            title_size=0,
+            separator_color=(0, 0, 0, 0),
+            content=header_wrapper,
             size_hint=(0.9, 0.9)
         )
-        # Apply Arabic font to popup title if needed
-        apply_arabic_font(self.popup, popup_title)
+
+        # Apply font to the entire popup content when Arabic is active
+        Clock.schedule_once(lambda dt: self._apply_popup_fonts(), 0.1)
+
         # Bind the cancel button to close the popup
         if hasattr(content.ids, 'cancel_btn'):
             content.ids.cancel_btn.bind(on_press=lambda x: self.popup.dismiss())
+
         self.popup.open()
+
+
+    def _apply_popup_fonts(self):
+        """Apply Arabic font to popup content if Arabic is active"""
+        try:
+            current_lang = self.language_manager.get_current_language() if hasattr(self, 'language_manager') else 'en'
+            if current_lang == 'ar' and hasattr(self, 'popup') and self.popup:
+                apply_font_to_all_widgets(self.popup)
+                print("🔤 Applied Arabic font to popup widgets")
+        except Exception as e:
+            print(f"⚠️ Error applying font to popup: {e}")
 
     def update_property(self, property_data, photos, property_code, photos_to_delete=None):
         """Update an existing property in the database."""
