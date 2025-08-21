@@ -19,6 +19,29 @@
             height: '60dp'
             spacing: '15dp'
 
+            # Language button
+            Button:
+                size_hint_x: None
+                width: '120dp'
+                text: 'Language\nاللغة'
+                font_size: '14sp'
+                background_color: 0.2, 0.8, 0.6, 1
+                color: 1, 1, 1, 1
+                on_release: root.show_language_switcher()
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 0.9
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [8, 8, 8, 8]
+                canvas.after:
+                    Color:
+                        rgba: 0.2, 0.8, 0.6, 0.4
+                    Line:
+                        rounded_rectangle: self.x, self.y, self.width, self.height, 8, 8, 8, 8
+                        width: 2
+
             # Exit button with icon
             Button:
                 size_hint_x: None
@@ -73,6 +96,7 @@
             spacing: '10dp'
 
             Label:
+                id: company_name_label
                 text: 'Al-Kawaz Software and Information Technology'
                 font_size: '24sp'
                 size_hint_y: None
@@ -83,6 +107,7 @@
                 valign: 'middle'
 
             Label:
+                id: app_title_label
                 text: 'Realstate Management System'
                 font_size: '18sp'
                 size_hint_y: None
@@ -132,6 +157,7 @@
                 spacing: '5dp'
 
                 Label:
+                    id: tagline_label
                     text: 'Real Estate in all Aspects'
                     font_size: '22sp'
                     size_hint_y: None
@@ -143,6 +169,7 @@
                     text_size: self.size
 
                 Label:
+                    id: subtitle_label
                     text: 'Professional • Reliable • Innovative'
                     font_size: '14sp'
                     size_hint_y: None
@@ -158,6 +185,7 @@
 
         # Main action buttons section
         Label:
+            id: choose_action_label
             text: 'Choose Your Action'
             font_size: '20sp'
             size_hint_y: None
@@ -208,6 +236,7 @@
                             source: 'assets/app-images/insert.jpg'
 
                 Label:
+                    id: new_property_label
                     text: 'New Property'
                     font_size: '14sp'
                     size_hint: None, None
@@ -251,6 +280,7 @@
                             source: 'assets/app-images/update.jpg'
 
                 Label:
+                    id: update_property_label
                     text: 'Update Property'
                     font_size: '14sp'
                     size_hint: None, None
@@ -294,6 +324,7 @@
                             source: 'assets/app-images/browse.jpg'
 
                 Label:
+                    id: browse_property_label
                     text: 'Browse Property'
                     font_size: '14sp'
                     size_hint: None, None
@@ -337,6 +368,7 @@
                             source: 'assets/app-images/upload.jpg'
 
                 Label:
+                    id: upload_property_label
                     text: 'Upload Property'
                     font_size: '14sp'
                     size_hint: None, None

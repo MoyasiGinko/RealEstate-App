@@ -1,0 +1,284 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Language Manager for Real Estate Management System
+Handles localization and language switching between English and Arabic
+"""
+
+import json
+import os
+from configs.arabic_fonts import apply_arabic_font
+
+class LanguageManager:
+    """Manages application localization and language switching"""
+
+    def __init__(self):
+        self.current_language = 'en'  # Default to English
+        self.translations = {}
+        self.observers = []  # Screens that need to be notified of language changes
+        self._load_translations()
+
+    def _load_translations(self):
+        """Load translation data"""
+        self.translations = {
+            'en': {
+                # Main Screen
+                'company_name': 'Al-Kawaz Software and Information Technology',
+                'app_title': 'Real Estate Management System',
+                'tagline': 'Real Estate in all Aspects',
+                'subtitle': 'Professional • Reliable • Innovative',
+                'choose_action': 'Choose Your Action',
+                'new_property': 'New Property',
+                'update_property': 'Update Property',
+                'browse_property': 'Browse Property',
+                'upload_property': 'Upload Property',
+                'about': 'About',
+                'exit': 'Exit',
+                'language': 'Language',
+
+                # Browse Screen
+                'property_search_reports': 'Property Search & Reports',
+                'search_criteria': 'Search Criteria',
+                'property_type': 'Property Type',
+                'building_type': 'Building Type',
+                'min_bedrooms': 'Min Bedrooms',
+                'max_bedrooms': 'Max Bedrooms',
+                'min_price': 'Min Price',
+                'max_price': 'Max Price',
+                'corner_property': 'Corner Property',
+                'search': 'Search',
+                'clear_search': 'Clear Search',
+                'export_results': 'Export Results',
+                'go_back': 'Go Back',
+                'search_results': 'Search Results',
+                'all_types': 'All Types',
+
+                # Insert Screen
+                'add_new_property': 'Add New Property',
+                'property_code': 'Property Code',
+                'year_construction': 'Year of Construction',
+                'unit_measurement': 'Unit of Measurement',
+                'facade': 'Facade',
+                'depth': 'Depth',
+                'floors': 'Floors/Levels',
+                'area': 'Area',
+                'bedrooms': 'Bedrooms',
+                'bathrooms': 'Bathrooms',
+                'corner': 'Corner?',
+                'yes': 'Yes',
+                'no': 'No',
+                'offer_type': 'Offer Type',
+                'governorate': 'Governorate/Province',
+                'neighborhood': 'Area/Neighborhood',
+                'address': 'Property Address',
+                'price': 'Price',
+                'owner': 'Property Owner',
+                'photos': 'Photos',
+                'add_photo': 'Add Photo',
+                'notes': 'Notes',
+                'required_fields': '* Required fields',
+                'back': '← Back',
+                'clear_form': 'Clear Form',
+                'save_property': 'Save Property',
+
+                # About Screen
+                'about_us': 'About Us',
+                'version': 'Version: 1.0.0',
+                'author': 'Author: Luay Alkawaz',
+                'description': 'This application helps users manage real estate properties efficiently and intuitively.\nProfessional • Reliable • Innovative\nThank you for using our system!',
+                'back_to_main': '← Back to Main',
+
+                # Upload Screen
+                'database_management': 'Database Management',
+                'db_description': 'Manage your database: reset, backup, seed with sample data, or upload a new database file',
+                'reset_database': 'Reset Database',
+                'export_database': 'Export Database',
+                'seed_database': 'Seed Database',
+                'upload_database': 'Upload Database',
+
+                # Update Screen
+                'property_management': 'Property Management',
+                'code': 'Code',
+                'type': 'Type',
+                'owner_name': 'Owner',
+                'actions': 'Actions',
+
+                # Common
+                'save': 'Save',
+                'cancel': 'Cancel',
+                'close': 'Close',
+                'view': 'View',
+                'edit': 'Edit',
+                'delete': 'Delete',
+                'loading': 'Loading...',
+                'error': 'Error',
+                'success': 'Success',
+                'warning': 'Warning',
+                'info': 'Information',
+            },
+            'ar': {
+                # Main Screen
+                'company_name': 'الكواز للبرمجيات وتقنية المعلومات',
+                'app_title': 'نظام إدارة العقارات',
+                'tagline': 'العقارات بجميع جوانبها',
+                'subtitle': 'مهني • موثوق • مبتكر',
+                'choose_action': 'اختر العملية',
+                'new_property': 'عقار جديد',
+                'update_property': 'تحديث العقار',
+                'browse_property': 'تصفح العقارات',
+                'upload_property': 'رفع العقار',
+                'about': 'حول',
+                'exit': 'خروج',
+                'language': 'اللغة',
+
+                # Browse Screen
+                'property_search_reports': 'البحث عن العقارات والتقارير',
+                'search_criteria': 'معايير البحث',
+                'property_type': 'نوع العقار',
+                'building_type': 'نوع البناء',
+                'min_bedrooms': 'أقل عدد غرف النوم',
+                'max_bedrooms': 'أكثر عدد غرف النوم',
+                'min_price': 'أقل سعر',
+                'max_price': 'أعلى سعر',
+                'corner_property': 'عقار زاوية',
+                'search': 'بحث',
+                'clear_search': 'مسح البحث',
+                'export_results': 'تصدير النتائج',
+                'go_back': 'العودة',
+                'search_results': 'نتائج البحث',
+                'all_types': 'جميع الأنواع',
+
+                # Insert Screen
+                'add_new_property': 'إضافة عقار جديد',
+                'property_code': 'رمز العقار',
+                'year_construction': 'سنة البناء',
+                'unit_measurement': 'وحدة القياس',
+                'facade': 'الواجهة',
+                'depth': 'العمق',
+                'floors': 'عدد الطوابق',
+                'area': 'المساحة',
+                'bedrooms': 'غرف النوم',
+                'bathrooms': 'دورات المياه',
+                'corner': 'زاوية؟',
+                'yes': 'نعم',
+                'no': 'لا',
+                'offer_type': 'نوع العرض',
+                'governorate': 'المحافظة',
+                'neighborhood': 'المنطقة/الحي',
+                'address': 'عنوان العقار',
+                'price': 'السعر',
+                'owner': 'مالك العقار',
+                'photos': 'الصور',
+                'add_photo': 'إضافة صورة',
+                'notes': 'ملاحظات',
+                'required_fields': '* حقول مطلوبة',
+                'back': '← رجوع',
+                'clear_form': 'مسح النموذج',
+                'save_property': 'حفظ العقار',
+
+                # About Screen
+                'about_us': 'معلومات عنا',
+                'version': 'الإصدار: 1.0.0',
+                'author': 'المؤلف: لؤي الكواز',
+                'description': 'هذا التطبيق يساعد المستخدمين على إدارة العقارات بكفاءة وسهولة.\nمهني • موثوق • مبتكر\nشكراً لاستخدام نظامنا!',
+                'back_to_main': '← العودة للرئيسية',
+
+                # Upload Screen
+                'database_management': 'إدارة قاعدة البيانات',
+                'db_description': 'إدارة قاعدة البيانات: إعادة تعيين، نسخ احتياطي، إضافة بيانات تجريبية، أو رفع ملف قاعدة بيانات جديد',
+                'reset_database': 'إعادة تعيين قاعدة البيانات',
+                'export_database': 'تصدير قاعدة البيانات',
+                'seed_database': 'إضافة بيانات تجريبية',
+                'upload_database': 'رفع قاعدة البيانات',
+
+                # Update Screen
+                'property_management': 'إدارة العقارات',
+                'code': 'الرمز',
+                'type': 'النوع',
+                'owner_name': 'المالك',
+                'actions': 'العمليات',
+
+                # Common
+                'save': 'حفظ',
+                'cancel': 'إلغاء',
+                'close': 'إغلاق',
+                'view': 'عرض',
+                'edit': 'تعديل',
+                'delete': 'حذف',
+                'loading': 'جاري التحميل...',
+                'error': 'خطأ',
+                'success': 'نجح',
+                'warning': 'تحذير',
+                'info': 'معلومات',
+            }
+        }
+
+    def get_text(self, key, fallback=None):
+        """Get translated text for the current language"""
+        if fallback is None:
+            fallback = key
+
+        return self.translations.get(self.current_language, {}).get(key, fallback)
+
+    def set_language(self, language_code):
+        """Set the current language and notify observers"""
+        if language_code in self.translations:
+            self.current_language = language_code
+            self._notify_language_change()
+            print(f"Language switched to: {language_code}")
+
+    def get_current_language(self):
+        """Get the current language code"""
+        return self.current_language
+
+    def is_rtl(self):
+        """Check if current language is right-to-left"""
+        return self.current_language == 'ar'
+
+    def register_observer(self, observer):
+        """Register a screen to be notified of language changes"""
+        if observer not in self.observers:
+            self.observers.append(observer)
+
+    def unregister_observer(self, observer):
+        """Unregister a screen from language change notifications"""
+        if observer in self.observers:
+            self.observers.remove(observer)
+
+    def _notify_language_change(self):
+        """Notify all registered observers of language change"""
+        for observer in self.observers[:]:  # Copy list to avoid modification during iteration
+            if hasattr(observer, 'on_language_changed'):
+                try:
+                    observer.on_language_changed()
+                except Exception as e:
+                    print(f"Error notifying observer {observer}: {e}")
+
+    def apply_font_and_text(self, widget, text_key, fallback_text=None):
+        """Apply text and Arabic font if needed"""
+        text = self.get_text(text_key, fallback_text or text_key)
+        widget.text = text
+        if self.current_language == 'ar':
+            apply_arabic_font(widget, text)
+
+# Global language manager instance
+_language_manager = None
+
+def get_language_manager():
+    """Get the global language manager instance"""
+    global _language_manager
+    if _language_manager is None:
+        _language_manager = LanguageManager()
+    return _language_manager
+
+def get_text(key, fallback=None):
+    """Convenience function to get translated text"""
+    return get_language_manager().get_text(key, fallback)
+
+def set_language(language_code):
+    """Convenience function to set language"""
+    get_language_manager().set_language(language_code)
+
+def apply_localization(widget, text_key, fallback_text=None):
+    """Convenience function to apply localization to a widget"""
+    get_language_manager().apply_font_and_text(widget, text_key, fallback_text)

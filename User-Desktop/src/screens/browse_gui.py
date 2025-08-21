@@ -14,6 +14,7 @@ from kivy.graphics import Color, Rectangle
 from kivy.lang import Builder
 from src.models.database_api import get_api
 from configs.arabic_fonts import apply_arabic_font
+from configs.language_manager import get_language_manager, get_text
 import datetime
 import os
 import csv
@@ -373,6 +374,8 @@ class SearchReportScreen(Screen):
     def __init__(self, **kwargs):
         super(SearchReportScreen, self).__init__(**kwargs)
         self.api = get_api()
+        self.language_manager = get_language_manager()
+        self.language_manager.register_observer(self)
         self.bind(on_enter=self.setup_arabic_fonts)
 
     def setup_arabic_fonts(self, *args):
@@ -383,6 +386,25 @@ class SearchReportScreen(Screen):
                     apply_arabic_font(widget, widget.text)
         except Exception as e:
             print(f"Error setting up Arabic fonts: {e}")
+
+    def on_language_changed(self):
+        """Called when language is changed"""
+        try:
+            # Update static text elements
+            self.update_localized_texts()
+            # Reload dynamic content with new language
+            if hasattr(self, 'ids'):
+                self.load_property_types()
+                self.load_building_types()
+                self.setup_arabic_fonts()
+        except Exception as e:
+            print(f"Error handling language change: {e}")
+
+    def update_localized_texts(self):
+        """Update the KV file text elements would be handled by reloading or manual updates"""
+        # This is a placeholder - in a full implementation, you'd want to
+        # either reload the KV file or manually update each text element
+        pass
 
     def on_enter(self):
         """Called when the screen is entered."""
@@ -405,13 +427,18 @@ class SearchReportScreen(Screen):
 
         try:
             if property_types:
-                values = ['All Types - جميع الأنواع'] + [f"{pt.get('code', 'N/A')} - {pt.get('name', 'Unknown')}" for pt in property_types]
+                all_types_text = get_text('all_types')
+                values = [all_types_text] + [f"{pt.get('code', 'N/A')} - {pt.get('name', 'Unknown')}" for pt in property_types]
                 self.ids.property_type_spinner.values = values
+                self.ids.property_type_spinner.text = all_types_text
             else:
-                self.ids.property_type_spinner.values = ['All Types - جميع الأنواع']
+                all_types_text = get_text('all_types')
+                self.ids.property_type_spinner.values = [all_types_text]
+                self.ids.property_type_spinner.text = all_types_text
         except Exception as e:
             print(f"Error loading property types: {e}")
-            self.ids.property_type_spinner.values = ['All Types - جميع الأنواع']
+            all_types_text = get_text('all_types')
+            self.ids.property_type_spinner.values = [all_types_text]
 
     def load_building_types(self):
         """Load building types from the database."""
@@ -419,13 +446,18 @@ class SearchReportScreen(Screen):
 
         try:
             if building_types:
-                values = ['All Types - جميع الأنواع'] + [f"{bt.get('code', 'N/A')} - {bt.get('name', 'Unknown')}" for bt in building_types]
+                all_types_text = get_text('all_types')
+                values = [all_types_text] + [f"{bt.get('code', 'N/A')} - {bt.get('name', 'Unknown')}" for bt in building_types]
                 self.ids.building_type_spinner.values = values
+                self.ids.building_type_spinner.text = all_types_text
             else:
-                self.ids.building_type_spinner.values = ['All Types - جميع الأنواع']
+                all_types_text = get_text('all_types')
+                self.ids.building_type_spinner.values = [all_types_text]
+                self.ids.building_type_spinner.text = all_types_text
         except Exception as e:
             print(f"Error loading building types: {e}")
-            self.ids.building_type_spinner.values = ['All Types - جميع الأنواع']
+            all_types_text = get_text('all_types')
+            self.ids.building_type_spinner.values = [all_types_text]
 
     def perform_search(self, instance):
         """Perform property search based on criteria."""
