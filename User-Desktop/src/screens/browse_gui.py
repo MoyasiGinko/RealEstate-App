@@ -72,7 +72,7 @@ class PropertyDetailContent(BoxLayout):
         photo_layout = BoxLayout(orientation='vertical', size_hint=(0.4, 1))
 
         # Photo section title
-        photo_title_text = get_text('photos', 'Property Photos')
+        photo_title_text = get_text('property_photos', 'Property Photos')
         photo_title = Label(
             text=photo_title_text,
             size_hint_y=None,
@@ -131,32 +131,35 @@ class PropertyDetailContent(BoxLayout):
         try:
             self.details_grid.clear_widgets()
 
-            # Add property details
+            # Add property details with localized labels
             fields = [
-                ('Property Code', 'realstatecode'),
-                ('Property Type', 'property_type'),
-                ('Building Type', 'building_type'),
-                ('Year Built', 'Yearmake'),
-                ('Area (m²)', 'Property-area'),
-                ('Facade (m)', 'Property-facade'),
-                ('Depth (m)', 'Property-depth'),
-                ('Bedrooms', 'N-of-bedrooms'),
-                ('Bathrooms', 'N-of-bathrooms'),
-                ('Floors', 'Property-floors'),
-                ('Corner Property', 'Property-corner'),
-                ('Price', 'Property-price'),
-                ('Currency', 'Property-currency'),
-                ('Province', 'province_name'),
-                ('Region', 'region_name'),
-                ('Address', 'Property-address'),
-                ('Owner', 'ownername'),
-                ('Owner Code', 'Ownercode'),
-                ('Description', 'Descriptions'),
+                ('property_code_label', 'realstatecode'),
+                ('property_type_label', 'property_type'),
+                ('building_type_label', 'building_type'),
+                ('year_built', 'Yearmake'),
+                ('area_m2', 'Property-area'),
+                ('facade_m', 'Property-facade'),
+                ('depth_m', 'Property-depth'),
+                ('bedrooms_label', 'N-of-bedrooms'),
+                ('bathrooms_label', 'N-of-bathrooms'),
+                ('floors_label', 'Property-floors'),
+                ('corner_property_label', 'Property-corner'),
+                ('price_label', 'Property-price'),
+                ('currency_label', 'Property-currency'),
+                ('province_label', 'province_name'),
+                ('region_label', 'region_name'),
+                ('address_label', 'Property-address'),
+                ('owner_label', 'ownername'),
+                ('owner_code_label', 'Ownercode'),
+                ('description_label', 'Descriptions'),
             ]
 
-            for label, field in fields:
-                self.details_grid.add_widget(Label(
-                    text=label + ':',
+            for label_key, field in fields:
+                # Get localized label text
+                label_text = get_text(label_key, label_key.replace('_', ' ').title())
+
+                label_widget = Label(
+                    text=label_text + ':',
                     size_hint_y=None,
                     height=dp(40),
                     halign='right',
@@ -164,25 +167,31 @@ class PropertyDetailContent(BoxLayout):
                     bold=True,
                     text_size=(dp(200), dp(40)),
                     color=(0.2, 0.2, 0.2, 1)
-                ))
+                )
 
-                value = property_data.get(field, 'Not specified')
+                # Apply Arabic font if needed
+                if self.language_manager.current_language == 'ar':
+                    apply_arabic_font(label_widget, label_text)
+
+                self.details_grid.add_widget(label_widget)
+
+                value = property_data.get(field, get_text('not_specified', 'Not specified'))
                 if value is None:
-                    value = 'Not specified'
+                    value = get_text('not_specified', 'Not specified')
 
-                # Format special fields
+                # Format special fields with localized values
                 if field == 'Property-corner' and value == 1:
-                    value = 'Yes'
+                    value = get_text('yes', 'Yes')
                 elif field == 'Property-corner' and value == 0:
-                    value = 'No'
-                elif field == 'Property-price' and value != 'Not specified':
+                    value = get_text('no', 'No')
+                elif field == 'Property-price' and value != get_text('not_specified', 'Not specified'):
                     try:
                         price_float = float(value)
                         value = f"{price_float:,.2f}"
                     except (ValueError, TypeError):
                         pass
 
-                self.details_grid.add_widget(Label(
+                value_widget = Label(
                     text=str(value),
                     size_hint_y=None,
                     height=dp(40),
@@ -190,7 +199,13 @@ class PropertyDetailContent(BoxLayout):
                     valign='middle',
                     text_size=(dp(300), dp(40)),
                     color=(0.4, 0.4, 0.4, 1)
-                ))
+                )
+
+                # Apply Arabic font if needed
+                if self.language_manager.current_language == 'ar':
+                    apply_arabic_font(value_widget, str(value))
+
+                self.details_grid.add_widget(value_widget)
 
         except Exception as e:
             print(f"Error adding property details: {e}")
@@ -230,24 +245,30 @@ class PropertyDetailContent(BoxLayout):
                 os.path.exists(os.path.join(photo.get('Storagepath', ''), photo.get('photofilename', '')))
                 for photo in photos
             ):
-                # No photos available
+                # No photos available - localized message
+                no_photo_text = get_text('no_photos_available', 'No photos available for this property')
                 no_photo_label = Label(
-                    text='No photos available',
+                    text=no_photo_text,
                     size_hint_y=None,
                     height=dp(100),
                     color=(0.5, 0.5, 0.5, 1)
                 )
+                if self.language_manager.current_language == 'ar':
+                    apply_arabic_font(no_photo_label, no_photo_text)
                 self.photo_gallery.add_widget(no_photo_label)
 
         except Exception as e:
             print(f"Error loading property photos: {e}")
-            # Add error message
+            # Add error message - localized
+            error_text = get_text('error_loading_photos', 'Error loading photos')
             error_label = Label(
-                text='Error loading photos',
+                text=error_text,
                 size_hint_y=None,
                 height=dp(100),
                 color=(1, 0, 0, 1)
             )
+            if self.language_manager.current_language == 'ar':
+                apply_arabic_font(error_label, error_text)
             self.photo_gallery.add_widget(error_label)
 
 class PropertyRow(BoxLayout):
@@ -380,13 +401,15 @@ class PropertyDetailPopup(Popup):
 
     def __init__(self, property_data, **kwargs):
         super(PropertyDetailPopup, self).__init__(**kwargs)
-        property_code = property_data.get('realstatecode', 'Unknown')
+        property_code = property_data.get('realstatecode', get_text('unknown', 'Unknown'))
         if property_code is None:
-            property_code = 'Unknown'
-        self.title = f"Property Details: {property_code}"
+            property_code = get_text('unknown', 'Unknown')
+
+        # Localized title
+        details_text = get_text( 'Property Details')
+        self.title = f"{details_text}: {property_code}"
         self.size_hint = (0.9, 0.9)
         self.separator_color = (0.7, 0.7, 0.7, 1)
-
 
         # Create and set the content widget
         content = PropertyDetailContent(property_data, self)
