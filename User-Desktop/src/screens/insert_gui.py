@@ -597,7 +597,7 @@ class InsertScreen(Screen):
 		apply_arabic_font(save_btn, save_text)
 
 		# Create popup with white background
-		popup_title = get_text('add_new_owner_title', 'Add New Owner')
+		popup_title = get_text('Add New Owner')
 		popup = Popup(
 			title=popup_title,
 			content=content,
