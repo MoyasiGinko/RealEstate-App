@@ -120,6 +120,10 @@ class PropertyForm(BoxLayout):
         self.currency_values = ['IQD - Iraqi Dinar', 'USD - US Dollar', 'EUR - Euro']  # Example, adjust as needed
         self.unit_values = [f"{x['code']} - {x['name']}" for x in self.api.get_unit_measures() or []]
 
+        # Store raw data for code extraction
+        self.provinces_data = self.api.get_provinces() or []
+        self.regions_data = []  # Will be populated when province is selected
+
         # Bind all widget references to their ids for kv linkage
         self.property_type_spinner = self.ids.property_type
         self.building_type_spinner = self.ids.building_type
@@ -187,8 +191,8 @@ class PropertyForm(BoxLayout):
                 'bathrooms_label': ('bathrooms', 'Bathrooms:'),
                 'corner_label': ('is_corner_property', 'Is Corner Property:'),
                 'offer_type_label': ('offer_type', 'Offer Type:'),
-                'province_label': ('governorate', 'Province:'),
-                'region_label': ('neighborhood', 'Region:'),
+                'province_label': ('province', 'Province:'),
+                'region_label': ('region', 'Region:'),
                 'address_label': ('address', 'Address:'),
                 'owner_label': ('owner', 'Owner:'),
                 'description_label': ('notes', 'Description:'),
@@ -332,6 +336,14 @@ class PropertyForm(BoxLayout):
             self.show_error(get_text('area_required', 'Property area is required.'))
             return
 
+        if not self.province_spinner.text or self.province_spinner.text == 'Select Province':
+            self.show_error(get_text('province_required', 'Province is required.'))
+            return
+
+        if not self.region_spinner.text or self.region_spinner.text == 'Select Region':
+            self.show_error(get_text('region_required', 'Region is required.'))
+            return
+
         if not self.owner_spinner.text or self.owner_spinner.text == 'Select Owner' or self.owner_spinner.text == 'No owners available':
             self.show_error(get_text('owner_required', 'Owner is required.'))
             return
@@ -348,8 +360,19 @@ class PropertyForm(BoxLayout):
             bathrooms = int(self.bathrooms_input.text) if self.bathrooms_input.text else None
             is_corner = self.corner_checkbox.active
             offer_type_code = self.offer_type_spinner.text.split(' - ')[0] if self.offer_type_spinner.text not in ['Select Offer Type', 'No offer types available'] else None
-            province_code = self.province_spinner.text.split(' - ')[0] if self.province_spinner.text not in ['Select Province', 'No provinces available'] else None
-            region_code = self.region_spinner.text.split(' - ')[0] if self.region_spinner.text not in ['Select Region', 'No regions available'] else None
+
+            # Extract province and region codes using proper method
+            province_code = self.get_code_from_selection(self.province_spinner.text, self.provinces_data)
+            region_code = self.get_code_from_selection(self.region_spinner.text, self.regions_data)
+
+            if not province_code:
+                self.show_error(get_text('invalid_province', 'Invalid province selection.'))
+                return
+
+            if not region_code:
+                self.show_error(get_text('invalid_region', 'Invalid region selection.'))
+                return
+
             address = self.address_input.text
             owner_code = self.owner_spinner.text.split(' - ')[0] if self.owner_spinner.text not in ['Select Owner', 'No owners available'] else None
             description = self.description_input.text
@@ -420,10 +443,13 @@ class PropertyForm(BoxLayout):
             match = next((v for v in self.province_spinner.values if v.startswith(str(data['Province-code']))), None)
             if match:
                 self.province_spinner.text = match
-        if data.get('Region-code') and self.region_spinner.values:
-            match = next((v for v in self.region_spinner.values if v.startswith(str(data['Region-code']))), None)
-            if match:
-                self.region_spinner.text = match
+                # Load regions for this province
+                self.on_province_selected(self.province_spinner, match)
+
+        # Set region after province is loaded
+        if data.get('Region-code'):
+            # Wait for regions to be loaded, then set the region
+            Clock.schedule_once(lambda dt: self._set_region_from_data(data), 0.1)
         self.address_input.text = str(data.get('Property-address', '') or '')
         if data.get('Ownercode') and self.owner_spinner.values:
             match = next((v for v in self.owner_spinner.values if v.startswith(str(data['Ownercode']))), None)
@@ -461,6 +487,14 @@ class PropertyForm(BoxLayout):
                 except Exception as e:
                     print(f"Error loading property photos: {e}")
             self.update_photo_gallery()
+
+    def _set_region_from_data(self, data):
+        """Set region selection after regions have been loaded"""
+        if data.get('Region-code') and hasattr(self, 'region_spinner') and self.region_spinner.values:
+            match = next((v for v in self.region_spinner.values if v.startswith(str(data['Region-code']))), None)
+            if match:
+                self.region_spinner.text = match
+
     def show_add_owner_form(self, instance):
         """Show the form for adding a new owner."""
         from src.screens.owner_management import OwnerForm
@@ -516,18 +550,28 @@ class PropertyForm(BoxLayout):
             # Extract province_code from the spinner text (format: "code - name")
             province_code = text.split(' - ')[0] if text and ' - ' in text else text
 
-            # Get cities for the selected province
-            cities = self.api.get_cities_by_province(province_code)
+            # Skip if it's a placeholder text
+            if not province_code or province_code in ['Select Province', 'No provinces available']:
+                if hasattr(self, 'region_spinner'):
+                    self.region_spinner.values = []
+                    self.region_spinner.text = 'Select Region'
+                    self.regions_data = []
+                return
 
-            if cities:
-                # Format city options (code - name)
-                city_values = [f"{c.get('code', 'N/A')} - {c.get('name', 'Unknown')}" for c in cities]
-                self.region_spinner.values = city_values
+            # Get regions for the selected province
+            regions = self.api.get_regions_by_province(province_code) or []
+
+            if regions:
+                # Format region options (code - name) and store raw data
+                region_values = [f"{r.get('code', 'N/A')} - {r.get('name', 'Unknown')}" for r in regions]
+                self.region_spinner.values = region_values
                 self.region_spinner.text = 'Select Region'
+                self.regions_data = regions  # Store for later code extraction
             else:
-                # No cities found for this province
+                # No regions found for this province
                 self.region_spinner.values = ['No regions available']
                 self.region_spinner.text = 'No regions available'
+                self.regions_data = []
 
         except Exception as e:
             print(f"Error updating region dropdown: {e}")
@@ -535,6 +579,18 @@ class PropertyForm(BoxLayout):
             if hasattr(self, 'region_spinner'):
                 self.region_spinner.values = ['Error loading regions']
                 self.region_spinner.text = 'Error loading regions'
+                self.regions_data = []
+
+    def get_code_from_selection(self, selected_text, data_list):
+        """Extract code from selected text in format 'Code - Name'"""
+        if not selected_text or not data_list or ' - ' not in selected_text:
+            return None
+
+        code_part = selected_text.split(' - ')[0]
+        for item in data_list:
+            if item.get('code') == code_part:
+                return item['code']
+        return code_part  # Return the extracted code if no match found
 
 class UpdateGUIScreen(Screen):
     """Screen for managing properties."""
