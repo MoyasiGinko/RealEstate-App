@@ -13,7 +13,7 @@ class LanguageManager:
     """Manages application localization and language switching"""
 
     def __init__(self):
-        self.current_language = 'en'  # Default to English
+        self.current_language = 'ar'  # Default to Arabic
         self.translations = {}
         self.observers = []  # Screens that need to be notified of language changes
         self._load_translations()
