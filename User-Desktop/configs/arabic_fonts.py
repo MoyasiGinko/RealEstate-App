@@ -180,19 +180,38 @@ class ArabicFonts:
             except Exception:
                 pass
 
-        # For Spinners, also apply font to their dropdown options
-        from kivy.uix.spinner import Spinner
-        if isinstance(widget, Spinner):
+        # For Spinners, also apply font to their dropdown options and reshape values
+        try:
+            from kivy.uix.spinner import Spinner
+        except Exception:
+            Spinner = None
+
+        if Spinner and isinstance(widget, Spinner):
             # Apply font to the spinner text itself
             if hasattr(widget, 'font_name'):
                 widget.font_name = self.FONT_NAME
 
-            # Apply font to dropdown options if they contain Arabic
-            if hasattr(widget, 'values'):
-                for value in widget.values:
-                    if self.is_arabic_text(value):
-                        widget.font_name = self.FONT_NAME
-                        break
+            # If spinner has values, reshape any Arabic entries in-place so dropdown shows correctly
+            try:
+                if hasattr(widget, 'values') and widget.values:
+                    new_values = []
+                    changed = False
+                    for v in widget.values:
+                        s = str(v)
+                        shaped = self.reshape_and_bidi(s) if self.is_arabic_text(s) else s
+                        new_values.append(shaped)
+                        if shaped != s:
+                            changed = True
+
+                    # Only assign back if any value changed to avoid unnecessary property updates
+                    if changed:
+                        try:
+                            widget.values = new_values
+                        except Exception:
+                            # Some Spinner implementations might not like direct reassignment during layout; ignore
+                            pass
+            except Exception:
+                pass
 
 # Global instance
 _arabic_fonts = None

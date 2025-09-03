@@ -593,11 +593,22 @@ class PropertyForm(BoxLayout):
                 # Format region options (code - name) and store raw data
                 region_values = [f"{r.get('code', 'N/A')} - {r.get('name', 'Unknown')}" for r in regions]
                 self.region_spinner.values = region_values
+                # Apply Arabic shaping/font to spinner and its values
+                try:
+                    from configs.arabic_fonts import apply_arabic_font
+                    apply_arabic_font(self.region_spinner)
+                except Exception:
+                    pass
                 self.region_spinner.text = 'Select Region'
                 self.regions_data = regions  # Store for later code extraction
             else:
                 # No regions found for this province
                 self.region_spinner.values = ['No regions available']
+                try:
+                    from configs.arabic_fonts import apply_arabic_font
+                    apply_arabic_font(self.region_spinner)
+                except Exception:
+                    pass
                 self.region_spinner.text = 'No regions available'
                 self.regions_data = []
 
@@ -606,6 +617,11 @@ class PropertyForm(BoxLayout):
             # Set error state if spinner exists
             if hasattr(self, 'region_spinner'):
                 self.region_spinner.values = ['Error loading regions']
+                try:
+                    from configs.arabic_fonts import apply_arabic_font
+                    apply_arabic_font(self.region_spinner)
+                except Exception:
+                    pass
                 self.region_spinner.text = 'Error loading regions'
                 self.regions_data = []
 

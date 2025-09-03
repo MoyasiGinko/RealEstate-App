@@ -566,10 +566,20 @@ class SearchReportScreen(Screen):
                 values = [all_types_text] + [f"{pt.get('code', 'N/A')} - {pt.get('name', 'Unknown')}" for pt in property_types]
                 self.ids.property_type_spinner.values = values
                 self.ids.property_type_spinner.text = all_types_text
+                try:
+                    from configs.arabic_fonts import apply_arabic_font
+                    apply_arabic_font(self.ids.property_type_spinner)
+                except Exception:
+                    pass
             else:
                 all_types_text = get_text('all_types')
                 self.ids.property_type_spinner.values = [all_types_text]
                 self.ids.property_type_spinner.text = all_types_text
+                try:
+                    from configs.arabic_fonts import apply_arabic_font
+                    apply_arabic_font(self.ids.property_type_spinner)
+                except Exception:
+                    pass
         except Exception as e:
             print(f"Error loading property types: {e}")
             all_types_text = get_text('all_types')
@@ -585,10 +595,20 @@ class SearchReportScreen(Screen):
                 values = [all_types_text] + [f"{bt.get('code', 'N/A')} - {bt.get('name', 'Unknown')}" for bt in building_types]
                 self.ids.building_type_spinner.values = values
                 self.ids.building_type_spinner.text = all_types_text
+                try:
+                    from configs.arabic_fonts import apply_arabic_font
+                    apply_arabic_font(self.ids.building_type_spinner)
+                except Exception:
+                    pass
             else:
                 all_types_text = get_text('all_types')
                 self.ids.building_type_spinner.values = [all_types_text]
                 self.ids.building_type_spinner.text = all_types_text
+                try:
+                    from configs.arabic_fonts import apply_arabic_font
+                    apply_arabic_font(self.ids.building_type_spinner)
+                except Exception:
+                    pass
         except Exception as e:
             print(f"Error loading building types: {e}")
             all_types_text = get_text('all_types')

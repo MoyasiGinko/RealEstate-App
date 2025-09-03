@@ -18,7 +18,7 @@ import tkinter as tk
 from tkinter import filedialog
 from src.models.database_api import get_api
 from configs.language_manager import get_language_manager, get_text
-from configs.arabic_fonts import apply_arabic_font
+from configs.arabic_fonts import apply_arabic_font, init_arabic_fonts
 from configs.language_switcher import show_language_switcher
 
 Builder.load_file('assets/kv/insert_gui.kv')
@@ -171,6 +171,11 @@ class InsertScreen(Screen):
 			if not values:
 				values = ['No property types available']
 			self.property_type.values = values
+			# Ensure Arabic shaping/font applied to spinner and its values
+			try:
+				apply_arabic_font(self.property_type)
+			except Exception:
+				pass
 
 	def load_building_types(self):
 		"""Load building types from database into spinner"""
@@ -180,6 +185,10 @@ class InsertScreen(Screen):
 			if not values:
 				values = ['No building types available']
 			self.building_type.values = values
+			try:
+				apply_arabic_font(self.building_type)
+			except Exception:
+				pass
 
 	def load_unit_measurements(self):
 		"""Load unit measurements from database into spinner"""
@@ -189,6 +198,10 @@ class InsertScreen(Screen):
 			if not values:
 				values = ['m²', 'ft²']
 			self.unit_measurement.values = values
+			try:
+				apply_arabic_font(self.unit_measurement)
+			except Exception:
+				pass
 
 	def load_offer_types(self):
 		"""Load offer types from database into spinner"""
@@ -198,6 +211,10 @@ class InsertScreen(Screen):
 			if not values:
 				values = ['Sale', 'Rent', 'Lease']
 			self.offer_type.values = values
+			try:
+				apply_arabic_font(self.offer_type)
+			except Exception:
+				pass
 
 	def load_provinces(self):
 		"""Load provinces from database into spinner"""
@@ -207,6 +224,10 @@ class InsertScreen(Screen):
 			if not values:
 				values = ['No provinces available']
 			self.governorate.values = values
+			try:
+				apply_arabic_font(self.governorate)
+			except Exception:
+				pass
 			# Store provinces data for later use
 			self.provinces_data = provinces
 
@@ -234,8 +255,13 @@ class InsertScreen(Screen):
 				values = [f"{r['name']} ({r['code']})" for r in regions if 'name' in r and 'code' in r] if regions else []
 				if not values:
 					values = ['No regions available']
-				self.region.values = values
-				self.region.text = 'Select Region' if values != ['No regions available'] else 'No regions available'
+					self.region.values = values
+					# Apply shaping/font to region spinner and values
+					try:
+						apply_arabic_font(self.region)
+					except Exception:
+						pass
+					self.region.text = 'Select Region' if values != ['No regions available'] else 'No regions available'
 				# Store regions data for later use
 				self.regions_data = regions
 
@@ -251,9 +277,18 @@ class InsertScreen(Screen):
 			values = [f"{o['ownername']} ({o['Ownercode']})" for o in self.filtered_owners if 'ownername' in o and 'Ownercode' in o]
 			if values:
 				self.property_owner.values = values
+				# Apply shaping/font to owner spinner
+				try:
+					apply_arabic_font(self.property_owner)
+				except Exception:
+					pass
 				self.property_owner.text = values[0]
 			else:
 				self.property_owner.values = ['No owners found']
+				try:
+					apply_arabic_font(self.property_owner)
+				except Exception:
+					pass
 				self.property_owner.text = 'No owners found'
 
 	def filter_owners(self, search_text):
@@ -824,6 +859,13 @@ class InsertScreen(Screen):
 			owner_code = self.api.add_owner(name, phone, note)
 			if owner_code:
 				success_msg = get_text('owner_added_success', 'Owner {0} added successfully').format(name)
+				# Reshape and bidi the formatted message for Arabic display
+				try:
+					reshaper = init_arabic_fonts()
+					if hasattr(reshaper, 'reshape_and_bidi'):
+						success_msg = reshaper.reshape_and_bidi(success_msg)
+				except Exception:
+					pass
 				self.show_success(success_msg)
 				# Reload owners data and select the new owner
 				self.load_owners()
@@ -838,6 +880,13 @@ class InsertScreen(Screen):
 				self.show_error(get_text('failed_to_add_owner', 'Failed to add owner'))
 		except Exception as e:
 			error_msg = get_text('error_adding_owner', 'Error adding owner: {0}').format(str(e))
+			# Reshape and bidi the formatted error message for Arabic display
+			try:
+				reshaper = init_arabic_fonts()
+				if hasattr(reshaper, 'reshape_and_bidi'):
+					error_msg = reshaper.reshape_and_bidi(error_msg)
+			except Exception:
+				pass
 			self.show_error(error_msg)
 
 	def show_success(self, message):
