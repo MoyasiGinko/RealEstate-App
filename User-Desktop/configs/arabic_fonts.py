@@ -12,6 +12,16 @@ from kivy.uix.button import Button
 import os
 import re
 
+# Optional dependencies for proper Arabic shaping and bidi reordering
+try:
+    import arabic_reshaper
+    from bidi.algorithm import get_display as bidi_get_display
+    _HAS_BIDI = True
+except Exception:
+    arabic_reshaper = None
+    bidi_get_display = None
+    _HAS_BIDI = False
+
 class ArabicFonts:
     """Production-ready Arabic font support with global font switching"""
 
@@ -127,15 +137,48 @@ class ArabicFonts:
             return False
         return bool(re.search(r'[\u0600-\u06FF]', text))
 
+    def reshape_and_bidi(self, text):
+        """Reshape Arabic text and apply bidi reordering for proper display.
+
+        If optional packages are not installed, fall back to returning the original text.
+        """
+        if not text:
+            return text
+        if not self.is_arabic_text(text):
+            return text
+
+        try:
+            if _HAS_BIDI and arabic_reshaper is not None:
+                reshaped = arabic_reshaper.reshape(text)
+                return bidi_get_display(reshaped)
+        except Exception:
+            pass
+
+        # Fallback: reverse characters (poor man's bidi; not ideal)
+        try:
+            return text[::-1]
+        except Exception:
+            return text
+
     def apply_font(self, widget, text=None):
         """Apply Arabic font to widget if text contains Arabic"""
         if not self.fonts_registered:
             return
 
+        # Determine the text to inspect
         text_to_check = text or getattr(widget, 'text', '')
 
         if self.is_arabic_text(text_to_check):
             widget.font_name = self.FONT_NAME
+
+            # Apply proper shaping and bidi reordering if possible
+            try:
+                shaped = self.reshape_and_bidi(text_to_check)
+                # Only set widget.text if it's meaningful and widget supports it
+                if shaped and hasattr(widget, 'text'):
+                    widget.text = shaped
+            except Exception:
+                pass
 
         # For Spinners, also apply font to their dropdown options
         from kivy.uix.spinner import Spinner
