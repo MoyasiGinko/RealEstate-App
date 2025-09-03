@@ -27,31 +27,45 @@ class AboutScreen(Screen):
         try:
             # Update title
             if hasattr(self.ids, 'about_title'):
-                self.ids.about_title.text = get_text('about_us', 'About Us')
+                txt = get_text('about_us', 'About Us')
+                self.ids.about_title.text = txt
+                apply_arabic_font(self.ids.about_title, txt)
 
             # Update company name
             if hasattr(self.ids, 'company_name_label'):
-                self.ids.company_name_label.text = get_text('company_name_full', 'Al-Kawaz Software and Information Technology')
+                txt = get_text('company_name_full', 'Al-Kawaz Software and Information Technology')
+                self.ids.company_name_label.text = txt
+                apply_arabic_font(self.ids.company_name_label, txt)
 
             # Update version
             if hasattr(self.ids, 'version_label'):
-                self.ids.version_label.text = get_text('version', 'Version: 1.0.0')
+                txt = get_text('version', 'Version: 1.0.0')
+                self.ids.version_label.text = txt
+                apply_arabic_font(self.ids.version_label, txt)
 
             # Update author
             if hasattr(self.ids, 'author_label'):
-                self.ids.author_label.text = get_text('author', 'Author: Luay Alkawaz')
+                txt = get_text('author', 'Author: Luay Alkawaz')
+                self.ids.author_label.text = txt
+                apply_arabic_font(self.ids.author_label, txt)
 
             # Update description
             if hasattr(self.ids, 'description_label'):
-                self.ids.description_label.text = get_text('description', 'This application helps users manage real estate properties efficiently and intuitively.\nProfessional • Reliable • Innovative\nThank you for using our system!')
+                txt = get_text('description', 'This application helps users manage real estate properties efficiently and intuitively.\nProfessional • Reliable • Innovative\nThank you for using our system!')
+                self.ids.description_label.text = txt
+                apply_arabic_font(self.ids.description_label, txt)
 
             # Update back button
             if hasattr(self.ids, 'back_btn'):
-                self.ids.back_btn.text = get_text('back_to_main', '← Back to Main')
+                txt = get_text('back_to_main', '← Back to Main')
+                self.ids.back_btn.text = txt
+                apply_arabic_font(self.ids.back_btn, txt)
 
             # Update language button
             if hasattr(self.ids, 'language_btn'):
-                self.ids.language_btn.text = get_text('language', 'Language') + '\n' + 'اللغة'
+                txt = get_text('language', 'Language') + '\n' + 'اللغة'
+                self.ids.language_btn.text = txt
+                apply_arabic_font(self.ids.language_btn, txt)
 
             # Apply fonts after text updates
             self.setup_arabic_fonts()

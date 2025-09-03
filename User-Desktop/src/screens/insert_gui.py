@@ -129,6 +129,10 @@ class InsertScreen(Screen):
 					if widget:
 						new_text = get_text(text_key)
 						widget.text = new_text
+						try:
+							apply_arabic_font(widget, new_text)
+						except Exception:
+							pass
 						# Apply Arabic font if needed
 						if self.language_manager.current_language == 'ar':
 							apply_arabic_font(widget, new_text)
@@ -589,8 +593,11 @@ class InsertScreen(Screen):
 			valign='middle'
 		)
 		title_label.bind(size=title_label.setter('text_size'))
-		if self.language_manager.current_language == 'ar':
+		# Apply Arabic font to the popup title if necessary
+		try:
 			apply_arabic_font(title_label, title_label.text)
+		except Exception:
+			pass
 		content.add_widget(title_label)
 
 		# Scrollable form area
@@ -621,8 +628,12 @@ class InsertScreen(Screen):
 			bold=True
 		)
 		owner_name_label.bind(size=owner_name_label.setter('text_size'))
-		if self.language_manager.current_language == 'ar':
+		# Apply Arabic font if needed
+		try:
 			apply_arabic_font(owner_name_label, owner_name_label.text)
+		except Exception:
+			pass
+		if self.language_manager.current_language == 'ar':
 			owner_name_label.halign = 'right'
 
 		owner_name_placeholder = get_text('enter_owner_name', 'Enter owner name')

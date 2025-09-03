@@ -51,6 +51,10 @@ class MainScreen(Screen):
                     if widget:
                         new_text = get_text(text_key)
                         widget.text = new_text
+                        try:
+                            apply_arabic_font(widget, new_text)
+                        except Exception:
+                            pass
                         # Apply Arabic font if needed
                         if self.language_manager.current_language == 'ar':
                             apply_arabic_font(widget, new_text)

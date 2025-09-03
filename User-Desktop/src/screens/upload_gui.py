@@ -523,6 +523,10 @@ class UploadScreen(Screen):
             markup=True
         )
         apply_arabic_font(message_label, message)
+        try:
+            apply_arabic_font(message_label, message)
+        except Exception:
+            pass
         content_layout.add_widget(message_label)
 
         # Close button
@@ -538,6 +542,10 @@ class UploadScreen(Screen):
             pos_hint={'center_x': 0.5}
         )
         apply_arabic_font(close_btn, close_text)
+        try:
+            apply_arabic_font(close_btn, close_text)
+        except Exception:
+            pass
 
         popup = Popup(
             title=title_text,

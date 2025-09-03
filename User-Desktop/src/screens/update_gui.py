@@ -177,7 +177,9 @@ class PropertyForm(BoxLayout):
         try:
             # Update form title
             if hasattr(self.ids, 'form_title_label'):
-                self.ids.form_title_label.text = get_text('property_form', 'Property Form')
+                txt = get_text('property_form', 'Property Form')
+                self.ids.form_title_label.text = txt
+                apply_arabic_font(self.ids.form_title_label, txt)
 
             # Update all field labels
             label_mappings = {
@@ -206,7 +208,12 @@ class PropertyForm(BoxLayout):
             for widget_id, (text_key, fallback) in label_mappings.items():
                 if hasattr(self.ids, widget_id):
                     widget = getattr(self.ids, widget_id)
-                    widget.text = get_text(text_key, fallback)
+                    txt = get_text(text_key, fallback)
+                    widget.text = txt
+                    try:
+                        apply_arabic_font(widget, txt)
+                    except Exception:
+                        pass
 
             # Update spinner texts
             spinner_mappings = {
@@ -224,7 +231,12 @@ class PropertyForm(BoxLayout):
             for widget_id, (text_key, fallback) in spinner_mappings.items():
                 if hasattr(self.ids, widget_id):
                     widget = getattr(self.ids, widget_id)
-                    widget.text = get_text(text_key, fallback)
+                    txt = get_text(text_key, fallback)
+                    widget.text = txt
+                    try:
+                        apply_arabic_font(widget, txt)
+                    except Exception:
+                        pass
 
             # Update hint texts for TextInputs
             hint_mappings = {
@@ -242,15 +254,26 @@ class PropertyForm(BoxLayout):
             for widget_id, (text_key, fallback) in hint_mappings.items():
                 if hasattr(self.ids, widget_id):
                     widget = getattr(self.ids, widget_id)
-                    widget.hint_text = get_text(text_key, fallback)
+                    hint = get_text(text_key, fallback)
+                    widget.hint_text = hint
+                    try:
+                        apply_arabic_font(widget, hint)
+                    except Exception:
+                        pass
 
             # Update buttons
             if hasattr(self.ids, 'save_btn'):
-                self.ids.save_btn.text = get_text('save', 'Save')
+                txt = get_text('save', 'Save')
+                self.ids.save_btn.text = txt
+                apply_arabic_font(self.ids.save_btn, txt)
             if hasattr(self.ids, 'cancel_btn'):
-                self.ids.cancel_btn.text = get_text('cancel', 'Cancel')
+                txt = get_text('cancel', 'Cancel')
+                self.ids.cancel_btn.text = txt
+                apply_arabic_font(self.ids.cancel_btn, txt)
             if hasattr(self.ids, 'add_photo_btn'):
-                self.ids.add_photo_btn.text = get_text('add_photos', 'Add Photos')
+                txt = get_text('add_photos', 'Add Photos')
+                self.ids.add_photo_btn.text = txt
+                apply_arabic_font(self.ids.add_photo_btn, txt)
 
             # Update photo count
             self.update_photo_count()
@@ -267,7 +290,12 @@ class PropertyForm(BoxLayout):
             if hasattr(self.ids, 'photo_count'):
                 count = len(self.selected_photos) if hasattr(self, 'selected_photos') else 0
                 if count == 0:
-                    self.ids.photo_count.text = get_text('no_photos_selected', 'No photos selected')
+                    txt = get_text('no_photos_selected', 'No photos selected')
+                    self.ids.photo_count.text = txt
+                    try:
+                        apply_arabic_font(self.ids.photo_count, txt)
+                    except Exception:
+                        pass
                 elif count == 1:
                     self.ids.photo_count.text = f"1 {get_text('photo_selected', 'photo selected')}"
                 else:
