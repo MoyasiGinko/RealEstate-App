@@ -123,7 +123,7 @@
             size_hint_y: None
             height: '140dp'
             spacing: '30dp'
-            padding: [50, 20, 50, 20]
+            padding: app.rtl and [50, 20, 50, 20][::-1] or [50, 20, 50, 20]
 
             # Centering widget
             Widget:
@@ -164,7 +164,7 @@
                     height: '35dp'
                     color: 0.4, 0.5, 0.6, 1
                     bold: True
-                    halign: 'left'
+                    halign: app.rtl and 'right' or 'left'
                     valign: 'middle'
                     text_size: self.size
 
@@ -175,7 +175,7 @@
                     size_hint_y: None
                     height: '25dp'
                     color: 0.5, 0.6, 0.7, 1
-                    halign: 'left'
+                    halign: app.rtl and 'right' or 'left'
                     valign: 'middle'
                     text_size: self.size
 
@@ -201,7 +201,7 @@
             spacing: '25dp'
             size_hint_y: None
             height: '160dp'
-            padding: [30, 10, 30, 10]
+            padding: app.rtl and [30, 10, 30, 10][::-1] or [30, 10, 30, 10]
 
             # New Property Button
             BoxLayout:

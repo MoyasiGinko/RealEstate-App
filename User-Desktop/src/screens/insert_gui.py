@@ -167,7 +167,8 @@ class InsertScreen(Screen):
 		"""Load property types from database into spinner"""
 		if hasattr(self, 'property_type') and self.property_type:
 			property_types = self.api.get_property_types() or []
-			values = [pt['name'] for pt in property_types if 'name' in pt] if property_types else []
+			lang = self.language_manager.get_current_language() if hasattr(self, 'language_manager') else 'en'
+			values = [ (pt.get('name_ar') if lang == 'ar' and 'name_ar' in pt else pt.get('name','')) for pt in property_types if 'name' in pt or 'name_ar' in pt ] if property_types else []
 			if not values:
 				values = ['No property types available']
 			self.property_type.values = values
@@ -181,7 +182,8 @@ class InsertScreen(Screen):
 		"""Load building types from database into spinner"""
 		if hasattr(self, 'building_type') and self.building_type:
 			building_types = self.api.get_building_types() or []
-			values = [bt['name'] for bt in building_types if 'name' in bt] if building_types else []
+			lang = self.language_manager.get_current_language() if hasattr(self, 'language_manager') else 'en'
+			values = [ (bt.get('name_ar') if lang == 'ar' and 'name_ar' in bt else bt.get('name','')) for bt in building_types if 'name' in bt or 'name_ar' in bt ] if building_types else []
 			if not values:
 				values = ['No building types available']
 			self.building_type.values = values
@@ -194,7 +196,8 @@ class InsertScreen(Screen):
 		"""Load unit measurements from database into spinner"""
 		if hasattr(self, 'unit_measurement') and self.unit_measurement:
 			unit_types = self.api.get_unit_measures() or []
-			values = [ut['name'] for ut in unit_types if 'name' in ut] if unit_types else []
+			lang = self.language_manager.get_current_language() if hasattr(self, 'language_manager') else 'en'
+			values = [ (ut.get('name_ar') if lang == 'ar' and 'name_ar' in ut else ut.get('name','')) for ut in unit_types if 'name' in ut or 'name_ar' in ut ] if unit_types else []
 			if not values:
 				values = ['m²', 'ft²']
 			self.unit_measurement.values = values
@@ -207,7 +210,8 @@ class InsertScreen(Screen):
 		"""Load offer types from database into spinner"""
 		if hasattr(self, 'offer_type') and self.offer_type:
 			offer_types = self.api.get_offer_types() or []
-			values = [ot['name'] for ot in offer_types if 'name' in ot] if offer_types else []
+			lang = self.language_manager.get_current_language() if hasattr(self, 'language_manager') else 'en'
+			values = [ (ot.get('name_ar') if lang == 'ar' and 'name_ar' in ot else ot.get('name','')) for ot in offer_types if 'name' in ot or 'name_ar' in ot ] if offer_types else []
 			if not values:
 				values = ['Sale', 'Rent', 'Lease']
 			self.offer_type.values = values
@@ -220,7 +224,8 @@ class InsertScreen(Screen):
 		"""Load provinces from database into spinner"""
 		if hasattr(self, 'governorate') and self.governorate:
 			provinces = self.api.get_provinces() or []
-			values = [f"{p['name']} ({p['code']})" for p in provinces if 'name' in p and 'code' in p] if provinces else []
+			lang = self.language_manager.get_current_language() if hasattr(self, 'language_manager') else 'en'
+			values = [f"{(p.get('name_ar') if lang == 'ar' and 'name_ar' in p else p.get('name',''))} ({p['code']})" for p in provinces if ('name' in p or 'name_ar' in p) and 'code' in p] if provinces else []
 			if not values:
 				values = ['No provinces available']
 			self.governorate.values = values
@@ -252,7 +257,8 @@ class InsertScreen(Screen):
 			# Load regions for this province
 			regions = self.api.get_regions_by_province(province_code) or []
 			if hasattr(self, 'region') and self.region:
-				values = [f"{r['name']} ({r['code']})" for r in regions if 'name' in r and 'code' in r] if regions else []
+				lang = self.language_manager.get_current_language() if hasattr(self, 'language_manager') else 'en'
+				values = [f"{(r.get('name_ar') if lang == 'ar' and 'name_ar' in r else r.get('name',''))} ({r['code']})" for r in regions if ('name' in r or 'name_ar' in r) and 'code' in r] if regions else []
 				if not values:
 					values = ['No regions available']
 					self.region.values = values
@@ -274,7 +280,8 @@ class InsertScreen(Screen):
 	def update_owner_spinner(self):
 		if hasattr(self, 'property_owner') and self.property_owner:
 			# Show both name and code for clarity
-			values = [f"{o['ownername']} ({o['Ownercode']})" for o in self.filtered_owners if 'ownername' in o and 'Ownercode' in o]
+			lang = self.language_manager.get_current_language() if hasattr(self, 'language_manager') else 'en'
+			values = [f"{(o.get('ownername_ar') if lang == 'ar' and 'ownername_ar' in o else o.get('ownername',''))} ({o['Ownercode']})" for o in self.filtered_owners if ('ownername' in o or 'ownername_ar' in o) and 'Ownercode' in o]
 			if values:
 				self.property_owner.values = values
 				# Apply shaping/font to owner spinner

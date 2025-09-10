@@ -417,7 +417,7 @@
 							text: 'No photos selected'
 							color: 0.5, 0.5, 0.5, 1
 							size_hint_x: 0.7
-							halign: 'left'
+							halign: app.rtl and 'right' or 'left'
 							valign: 'middle'
 							text_size: self.size
 
@@ -433,7 +433,7 @@
 						size_hint_y: None
 						height: 30
 						color: 0.2, 0.2, 0.2, 1
-						halign: 'left'
+						halign: app.rtl and 'right' or 'left'
 						valign: 'middle'
 						text_size: self.size
 
@@ -464,7 +464,7 @@
 						size_hint_y: None
 						height: 30
 						color: 0.2, 0.2, 0.2, 1
-						halign: 'left'
+						halign: app.rtl and 'right' or 'left'
 						valign: 'middle'
 						text_size: self.size
 
@@ -481,7 +481,7 @@
 			size_hint_y: None
 			height: 20
 			color: 0.5, 0.5, 0.5, 1
-			halign: 'left'
+			halign: app.rtl and 'right' or 'left'
 			text_size: self.size
 
 		# Action buttons
@@ -489,6 +489,7 @@
 			size_hint_y: None
 			height: 60
 			spacing: 20
+			# Two-value padding (top/bottom) is unchanged; no left/right swap needed
 			padding: [0, 10]
 
 			Button:

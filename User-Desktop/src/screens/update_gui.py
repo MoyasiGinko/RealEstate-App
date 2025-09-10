@@ -110,15 +110,16 @@ class PropertyForm(BoxLayout):
         self.language_manager.register_observer(self)
 
         # Populate dropdown values
-        self.property_type_values = [f"{x['code']} - {x['name']}" for x in self.api.get_property_types() or []]
-        self.building_type_values = [f"{x['code']} - {x['name']}" for x in self.api.get_building_types() or []]
+        lang = self.language_manager.get_current_language() if hasattr(self, 'language_manager') else 'en'
+        self.property_type_values = [f"{x.get('code','')} - {(x.get('name_ar') if lang == 'ar' and x.get('name_ar') else x.get('name',''))}" for x in (self.api.get_property_types() or [])]
+        self.building_type_values = [f"{x.get('code','')} - {(x.get('name_ar') if lang == 'ar' and x.get('name_ar') else x.get('name',''))}" for x in (self.api.get_building_types() or [])]
         self.year_values = [str(y) for y in range(1980, datetime.now().year + 1)]
-        self.offer_type_values = [f"{x['code']} - {x['name']}" for x in self.api.get_offer_types() or []]
-        self.province_values = [f"{x['code']} - {x['name']}" for x in self.api.get_provinces() or []]
+        self.offer_type_values = [f"{x.get('code','')} - {x.get('name','')}" for x in (self.api.get_offer_types() or [])]
+        self.province_values = [f"{x.get('code','')} - {x.get('name','')}" for x in (self.api.get_provinces() or [])]
         self.region_values = []  # Will be set when province is selected
-        self.owner_values = [f"{x['Ownercode']} - {x['ownername']}" for x in self.api.get_all_owners() or []]
-        self.currency_values = ['IQD - Iraqi Dinar', 'USD - US Dollar', 'EUR - Euro']  # Example, adjust as needed
-        self.unit_values = [f"{x['code']} - {x['name']}" for x in self.api.get_unit_measures() or []]
+        self.owner_values = [f"{x.get('Ownercode','')} - {x.get('ownername','')}" for x in (self.api.get_all_owners() or [])]
+        self.currency_values = ['IQD - Iraqi Dinar', 'USD - US Dollar', 'EUR - Euro']
+        self.unit_values = [f"{x.get('code','')} - {x.get('name','')}" for x in (self.api.get_unit_measures() or [])]
 
         # Store raw data for code extraction
         self.provinces_data = self.api.get_provinces() or []
@@ -147,11 +148,13 @@ class PropertyForm(BoxLayout):
         self.unit_spinner = self.ids.unit
         # Photo-related widgets
         self.photo_count = self.ids.photo_count
+
         # Optionally, connect save/cancel buttons if needed
         if 'save_btn' in self.ids:
             self.ids.save_btn.bind(on_press=self.save)
         if 'cancel_btn' in self.ids:
             self.ids.cancel_btn.bind(on_press=self.cancel)
+
         # Always define selected_photos and property_code to avoid attribute errors
         self.selected_photos = []
         self.existing_photos = []  # Track existing photos separately from new ones

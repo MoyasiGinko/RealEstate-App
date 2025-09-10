@@ -1,4 +1,5 @@
 from kivy.app import App
+from kivy.properties import BooleanProperty
 from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
 from kivy.lang import Builder
 from kivy.core.window import Window
@@ -29,6 +30,7 @@ Window.size = (1024, 768)
 
 class MainApp(App):
     """Main application class for the Real Estate Property Management System."""
+    rtl = BooleanProperty(False)
 
     def build(self):
         """Build the application and set up the screen manager."""
@@ -95,6 +97,11 @@ class MainApp(App):
         current_lang = self.language_manager.get_current_language()
 
         if current_lang == 'ar':
+            # Enable RTL mode for KV bindings
+            try:
+                self.rtl = True
+            except Exception:
+                pass
             # Set Arabic font as the global default
             set_global_arabic_font()
             # Also apply Arabic font to all existing widgets
@@ -102,6 +109,10 @@ class MainApp(App):
                 apply_font_to_all_widgets(self.sm)
         else:
             # Restore system default font
+            try:
+                self.rtl = False
+            except Exception:
+                pass
             restore_default_font()
 
 if __name__ == '__main__':

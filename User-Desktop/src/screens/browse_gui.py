@@ -563,7 +563,8 @@ class SearchReportScreen(Screen):
         try:
             if property_types:
                 all_types_text = get_text('all_types')
-                values = [all_types_text] + [f"{pt.get('code', 'N/A')} - {pt.get('name', 'Unknown')}" for pt in property_types]
+                lang = self.language_manager.get_current_language() if hasattr(self, 'language_manager') else 'en'
+                values = [all_types_text] + [f"{pt.get('code', 'N/A')} - {(pt.get('name_ar') if lang == 'ar' and 'name_ar' in pt else pt.get('name', 'Unknown'))}" for pt in property_types]
                 self.ids.property_type_spinner.values = values
                 self.ids.property_type_spinner.text = all_types_text
                 try:
@@ -592,7 +593,8 @@ class SearchReportScreen(Screen):
         try:
             if building_types:
                 all_types_text = get_text('all_types')
-                values = [all_types_text] + [f"{bt.get('code', 'N/A')} - {bt.get('name', 'Unknown')}" for bt in building_types]
+                lang = self.language_manager.get_current_language() if hasattr(self, 'language_manager') else 'en'
+                values = [all_types_text] + [f"{bt.get('code', 'N/A')} - {(bt.get('name_ar') if lang == 'ar' and 'name_ar' in bt else bt.get('name', 'Unknown'))}" for bt in building_types]
                 self.ids.building_type_spinner.values = values
                 self.ids.building_type_spinner.text = all_types_text
                 try:

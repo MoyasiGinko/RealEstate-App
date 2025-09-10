@@ -114,7 +114,8 @@
 			size_hint_y: None
 			height: '60dp'
 			spacing: '20dp'
-			padding: [0, 10, 0, 0]
+			# Swap left/right padding when RTL is active
+			padding: app.rtl and [0, 10, 0, 0][::-1] or [0, 10, 0, 0]
 
 			Button:
 				text: 'Back to Main'
